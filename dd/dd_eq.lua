@@ -1,0 +1,11 @@
+function loginSort()
+  send(f 'put all.{food} {foodBag}', false)
+  send(f 'put all.scroll {scrollBag}', false)
+  send(f 'put all.potion {potBag}', false)
+  send(f 'put girth webbing', false)
+  send(f 'put eog webbing', false)
+  send(f 'put eog webbing', false)
+  send(f 'put hat webbing', false)
+  send(f 'put rusty webbing', false)
+  send(f 'hold staff', false)
+end
