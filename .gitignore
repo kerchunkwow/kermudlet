@@ -2,7 +2,7 @@ gizmo/mal
 gizmo/assets
 gizmo/logs
 dd/logs
-gizmo/login.lua
+gizmo/config/login.lua
 sandbox/
 .vscode/
 .editorconfig
