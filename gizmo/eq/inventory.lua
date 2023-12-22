@@ -1,3 +1,5 @@
+-- Functions for inventory management like gear swaps, cloning, etc.
+
 function laswield()
   expandAlias( 'las rem ring', false )
   expandAlias( 'las rem leg', false )
@@ -72,43 +74,12 @@ function colwield()
   expandAlias( 'col wear greaves', false )
 end
 
-function do_clone()
-  -- Check first/last call conditions
-  if not nadja_clones then
-    start_cloning()
-  elseif #nadja_clones == 0 and #laszlo_clones == 0 then
-    finish_cloning()
-  end
-  -- If Nadja has clone mana, try the next clone
-  if pcStatus[2]["currentMana"] > 100 and #nadja_clones > 0 then
-    expandAlias( "nad stand" )
+-- Prepare cloning sequence with gear assignments
+function startClone()
+  nadjaClones = {'staff', 'staff', 'staff', 'transparent', 'transparent'}
+  laszloClones = {'crocodile', 'gloves', 'gloves', 'masoch', 'masoch'}
 
-    -- Refresh a trigger to remove the item on successful clone
-    if nad_clone_trigger then killTrigger( nad_clone_trigger ) end
-    nad_clone_trigger = tempTrigger( "Nadja creates a duplicate", [[table.remove( nadja_clones, 1 )]] )
-    local next_item = nadja_clones[1]
-    expandAlias( f [[nad cast 'clone' {next_item}]] )
-  elseif pcStatus[3]["currentMana"] < 100 and #laszlo_clones > 0 then
-    expandAlias( "nad rest" )
-  end
-  -- Repeat for Laszlo
-  if pcStatus[3]["currentMana"] > 100 and #laszlo_clones > 0 then
-    expandAlias( "las stand" )
-
-    if las_clone_trigger then killTrigger( las_clone_trigger ) end
-    las_clone_trigger = tempTrigger( "Laszlo creates a duplicate", [[table.remove( laszlo_clones, 1 )]] )
-    local next_item = laszlo_clones[1]
-    expandAlias( f [[las cast 'clone' {next_item}]] )
-  elseif pcStatus[3]["currentMana"] < 100 and #laszlo_clones > 0 then
-    expandAlias( "las rest" )
-  end
-end --function
-
-function start_cloning()
-  nadja_clones = { 'staff', 'staff', 'staff', 'transparent', 'transparent' }
-  laszlo_clones = { 'crocodile', 'gloves', 'gloves', 'masoch', 'masoch' }
-
-  -- And remove the items in question
+  -- And remove the items to clone
   expandAlias( 'nad rem staff', false )
   expandAlias( 'las rem crocodile', false )
   expandAlias( 'nad rem transparent', false )
@@ -116,12 +87,43 @@ function start_cloning()
   expandAlias( 'las rem masoch', false )
 end
 
-function finish_cloning()
-  nadja_clones = nil
-  laszlo_clones = nil
+-- Called repeatedly to iterate each list of cloning assignments until complete
+function doClone()
+  -- First/last call condition
+  if not nadjaClones then
+    startClone()
+  elseif #nadjaClones == 0 and #laszloClones == 0 then
+    endClone()
+  end
+  -- If Nadja has clone mana, try the next clone
+  if pcStatus[2]["currentMana"] > 100 and #nadjaClones > 0 then
+    -- Stand up & attempt to clone after setting a fresh success trigger
+    expandAlias( "nad stand" )
+    if nadCloneTrigger then killTrigger( nadCloneTrigger ) end
+    nadCloneTrigger = tempTrigger( "Nadja creates a duplicate", [[table.remove( nadjaClones, 1 )]] )
+    local nextClone = nadjaClones[1]
+    expandAlias( f [[nad cast 'clone' {nextClone}]] )
+  elseif pcStatus[2]["currentMana"] < 100 and #nadjaClones > 0 then
+    expandAlias( "nad rest" )
+  end
+  -- Repeat for Laszlo
+  if pcStatus[3]["currentMana"] > 100 and #laszloClones > 0 then
+    expandAlias( "las stand" )
+    if lasCloneTrigger then killTrigger( lasCloneTrigger ) end
+    lasCloneTrigger = tempTrigger( "Laszlo creates a duplicate", [[table.remove( laszloClones, 1 )]] )
+    local nextClone = laszloClones[1]
+    expandAlias( f [[las cast 'clone' {nextClone}]] )
+  elseif pcStatus[3]["currentMana"] < 100 and #laszloClones > 0 then
+    expandAlias( "las rest" )
+  end
+end
 
-  if las_clone_trigger then killTrigger( las_clone_trigger ) end
-  if nad_clone_trigger then killTrigger( nad_clone_trigger ) end
+function endClone()
+  nadjaClones = nil
+  laszloClones = nil
+
+  if lasCloneTrigger then killTrigger( lasCloneTrigger ) end
+  if nadCloneTrigger then killTrigger( nadCloneTrigger ) end
   expandAlias( 'col get staff', false )
   expandAlias( 'col get crocodile', false )
   expandAlias( 'col get gloves', false )
@@ -154,44 +156,44 @@ function finish_cloning()
   expandAlias( 'all save', false )
 end
 
-function swapGear( itemsWorn, itemsToWear, pc, container )
-  -- Check if both lists have the same number of items
+-- Swap between lists of items worn/stored in container
+function swapGear( itemsWorn, itemsToWear, bag, pc )
+  -- Make sure both lists have the same number of items
   if #itemsWorn ~= #itemsToWear then
-    print( "Error: The lists of items to wear and remove do not match in size." )
+    cecho( "infoWindow", "\n<dark_orange>Unbalanced item lists in swapGear()" )
     return
   end
-  local swapper = short_names[pc]
-
-  -- Iterating over both lists simultaneously
+  -- Then walk the lists & swap the gear
   for i = 1, #itemsWorn do
-    expandAlias( f( "{swapper} remove {itemsWorn[i]}" ) )
-    expandAlias( f( "{swapper} put {itemsWorn[i]} {container}" ) )
-    expandAlias( f( "{swapper} get {itemsToWear[i]} {container}" ) )
-    expandAlias( f( "{swapper} wear {itemsToWear[i]}" ) )
+    expandAlias( f( "{pc} remove {itemsWorn[i]}" ) )
+    expandAlias( f( "{pc} put {itemsWorn[i]} {bag}" ) )
+    expandAlias( f( "{pc} get {itemsToWear[i]} {bag}" ) )
+    expandAlias( f( "{pc} wear {itemsToWear[i]}" ) )
   end
 end
 
-function swapHand( itemHeld, itemToHold, pc, container, command )
-  local holder = short_names[pc]
-  expandAlias( f '{holder} rem {itemHeld}' )
-  expandAlias( f '{holder} put {itemHeld} {container}' )
-  expandAlias( f '{holder} get {itemToHold} {container}' )
-  expandAlias( f '{holder} {command} {itemToHold}' )
+-- Swap items in hand (wielded/held)
+function swapHand( itemHand, itemToHand, handCommand, bag, pc )
+  expandAlias( f '{pc} rem {itemHand}' )
+  expandAlias( f '{pc} put {itemHand} {bag}' )
+  expandAlias( f '{pc} get {itemToHand} {bag}' )
+  expandAlias( f '{pc} {handCommand} {itemToHold}' )
 end
 
+-- Switch Nandor from AC to DPS gear (and back)
 function swapNandor()
-  local dpsGear = { 'onyx', 'onyx', 'transparent', 'masoch', 'flaming' }
-  local acGear = { 'one', 'emerald', 'vest', 'spider', 'glowing' }
+  local dpsGear = {'onyx', 'onyx', 'transparent', 'masoch', 'flaming'}
+  local acGear = {'one', 'emerald', 'vest', 'spider', 'glowing'}
 
   if nanMode == "dps" then
     nanMode = "tank"
-    swapGear( dpsGear, acGear, 4, "bag" )
-    swapHand( "scalpel", "bangle", 4, "bag", "hold" )
-    swapHand( "cudgel", "cutlass", 4, "bag", "wield" )
+    swapGear( dpsGear, acGear, "nan", "bag" )
+    swapHand( "scalpel", "bangle", "hold", "bag", "nan" )
+    swapHand( "cudgel", "cutlass", "wield", "bag", "nan" )
   else
     nanMode = "dps"
-    swapGear( acGear, dpsGear, 4, "bag" )
-    swapHand( "bangle", "scalpel", 4, "bag", "hold" )
-    swapHand( "cutlass", "cudgel", 4, "bag", "wield" )
+    swapGear( acGear, dpsGear, "nan", "bag" )
+    swapHand( "bangle", "scalpel", "nan", "bag", "hold" )
+    swapHand( "cutlass", "cudgel", "nan", "bag", "wield" )
   end
 end

@@ -200,7 +200,7 @@ end</script>
 				</regexCodePropertyList>
 				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 					<name>Room Capture</name>
-					<script>if my_room == matches[2] then return end -- Do nothing on "same room"
+					<script>if my_room == matches[2] then return end
 my_room = matches[2]
 triggerCaptureRoom( my_room )
 
@@ -1927,7 +1927,7 @@ tempTimer( 1, [[laswield()]] )</script>
 				</Alias>
 				<Alias isActive="yes" isFolder="no">
 					<name>doclone</name>
-					<script>do_clone()</script>
+					<script>doClone()</script>
 					<command></command>
 					<packageName></packageName>
 					<regex>^doclone$</regex>

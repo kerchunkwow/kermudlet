@@ -37,7 +37,7 @@ function triggerRouteChat()
       print( "Error: 'message' is nil." )
       return
     end
-    local spam_strings = { "expires in", "Sanct Out" }
+    local spam_strings = {"expires in", "Sanct Out"}
 
     for _, spam_string in ipairs( spam_strings ) do
       if string.find( message, spam_string, 1, true ) then
@@ -52,7 +52,7 @@ function triggerRouteChat()
       -- Play a sound when you receive a whisper (no more than once per 10s)
       if not sound_delayed and speaker ~= "You" then
         sound_delayed = true
-        playSoundFile( { name = "msg.wav" } )
+        playSoundFile( {name = "msg.wav"} )
         tempTimer( 10, [[sound_delayed = false]] )
       end
     end
@@ -75,7 +75,7 @@ function triggerCaptureRoom( room )
   else
     raiseGlobalEvent( "event_pcStatus_room", session, room )
   end
-end --function
+end
 
 function isAlternate( pc )
   return alt_pcs[pc]
@@ -104,7 +104,7 @@ function triggerHunger()
   createTemporaryTrigger( "have_food_trigger", have_str, eat_code, 3 )
 
   send( f "get {food} {container}", false )
-end --function
+end
 
 -- Drink when we're thirsty
 function triggerThirst()
@@ -128,7 +128,7 @@ function triggerFountain()
 
   -- Disable this trigger for 5 minutes
   tempDisableTrigger( "fountain", 300 )
-end --function
+end
 
 -- Gather random resources; ensure your pattern captures a keyword that works for 'get'
 function triggerGather()
@@ -141,7 +141,7 @@ function triggerGather()
   else
     gathered[resource] = 1
   end
-end --function
+end
 
 function repeatSend( cmd_string, count )
   for c = 1, count do

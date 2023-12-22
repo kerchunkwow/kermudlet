@@ -7,14 +7,14 @@ sound_delayed = false
 -- or loses more than [big%] in a single round.
 hp_monitor = {
   --[#] = {low%, big%}
-  [1] = { 50, 20 },
-  [2] = { 80, 10 },
-  [3] = { 80, 10 },
-  [4] = { 25, 20 },
+  [1] = {50, 20},
+  [2] = {80, 10},
+  [3] = {80, 10},
+  [4] = {25, 20},
 }
 
-nadja_clones = nil
-laszlo_clones = nil
+nadjaClones = nil
+laszloClones = nil
 
 -- Raise to send warning messages to the info window
 registerAnonymousEventHandler( [[eventWarn]], [[show_warning]] )

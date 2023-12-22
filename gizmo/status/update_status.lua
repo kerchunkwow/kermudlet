@@ -29,8 +29,8 @@ function pcStatusPrompt( pc, hpc, mnc, mvc, tnk, trg )
     if (percentHP < 95) and checkHP( pc, percentHP, delta_p ) then
       hpGauge[pc]:flash( 0.5 )
       tempTimer( 0.75, f [[hpGauge[{pc}]:flash( 0.25 )]] )
-    end --if
-  end   --if hp update
+    end
+  end
   if myStatus["currentMana"] ~= mnc then
     myStatus["currentMana"] = mnc
     manaGauge[pc]:setValue( mnc, myStatus["maxMana"], mnc )
@@ -57,17 +57,17 @@ function pcStatusPrompt( pc, hpc, mnc, mvc, tnk, trg )
         -- If we're not Nandor and we lost our tank mid-combat and we didn't recently incap a target
         if pc ~= 4 and myStatus["tank"] and #myStatus["tank"] > 1 and not incap_delay then
           raiseEvent( "eventWarn", pc, "switched" )
-        end --if
-      end   --if
+        end
+      end
       combatIcons[pc]:show()
     else
       combatIcons[pc]:hide()
-    end --if
+    end
     -- Update the status table
     myStatus["target"] = trg
     myStatus["tank"]   = tnk
-  end --if
-end   --function
+  end
+end
 
 -- Use the hp_monitor table to see if we should send a warning
 function checkHP( pc, percentHP, delta_p )
@@ -96,13 +96,13 @@ function pcStatusScore( pc, dam, maxHP, hit, mnm, arm, mvm, mac, aln, exp, exh, 
   pcStatus[pc]["expPerHour"] = exh
   pcStatus[pc]["expToLevel"] = exl
   pcStatus[pc]["gold"]       = gld
-end --function
+end
 
 -- Update the room label for a pc
 function pcStatusRoom( pc, room )
   pcStatus[pc]["room"] = room
   rm_labels[pc]:echo( room )
-end --function
+end
 
 -- Create and default a table to hold status info for each pc
 function initPCStatusTable( pc_names )
@@ -134,8 +134,8 @@ function initPCStatusTable( pc_names )
 
 
     }
-  end --for
-end   --function
+  end
+end
 
 function initPCLastStatus( pc_names )
   pc_last_status = {
@@ -147,7 +147,7 @@ function initPCLastStatus( pc_names )
     target       = 0,
 
   }
-end --function
+end
 
 function printPCStatusTable()
   for pc = 1, 4 do
@@ -178,5 +178,5 @@ function printPCStatusTable()
 
     cecho( f [[<light_steel_blue>|<black>................................<reset>]] .. "\n" )
     cecho( [[<light_steel_blue>+--------------------------------+]] .. "\n" )
-  end --for
-end   --function
+  end
+end

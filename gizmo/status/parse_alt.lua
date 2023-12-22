@@ -64,4 +64,4 @@ function triggerParseScore()
   gld              = tonumber( gld )
 
   raiseGlobalEvent( "event_pcStatus_score", session, dam, maxHP, hit, mnm, arm, mvm, mac, aln, exp, exh, exl, gld )
-end --function
+end

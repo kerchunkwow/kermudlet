@@ -141,8 +141,8 @@ function generate_sim_stats()
       -- 75% of in-combat sim w/ tank
       if math.random() < 0.75 then
         tnk = combat_conditions[math.random( 1, #combat_conditions )]
-      end --if
-    end   --if
+      end
+    end
     pcStatus[pc] = {
 
       currentHP    = hpc,
@@ -197,4 +197,4 @@ function simulate_prompt()
   local sim_session = short_names[tonumber( pc )]
 
   expandAlias( f "{sim_session} sim " .. prompt_str, true )
-end --function
+end

@@ -6,7 +6,7 @@
 function aliasPlayGizmo()
   tempTimer( 0.5, [[openOutputWindows()]] )
   tempTimer( 1.5, [[createPartyConsole()]] )
-end --function
+end
 
 -- Compile and execute a lua function directly from the command-line; used
 -- throughout other scripts and in aliases as 'lua <command> <args>'
@@ -26,11 +26,11 @@ function runLuaLine( args )
   local run_func =
 
       function ( ... )
-        if not table.is_empty( { ... } ) then
+        if not table.is_empty( {...} ) then
           display( ... )
         end
       end
 
   -- Call it
   run_func( func() )
-end --function
+end

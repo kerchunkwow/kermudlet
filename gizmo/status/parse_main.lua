@@ -55,4 +55,4 @@ function triggerParseScore()
   gld              = tonumber( gld )
 
   pcStatusScore( session, dam, maxHP, hit, mnm, arm, mvm, mac, aln, exp, exh, exl, gld )
-end --function
+end

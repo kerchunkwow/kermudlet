@@ -77,8 +77,8 @@ function aliasSmartHeal()
     -- Party's fine; check for tank
   elseif gtank then
     send( f "cast 'heal' {gtank}", echo_mode )
-  end --if
-end   --function
+  end
+end
 
 -- Spend some MU mana -- pick the best caster and the best spell they can afford
 function aliasMUDps()
@@ -89,9 +89,9 @@ function aliasMUDps()
       expandAlias( f [[{short_names[caster]} cast 'electric shock']] )
     elseif caster_mn >= 50 then
       expandAlias( f [[{short_names[caster]} cast 'lethal fire']] )
-    end --if
-  end   --if
-end     --function
+    end
+  end
+end
 
 -- Find the best refresher for the job, then ask them to refresh the target.
 function optimalRefresh( target )
@@ -111,17 +111,17 @@ function getMaxStat( stat, ... )
   local max_pc
 
   -- Iterate over the passed pc's, remembering the max
-  for _, pc in ipairs( { ... } ) do
+  for _, pc in ipairs( {...} ) do
     local next_stat = pcStatus[pc][stat]
 
     if next_stat > max_stat then
       max_stat = next_stat
       max_pc   = pc
-    end --if
-  end   --for
+    end
+  end
   -- Return the pc index and stat value
   return max_pc, max_stat
-end --function
+end
 
 -- Given a stat string from the pcStatus table and an arbitrary set of pc indices,
 -- figure out who has the least of that stat; e.g., get_max_stat( "percentHP", 1, 2, 3, 4 )
@@ -132,7 +132,7 @@ function getMinStat( stat, ... )
   local min_pc
 
   -- Iterate over the passed pc's, remembering the min
-  for _, pc in ipairs( { ... } ) do
+  for _, pc in ipairs( {...} ) do
     local next_stat = pcStatus[pc][stat]
 
     -- First pc is always the minimum
@@ -143,9 +143,9 @@ function getMinStat( stat, ... )
       if next_stat < min_stat then
         min_stat = next_stat
         min_pc   = pc
-      end --if
-    end   --if
-  end     --for
+      end
+    end
+  end
   -- Return the pc index and stat value
   return min_pc, min_stat
-end --function
+end

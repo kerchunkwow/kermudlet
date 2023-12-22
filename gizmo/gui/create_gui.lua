@@ -57,7 +57,7 @@ function openOutputWindows()
   cecho( "info", f "{lft}+------------+{rgt}" )
   cecho( "info", f "{lft}{info_title}{rgt}" )
   cecho( "info", f "{lft}+------------+{rgt}\n" )
-end --function
+end
 
 -- Kind of an ugly version of #include
 function createConsoleStyles()
@@ -101,7 +101,7 @@ function createConsoleStyles()
     ["lbl_bd"] = "#707070",
   }
 
-  nameLabel    = { "Colin", "Nadja", "Laszlo", "Nandor" }
+  nameLabel    = {"Colin", "Nadja", "Laszlo", "Nandor"}
 
   gauge_border = [[
       border-width:  1px;
@@ -385,7 +385,7 @@ function createPartyConsole()
     combatIcons[pc]:hide()
   end
   deleteConsoleStyles()
-end -- create_party_console()
+end
 
 function createGroupConsole()
   createConsoleStyles()
@@ -399,4 +399,4 @@ function createGroupConsole()
   group_gauges = {}
 
   deleteConsoleStyles()
-end --function
+end

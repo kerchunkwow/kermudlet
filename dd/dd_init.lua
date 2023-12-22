@@ -1,6 +1,3 @@
-timeStart = os.time()
-math.randomseed( timeStart )
-
 runLuaFile( "stdlib.lua" )
 runLuaFile( "dd_actions.lua" )
 runLuaFile( "dd_eq.lua" )

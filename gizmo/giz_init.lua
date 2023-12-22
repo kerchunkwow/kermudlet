@@ -1,25 +1,17 @@
-timeStart = os.time()
-math.randomseed( timeStart )
+session = getProfileTabNumber()
 
--- Load our Mudlet standard library
-runLuaFile( "stdlib.lua" )
-
+-- Load directions/speedwalks
 runLuaFile( "game\\speedwalks.lua" )
 
+-- Define functions to execute and support Triggers
+runLuaFile( "game\\trigger.lua" )
+
 -- Define the functions needed for sending messages between sessions
-runLuaFile( "events.lua" )
+runLuaFile( "config\\events.lua" )
 
 -- Define functions to execute and support Aliases
 runLuaFile( "alias\\utility_alias.lua" )
 runLuaFile( "alias\\game_alias.lua" )
-
--- Define functions to execute and support Triggers
-runLuaFile( "trigger.lua" )
-
--- Functions helpful while developing/testing new features
--- run_lua_file("devtools.lua")
-
-session = getProfileTabNumber()
 
 -- This defines globals & settings needed by all sessions
 runLuaFile( "config\\config_common.lua" )
@@ -37,10 +29,12 @@ if session == 1 then
   runLuaFile( "status\\update_status.lua" )
   runLuaFile( "status\\parse_main.lua" )
   runLuaFile( "status\\affect.lua" )
-  initializeAffectTracking()
 
   -- EQ handling
-  runLuaFile( "eq.lua" )
+  runLuaFile( "eq\\eqdb.lua" )
+  runLuaFile( "eq\\inventory.lua" )
+
+  initializeAffectTracking()
 else
   runLuaFile( "config\\config_alt.lua" )
   runLuaFile( "status\\parse_alt.lua" )
@@ -60,7 +54,7 @@ local function createWarningCalls()
     calls[item] = f [[{warningMethod}( "eventWarn", {session}, "{item}" )]]
   end
   return calls
-end --local function
+end
 
 if session == 1 and not pcStatus then
   initPCStatusTable( pc_names )

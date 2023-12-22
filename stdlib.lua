@@ -21,20 +21,19 @@ end
 
 -- Feed a line to the client as if it came from the MUD (great for testing triggers).
 function simulateOutput()
-  local string_to_feed = matches[2]
+  local simString = matches[2]
 
-  string_to_feed = string.gsub( string_to_feed, "%$", "\n" )
-  cfeedTriggers( string_to_feed )
-end --function
+  simString = string.gsub( simString, "%$", "\n" )
+  cfeedTriggers( simString )
+end
 
--- Convert large numbers to abbreviated strings like '1.2B'
 function abbreviateNumber( numberString )
-  -- Strip commas & whitespace then convert
+  -- Convert large numbers to abbreviated strings like '1.2B'
   local str = string.gsub( numberString, ",", "" )
   str = trim( str )
   local num = tonumber( str )
 
-  -- Truncuate based on 10 powers and add a label
+  -- Truncuate based on 10 power and add matching label
   if num >= 10 ^ 9 then
     return string.format( "%.1fB", num / 10 ^ 9 )
   elseif num >= 10 ^ 6 then
@@ -145,14 +144,14 @@ function runLuaLine()
   local runFunc =
 
       function ( ... )
-        if not table.is_empty( { ... } ) then
+        if not table.is_empty( {...} ) then
           display( ... )
         end
       end
 
   -- Call it
   runFunc( func() )
-end --function
+end
 
 -- Standard format/highlight for chat message; pass a window name to route chat there
 function chatMessage( speaker, channel, message, window )
@@ -170,7 +169,6 @@ end
 -- store the object in a variable of the same name
 function openBasicWindow( name, title, fontFace, fontSize )
   _G[name] = Geyser.UserWindow:new( {
-
     name          = name,
     titleText     = title,
     font          = fontFace,
@@ -178,7 +176,6 @@ function openBasicWindow( name, title, fontFace, fontSize )
     wrapAt        = 80,
     scrollBar     = false,
     restoreLayout = true,
-
   } )
 
   _G[name]:disableScrollBar()
@@ -213,15 +210,14 @@ end
 -- to customize width, or let the function guess by finding the longest
 -- string in your list.
 function displayBox( stringList, maxLength, borderColor )
-  maxLength = maxLength or getMaxStringLength( stringList )
-  local bclr = borderColor or "<dark_slate_blue>"
-  local margin = "  "
-
-  local boxWidth = maxLength + 10
-  local line = string.rep( '-', boxWidth )
-  local blank = string.rep( ' ', boxWidth )
+  maxLength        = maxLength or getMaxStringLength( stringList )
+  local bclr       = borderColor or "<dark_slate_blue>"
+  local margin     = "  "
+  local boxWidth   = maxLength + 10
+  local line       = string.rep( '-', boxWidth )
+  local blank      = string.rep( ' ', boxWidth )
   local borderLine = f "\n{bclr}+{line}+<reset>"
-  local blankLine = f "\n{bclr}|<reset>"
+  local blankLine  = f "\n{bclr}|<reset>"
 
   cecho( borderLine )
   cecho( blankLine )
@@ -234,91 +230,46 @@ function displayBox( stringList, maxLength, borderColor )
   cecho( borderLine )
 end
 
-function trimName( name )
-  -- Trim the "flags" from the end of an item name (along with any excess whitespace)
-
-  -- [NOTE] Glowing, humming, and invisible flags are technically permanent so this isn't precisely
-  -- needed; but it does make for shorter names which is nice.
-
-  -- Look for these flags
-  local flags = { "%(glowing%)", "%(humming%)", "%(invisible%)", "%(cloned%)" }
-
-  -- Strip them off the end of the name
-  for _, flag in ipairs( flags ) do
-    -- The second return value of gsub is the number of substitutions made,
-    -- which we don't need, so it's ignored with _
-    name = string.gsub( name, flag, '' )
+function repeatSend( cmd, count )
+  for c = 1, count do
+    send( cmd, false )
   end
-  -- Make sure we didn't leave any whitespace behind
-  name = string.match( name, "^%s*(.-)%s*$" )
-
-  return name
 end
 
-function itemQueryAppend( item_name )
-  -- Store untrimmed string length for later padding/alignment
-  local true_length = #item_name
-  item_name = trimName( item_name )
+-- Clear the main screen & info window
+function clearScreen()
+  clearUserWindow()
+  clearUserWindow( "infoWindow" )
+  -- For some reason secondary windows don't clear without output
+  cecho( "infoWindow", "\n" )
+end
 
-  -- Check if the item is in the ignored list and return immediately if it is
-  if ignored_items[item_name] then
-    return
+-- Make a temporary alias from the command line with
+-- #alias p=pattern c=code; use *'s for wildcards
+function makeAlias( aliasString )
+  -- Table to hold temporary alias IDs in case you want to kill 'em'
+  if not tempAliases then
+    tempAliases = {}
   end
-  -- Connect to local item db
-  local luasql = require "luasql.sqlite3"
-  local env = luasql.sqlite3()
-  local conn, cerr = env:connect( "C:\\Gizmo\\data\\gizdb.db" )
+  -- Parse the creation string
+  local pattern, code = aliasString:match( "p=(.-) c=(.*)" )
 
-  if not conn then
-    cecho( "info", "\n<dark_orange>;Connect to item db failed<reset>" )
-    return
-  end
-  -- Query for the item's stats, antis, and cloneability values
-  local query = string.format( [[SELECT name, stats_str, antis_str, clone FROM simple_item WHERE name = '%s']],
-    item_name:gsub( "'", "''" ) )
-  local cur, qerr = conn:execute( query )
+  -- Replace incoming wildcard with regex
+  pattern = pattern:gsub( "%*", "(\\w+)" )
 
-  if not cur then
-    cecho( "info", f "\n<dark_orange>Item query failed: {query}<reset>" )
-    conn:close()
-    env:close()
-    return
-  end
-  local item = cur:fetch( {}, "a" )
+  -- Replace outgoing wildcard with capture group
+  code = code:gsub( "%*", "{matches[2]}" )
 
-  cur:close()
-  conn:close()
-  env:close()
+  -- Build the regex and code patterns
+  pattern = '^' .. pattern .. '$'
+  code = f [[send(f']] .. code .. [[')]]
 
-  if item then
-    -- Some basic formatting and alignment
-    local padding = string.rep( " ", 44 - true_length )
-    longest_eq = longest_eq or 0
-    if #item_name > longest_eq then longest_eq = #item_name end
-    -- Build display string from stats &amp; cloneable flag
-    local display_string = ""
-    local stats = item.stats_str or ""
-    local antis = item.antis_str or ""
+  -- Create the alias
+  local aliasID = tempAlias( pattern, code )
 
-    local cloneable = " <dodger_blue>!<reset>"
-    local clone_indicator = item.clone == 1 and cloneable or ""
+  -- Store it's ID
+  table.insert( tempAliases, aliasID )
 
-    -- Add a space if strings don't have a sign (looks nicer, usually weapons)
-    if not string.match( stats, "^[+-]" ) then
-      stats = " " .. stats
-    end
-    if eqmode == 0 and stats ~= "" then
-      display_string = padding .. string.format( "<sea_green>%s<reset>%s", stats, clone_indicator )
-    elseif eqmode == 1 and (stats ~= "" or antis ~= "") then
-      display_string = padding ..
-          string.format( "<sea_green>%s<reset> <firebrick>%s<reset>%s", stats, antis,
-            clone_indicator )
-    end
-    -- Print the final string
-    if display_string ~= "" then
-      cecho( display_string )
-    end
-  else
-    cecho( "info", string.format( "\nNo item named <medium_orchid>%s<reset>; #add me!", item_name ) )
-  end
-end --function
+  -- Get some info
+  cecho( f "\nCreated alias: {pattern} to execute code: {code} (#{#tempAliases} active temps)" )
+end

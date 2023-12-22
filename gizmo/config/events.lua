@@ -20,7 +20,7 @@ function sessionCommand( event_name, cmd )
   else
     send( cmd, false )
   end
-end --function
+end
 
 -- Parses session commands being one of 'all' or one of the character-specific aliases and
 -- raises the corresponding event. This raises events for 'everyone' regardless of the
@@ -32,7 +32,7 @@ function aliasSessionCommand()
 
   raiseEvent( evt_to_raise, cmd_to_raise )
   raiseGlobalEvent( evt_to_raise, cmd_to_raise )
-end --function
+end
 
 -- The event by which alts report their prompt status to the main pcStatus table.
 function PCStatusPromptEvent( raised_event, pc, hpc, mnc, mvc, tnk, trg )
