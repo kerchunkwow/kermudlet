@@ -1,3 +1,8 @@
+-- lib_moblist.lua
+-- A module that maintains a list of mobs and counts; useful primarily for target acquisition and tracking.
+
+mobList = {}
+
 -- Update the mobList; pass modify true to insert/remove strings
 function updateMobList( str, number, modify )
   -- By default, don't add or remove any strings
