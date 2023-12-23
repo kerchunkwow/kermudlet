@@ -1,3 +1,5 @@
+cecho( f '\n\t<dark_violet>config_main.lua<reset>: globals & tables exclusive to the main session' )
+
 -- A set to keep track of items collected via auto-gathering, like resin
 gathered = {}
 

@@ -1,22 +1,24 @@
+cecho( f '\n\t<dark_violet>affect.lua<reset>: to maintain buffs/debuffs and track duration' )
+
 -- The affects we want to track; set this to "save" in Variables to maintain durations between sessions
 spellInfo = spellInfo or {
-  ["Sanctuary"] = { duration = nil, cost = 50 },
-  ["Bless"] = { duration = nil, cost = 5 },
-  ["Fury"] = { duration = nil, cost = 60 },
-  ["Armor"] = { duration = nil, cost = 5 },
+  ["Sanctuary"] = {duration = nil, cost = 50},
+  ["Bless"] = {duration = nil, cost = 5},
+  ["Fury"] = {duration = nil, cost = 60},
+  ["Armor"] = {duration = nil, cost = 5},
 }
 
 
 -- "Up" and "down" messages for each affect
 affectMessages = {
-  ["You start glowing."]                     = { affect = "Sanctuary", state = true },
-  ["The white aura around your body fades."] = { affect = "Sanctuary", state = false },
-  ["You feel righteous."]                    = { affect = "Bless", state = true },
-  ["You feel less righteous."]               = { affect = "Bless", state = false },
-  ["You feel very angry."]                   = { affect = "Fury", state = true },
-  ["You calm down."]                         = { affect = "Fury", state = false },
-  ["You feel someone protecting you."]       = { affect = "Armor", state = true },
-  ["You feel less protected."]               = { affect = "Armor", state = false },
+  ["You start glowing."]                     = {affect = "Sanctuary", state = true},
+  ["The white aura around your body fades."] = {affect = "Sanctuary", state = false},
+  ["You feel righteous."]                    = {affect = "Bless", state = true},
+  ["You feel less righteous."]               = {affect = "Bless", state = false},
+  ["You feel very angry."]                   = {affect = "Fury", state = true},
+  ["You calm down."]                         = {affect = "Fury", state = false},
+  ["You feel someone protecting you."]       = {affect = "Armor", state = true},
+  ["You feel less protected."]               = {affect = "Armor", state = false},
 }
 
 -- Highlights for console output

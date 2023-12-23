@@ -1,5 +1,4 @@
--- config_common.lua
--- Common configuration shared by all sessions.
+cecho( f '\n\t<dark_violet>config_common.lua<reset>: define globals & tables shared by all sessions' )
 
 -- Ideally used to suppress aliases, triggers, and script that's only needed for testing & QA so it's not
 -- loaded during regular play.

@@ -1,6 +1,4 @@
---- devtools.lua
---- These functions are really only useful when you're actively developing and need ready access to "helper"
---- functions from the command line. You can safely skip loading these otherwise.
+cecho( f '\n\t<dark_violet>devtools.lua<reset>: stuff useful when developing new scripts' )
 
 -- List all fonts available in Mudlet.
 function listFonts()

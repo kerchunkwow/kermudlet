@@ -1,5 +1,4 @@
--- lib_moblist.lua
--- A module that maintains a list of mobs and counts; useful primarily for target acquisition and tracking.
+cecho( f '\n\t<yellow_green>lib_moblist.lua<reset>: functions to maintain & update a list of mobs w/ counts' )
 
 mobList = {}
 
@@ -57,3 +56,11 @@ function resetMobList()
     mobList[str].count = 0
   end
 end
+
+--[[
+GitHub Copilot, ChatGPT notes:
+Collaborate on Lua 5.1 scripts for Mudlet in VSCode. Use f-strings, camelCase, UPPER_CASE constants.
+Prioritize performance, optimization, and modular design. Provide debugging output with cecho.
+Be critical, suggest improvements, don't apologize for errors.
+Respond concisely, treat me as a coworker.
+]]

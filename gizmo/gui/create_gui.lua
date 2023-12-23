@@ -1,3 +1,5 @@
+cecho( f '\n\t<dark_violet>create_gui.lua<reset>: initial functions to build/create Gizmo GUI: info, chat, party console' )
+
 function openOutputWindows()
   local chat_window_name  = "chat"
   local chat_window_title = "Gizmo Chat"

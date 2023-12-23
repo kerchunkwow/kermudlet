@@ -1,5 +1,4 @@
--- lib_string.lua
--- Functions related to string manipulation, parsing, formatting, highlighting, etc.
+cecho( f '\n\t<yellow_green>lib_string.lua<reset>: string manipulation, parsing, formatting, etc.' )
 
 -- Trim leading/trailing whitespace from a string
 function trim( str )
@@ -86,3 +85,11 @@ function createLineRegex( rawString )
 
   return lineRegex
 end
+
+--[[
+GitHub Copilot, ChatGPT notes:
+Collaborate on Lua 5.1 scripts for Mudlet in VSCode. Use f-strings, camelCase, UPPER_CASE constants.
+Prioritize performance, optimization, and modular design. Provide debugging output with cecho.
+Be critical, suggest improvements, don't apologize for errors.
+Respond concisely, treat me as a coworker.
+]]

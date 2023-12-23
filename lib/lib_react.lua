@@ -1,5 +1,4 @@
--- lib_react.lua
--- This lib includes core functions related to the basic Mudlet "reactions" -- triggers and aliases
+cecho( f '\n\t<yellow_green>lib_react.lua<reset>: Functions related to Mudlet "reactions" i.e., triggers, aliases' )
 
 -- Enable an alias for the specified duration then disable it again; useful for triggers that are only
 -- needed in niche circumstances like then viewing your 'eq' or interacting with a shopkeeper
@@ -100,3 +99,11 @@ function makeAlias( aliasString )
   -- Get some info
   cecho( f "\nCreated alias: {pattern} to execute code: {code} (#{#tempAliases} active temps)" )
 end
+
+--[[
+GitHub Copilot, ChatGPT notes:
+Collaborate on Lua 5.1 scripts for Mudlet in VSCode. Use f-strings, camelCase, UPPER_CASE constants.
+Prioritize performance, optimization, and modular design. Provide debugging output with cecho.
+Be critical, suggest improvements, don't apologize for errors.
+Respond concisely, treat me as a coworker.
+]]

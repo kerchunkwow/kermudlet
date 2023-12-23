@@ -1,5 +1,5 @@
--- Alts don't have direct access to the pcStatus table, but we give them a smaller table to check their "last status"
--- so we're not sending unnecessary update events when their stats haven't changed.
+cecho( f '\n\t<dark_violet>config_alt.lua<reset>: define global tables & variables exclusive to alts' )
+
 pc_last_status = {}
 function resetLastStatus()
   pc_last_status["currentHP"]    = -1

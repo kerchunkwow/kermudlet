@@ -1,3 +1,5 @@
+cecho( f '\n\t<dark_violet>trigger.lua<reset>: functions to support triggers; probably refactor to a react lib' )
+
 function triggerAutoMira()
   if session ~= 1 then return end
   if pcStatus[1]["currentMana"] < 100 then return end

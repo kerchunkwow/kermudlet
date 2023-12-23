@@ -1,4 +1,4 @@
--- Functions for inventory management like gear swaps, cloning, etc.
+cecho( f '\n\t<dark_violet>inventory.lua<reset>: inventory and equipment management, juggling, swapping, etc.' )
 
 function laswield()
   expandAlias( 'las rem ring', false )

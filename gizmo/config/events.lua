@@ -1,3 +1,5 @@
+cecho( f '\n\t<dark_violet>events.lua<reset>: this is how sessions communicate with one another' )
+
 -- Raise event_session_x to "pass" commands to sessions. raiseEvent is heard by the raising
 -- session; raiseGlobalEvent is heard by all OTHER sessions (you must use both if you want
 -- everyone to get the event).

@@ -1,3 +1,5 @@
+cecho( f '\n\t<dark_violet>gui.lua<reset>: functions for maintaining & updating the GUI during play' )
+
 -- Display a warning in the Info window; see Game Globals for a list of customizable messages
 function show_warning( event_raised, session, warning_type, extra_info )
   local msg = warning_messages[warning_type]
@@ -8,7 +10,7 @@ function show_warning( event_raised, session, warning_type, extra_info )
   if critical_warnings[warning_type] and not warning_delayed then
     warning_delayed = true
     tempTimer( 5, [[warning_delayed = false]] )
-    playSoundFile( { name = "bloop.wav" } )
+    playSoundFile( {name = "bloop.wav"} )
   end
 end
 

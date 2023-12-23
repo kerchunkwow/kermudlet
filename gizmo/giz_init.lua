@@ -1,44 +1,40 @@
+cecho( f '\n\t<dark_violet>giz_init.lua<reset>: entry point to Gizmo-specific scripts and functions' )
+
 session = getProfileTabNumber()
 
--- Load directions/speedwalks
-runLuaFile( "game\\speedwalks.lua" )
+-- Common to all sessions
+local commonScripts = {
+  "game/speedwalks.lua",
+  "game/trigger.lua",
+  "config/events.lua",
+  "config/config_common.lua",
+  "alias/game_alias.lua",
+  "eq/eqdb.lua",
+}
 
--- Define functions to execute and support Triggers
-runLuaFile( "game\\trigger.lua" )
+-- Specific to the main session
+local mainScripts = {
+  "config/config_main.lua",
+  "gui/create_gui.lua",
+  "gui/gui.lua",
+  "status/update_status.lua",
+  "status/parse_main.lua",
+  "status/affect.lua",
+  "eq/inventory.lua",
+}
 
--- Define the functions needed for sending messages between sessions
-runLuaFile( "config\\events.lua" )
+-- Specific to alt sessions
+local altScripts = {
+  "config/config_alt.lua",
+  "status/parse_alt.lua",
+}
 
--- Define functions to execute and support Aliases
-runLuaFile( "alias\\utility_alias.lua" )
-runLuaFile( "alias\\game_alias.lua" )
+runLuaFiles( commonScripts )
 
--- This defines globals & settings needed by all sessions
-runLuaFile( "config\\config_common.lua" )
-
-runLuaFile( "eq\\eqdb.lua" )
-
--- Here we distinguish the main session from alts; namely, the main session
--- is responsible for creating and updating the UI and pcStatus table while
 if session == 1 then
-  runLuaFile( "config\\config_main.lua" )
-
-  -- Stuff for creating & updating the UI including party window and chat/info
-  runLuaFile( "gui\\create_gui.lua" )
-  runLuaFile( "gui\\gui.lua" )
-
-  -- Stuff for the pcStatus table and score/prompt capture
-  runLuaFile( "status\\update_status.lua" )
-  runLuaFile( "status\\parse_main.lua" )
-  runLuaFile( "status\\affect.lua" )
-
-  -- EQ handling
-  runLuaFile( "eq\\inventory.lua" )
-
-  initializeAffectTracking()
+  runLuaFiles( mainScripts )
 else
-  runLuaFile( "config\\config_alt.lua" )
-  runLuaFile( "status\\parse_alt.lua" )
+  runLuaFiles( altScripts )
 end
 -- This local function helps create "code strings" from the messages in the warning_messages
 -- table (config_common) for later posting to the Info window
@@ -64,3 +60,10 @@ end
 warning_calls = createWarningCalls()
 
 tempTimer( 0.1, [[cecho(f"\n<olive_drab>(Game)<reset> configured for {my_color}{myself}<reset>.")]] )
+--[[
+GitHub Copilot, ChatGPT notes:
+Collaborate on Lua 5.1 scripts for Mudlet in VSCode. Use f-strings, camelCase, UPPER_CASE constants.
+Prioritize performance, optimization, and modular design. Provide debugging output with cecho.
+Be critical, suggest improvements, don't apologize for errors.
+Respond concisely, treat me as a coworker.
+]]

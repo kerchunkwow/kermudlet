@@ -1,5 +1,4 @@
---- game_alias.lua
---- Aliases for playing the game like moving, casting spells, responding to combat events, etc.
+cecho( f '\n\t<dark_violet>game_alias.lua<reset>: functions to directly support aliases like recasting' )
 
 -- Get the optimal Magic-User for a cast
 function getCasterMU( mana_cost )
@@ -148,4 +147,10 @@ function getMinStat( stat, ... )
   end
   -- Return the pc index and stat value
   return min_pc, min_stat
+end
+
+-- Create the party console, open chat & info windows
+function aliasPlayGizmo()
+  tempTimer( 0.5, [[openOutputWindows()]] )
+  tempTimer( 1.5, [[createPartyConsole()]] )
 end

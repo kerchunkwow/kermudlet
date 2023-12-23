@@ -1,5 +1,4 @@
--- lib_gui.lua
--- Functions related to basic/core GUI functionality like creating basic windows and formatting output
+cecho( f '\n\t<yellow_green>lib_gui.lua<reset>: core GUI functions for windows, output, chat, etc.' )
 
 -- Standard format/highlight for chat message; pass a window name to route chat there
 function chatMessage( speaker, channel, message, window )
@@ -63,3 +62,11 @@ function clearScreen()
   -- For some reason secondary windows don't clear without output
   cecho( "infoWindow", "\n" )
 end
+
+--[[
+GitHub Copilot, ChatGPT notes:
+Collaborate on Lua 5.1 scripts for Mudlet in VSCode. Use f-strings, camelCase, UPPER_CASE constants.
+Prioritize performance, optimization, and modular design. Provide debugging output with cecho.
+Be critical, suggest improvements, don't apologize for errors.
+Respond concisely, treat me as a coworker.
+]]

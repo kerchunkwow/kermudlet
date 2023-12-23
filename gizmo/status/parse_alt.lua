@@ -1,6 +1,4 @@
--- parse_alt.lua
--- These are the functions alternate sessions use to respond to parsing their prompts and score values;
--- use alternate definitions because they don't have direct access to the pcStatus table
+cecho( f '\n\t<dark_violet>parse_alt.lua<reset>: alt session prompt parser, alts raise events to update the pcStatus table' )
 
 -- Parse prompt components and trigger an update if anything has changed; ignore maximum values
 function triggerParsePrompt()
