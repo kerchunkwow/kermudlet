@@ -10,12 +10,12 @@
 -- Called by the alias when you type 'ses cmd' or 'all cmd'
 
 -- Handle "event_session_command" from other sessions
-function sessionCommand( event_name, cmd )
-  -- Use the is_alias table to allow sessions to pass aliases as commands
+function sessionCommand( eventType, cmd )
+  -- Use the isAlias table to allow sessions to pass aliases as commands
   s = string.find( cmd, " " )
-  local is_alias_cmd = is_alias[cmd] or (s and is_alias[string.sub( cmd, 1, s - 1 )])
+  local isAlias_cmd = isAlias[cmd] or (s and isAlias[string.sub( cmd, 1, s - 1 )])
 
-  if is_alias_cmd then
+  if isAlias_cmd then
     expandAlias( cmd, false )
   else
     send( cmd, false )
@@ -26,21 +26,21 @@ end
 -- raises the corresponding event. This raises events for 'everyone' regardless of the
 -- intended recipient; there's no downside to unhandled events.
 function aliasSessionCommand()
-  local cmd_trg      = (matches[2] == "all") and matches[2] or session_numbers[matches[2]]
-  local cmd_to_raise = matches[3]
-  local evt_to_raise = "event_command_" .. cmd_trg
+  local targetSession = (matches[2] == "all") and matches[2] or session_numbers[matches[2]]
+  local cmd           = matches[3]
+  local eventType     = "event_command_" .. targetSession
 
-  raiseEvent( evt_to_raise, cmd_to_raise )
-  raiseGlobalEvent( evt_to_raise, cmd_to_raise )
+  raiseEvent( eventType, cmd )
+  raiseGlobalEvent( eventType, cmd )
 end
 
 -- The event by which alts report their prompt status to the main pcStatus table.
-function PCStatusPromptEvent( raised_event, pc, hpc, mnc, mvc, tnk, trg )
+function pcStatusPromptEvent( raised_event, pc, hpc, mnc, mvc, tnk, trg )
   pcStatusPrompt( tonumber( pc ), tonumber( hpc ), tonumber( mnc ), tonumber( mvc ), tnk, trg )
 end
 
 -- The event by which alts report their score information to the main pcStatust able.
-function PCStatusScoreEvent( raised_event, pc, dam, maxHP, hit, mnm, arm, mvm, mac, aln, exp, exh, exl, gld )
+function pcStatusScoreEvent( raised_event, pc, dam, maxHP, hit, mnm, arm, mvm, mac, aln, exp, exh, exl, gld )
   pcStatusScore( tonumber( pc ), tonumber( dam ),
     tonumber( maxHP ), tonumber( hit ),
     tonumber( mnm ), tonumber( arm ),

@@ -1,10 +1,6 @@
 -- config_common.lua
 -- Common configuration shared by all sessions.
 
--- Theoretically for use with send() and expandAlias() to decide whether to echo to the console; used
--- sporadically right now.
-echo_mode          = false
-
 -- Ideally used to suppress aliases, triggers, and script that's only needed for testing & QA so it's not
 -- loaded during regular play.
 developer_mode     = true
@@ -36,7 +32,7 @@ session_numbers    = {
 
 -- If you want to be able to send aliases between sessions, you must add them to this table so the session_command
 -- function will use expandAlias() instead of send().
-is_alias           = {
+isAlias            = {
   ["rp"] = true,
   ["sim"] = true,
   ["lua"] = true,

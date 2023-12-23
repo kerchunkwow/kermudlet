@@ -16,6 +16,8 @@ runLuaFile( "alias\\game_alias.lua" )
 -- This defines globals & settings needed by all sessions
 runLuaFile( "config\\config_common.lua" )
 
+runLuaFile( "eq\\eqdb.lua" )
+
 -- Here we distinguish the main session from alts; namely, the main session
 -- is responsible for creating and updating the UI and pcStatus table while
 if session == 1 then
@@ -31,7 +33,6 @@ if session == 1 then
   runLuaFile( "status\\affect.lua" )
 
   -- EQ handling
-  runLuaFile( "eq\\eqdb.lua" )
   runLuaFile( "eq\\inventory.lua" )
 
   initializeAffectTracking()

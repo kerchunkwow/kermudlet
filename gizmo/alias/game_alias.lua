@@ -76,7 +76,7 @@ function aliasSmartHeal()
     end
     -- Party's fine; check for tank
   elseif gtank then
-    send( f "cast 'heal' {gtank}", echo_mode )
+    send( f "cast 'heal' {gtank}", false )
   end
 end
 
