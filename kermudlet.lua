@@ -1,3 +1,5 @@
+-- If we're reloading, clear the screen and reset the timers
+if clearScreen then clearScreen() end
 cecho( f '\n\t<yellow_green>kermudlet.lua<reset>: common entry point for all of my Mudlet stuff' )
 
 -- Send profiles through a shared init to establish consistency and avoid deuplicating common/shared tasks

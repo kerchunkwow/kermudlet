@@ -33,10 +33,10 @@ function itemQueryAppend( item_name )
   -- Connect to local item db
   local luasql = require "luasql.sqlite3"
   local env = luasql.sqlite3()
-  local conn, cerr = env:connect( "C:\\Gizmo\\data\\gizdb.db" )
+  local conn, cerr = env:connect( "C:/Dev/mud/gizmo/data/gizdb.db" )
 
   if not conn then
-    cecho( "info", "\n<dark_orange>;Connect to item db failed<reset>" )
+    cecho( "info", "\n<dark_orange>Connection to eq database failed<reset>" )
     return
   end
   -- Query for the item's stats, antis, and cloneability values
