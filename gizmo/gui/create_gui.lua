@@ -63,7 +63,7 @@ end
 
 -- Kind of an ugly version of #include
 function createConsoleStyles()
-  ui_height = {
+  uiHeight = {
     ["label"]    = 24,
     ["hp_gauge"] = 50,
     ["mn_gauge"] = 18,
@@ -85,6 +85,7 @@ function createConsoleStyles()
     ["gauge_sm"]  = "c10",
     ["gauge_lrg"] = "rb16",
     ["room"]      = "c12",
+    ["affect"]    = "l12",
   }
 
   ui_color     = {
@@ -146,7 +147,7 @@ function createConsoleStyles()
 end
 
 function deleteConsoleStyles()
-  ui_height       = nil
+  uiHeight        = nil
   font_face       = nil
   font_format     = nil
   ui_color        = nil
@@ -200,12 +201,12 @@ function createPartyConsole()
   -- MN Gauge
   -- MV Gauge
   -- Item Tray (Label)
-  local pc_area_h      = (ui_height["label"] * 3) +
-      (ui_height["hp_gauge"]) +
-      (ui_height["mn_gauge"]) +
-      (ui_height["mv_gauge"]) +
-      (3 * ui_height["gap"]) +
-      ui_height["pc_tray"]
+  local pc_area_h      = (uiHeight["label"] * 3) +
+      (uiHeight["hp_gauge"]) +
+      (uiHeight["mn_gauge"]) +
+      (uiHeight["mv_gauge"]) +
+      (3 * uiHeight["gap"]) +
+      uiHeight["pc_tray"]
 
   local pc_total_h     = (pc_area_h * 4)
 
@@ -225,19 +226,21 @@ function createPartyConsole()
   movesGauge           = {} -- Move Gauges
 
   nameLabel            = {} -- Player names
+  combatLabel          = {} -- Test for new combat label
   roomLabel            = {} -- Player rooms
 
   combatIcons          = {} -- Combat icons (labels)
 
   for pc = 1, 4 do
-    local pc_label_y = pc_y_top + (pc_area_h * (pc - 1))
-    local rm_label_y = pc_label_y + ui_height["label"] + ui_height["gap"]
+    local nameLabelY = pc_y_top + (pc_area_h * (pc - 1))
+    local combatLabelY = nameLabelY
+    local rm_label_y = nameLabelY + uiHeight["label"] + uiHeight["gap"]
 
-    local hp_gauge_y = rm_label_y + ui_height["label"] + ui_height["gap"]
-    local mn_gauge_y = (hp_gauge_y + ui_height["hp_gauge"] + ui_height["gap"])
-    local mv_gauge_y = (mn_gauge_y + ui_height["mn_gauge"] + ui_height["gap"])
+    local hp_gauge_y = rm_label_y + uiHeight["label"] + uiHeight["gap"]
+    local mn_gauge_y = (hp_gauge_y + uiHeight["hp_gauge"] + uiHeight["gap"])
+    local mv_gauge_y = (mn_gauge_y + uiHeight["mn_gauge"] + uiHeight["gap"])
 
-    local combat_icon_y = mv_gauge_y + ui_height["mv_gauge"] + ui_height["gap"] + 6
+    local combat_icon_y = mv_gauge_y + uiHeight["mv_gauge"] + uiHeight["gap"] + 6
 
     -- HP Gauge
     hpGauge[pc] = Geyser.Gauge:new( {
@@ -246,7 +249,7 @@ function createPartyConsole()
       x      = 0,
       y      = hp_gauge_y,
       width  = "100%",
-      height = ui_height["hp_gauge"],
+      height = uiHeight["hp_gauge"],
 
     }, party_console )
 
@@ -270,7 +273,7 @@ function createPartyConsole()
       x      = 0,
       y      = mn_gauge_y,
       width  = "100%",
-      height = ui_height["mn_gauge"],
+      height = uiHeight["mn_gauge"],
 
     }, party_console )
 
@@ -291,7 +294,7 @@ function createPartyConsole()
       x      = 0,
       y      = mv_gauge_y,
       width  = "100%",
-      height = ui_height["mv_gauge"],
+      height = uiHeight["mv_gauge"],
 
     }, party_console )
 
@@ -312,14 +315,29 @@ function createPartyConsole()
 
       name   = "pc_label_" .. pc,
       x      = 0,
-      y      = pc_label_y,
+      y      = nameLabelY,
       width  = "100%",
-      height = ui_height["label"],
+      height = uiHeight["label"],
 
     }, party_console )
 
+    -- combatLabel[pc] = Geyser.Label:new( {
+
+    --   name   = "combat_label_" .. pc,
+    --   x      = 0,
+    --   y      = combatLabelY,
+    --   width  = "100%",
+    --   height = uiHeight["label"],
+
+    -- }, party_console )
+
     local pc_label_border = ui_color[f "pc_{pc}"]
     local CSS_label_pc = CSS_label .. f [[border-color: {pc_label_border};padding-right: 14px;]]
+    local CSS_label_aff = CSS_label .. f [[border-color: {pc_label_border};padding-left: 14px;]]
+
+    -- combatLabel[pc]:setFormat( font_format["affect"] )
+    -- combatLabel[pc]:setStyleSheet( CSS_label_aff )
+    --combatLabel[pc]:echo( "wtf" )
 
     nameLabel[pc]:setFgColor( ui_color[f "pc_{pc}"] )
     nameLabel[pc]:setFont( font_face["label"] )
@@ -335,7 +353,7 @@ function createPartyConsole()
 
         name   = "fury_icon",
         x      = (icon_dim * -1) - 6,
-        y      = pc_label_y - ui_height["label"] - 16,
+        y      = nameLabelY - uiHeight["label"] - 16,
         width  = 32,
         height = 32,
 
@@ -350,7 +368,7 @@ function createPartyConsole()
       x      = 0,
       y      = rm_label_y,
       width  = "100%",
-      height = ui_height["label"],
+      height = uiHeight["label"],
 
     }, party_console )
 

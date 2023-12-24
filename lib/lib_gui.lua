@@ -55,12 +55,19 @@ function displayBox( stringList, maxLength, borderColor )
   cecho( borderLine )
 end
 
--- Clear the main screen & info window
+-- Clear the main user window, or a sub/child window
 function clearScreen()
+  -- Clear the main user/console window
   clearUserWindow()
-  clearUserWindow( "infoWindow" )
-  -- For some reason secondary windows don't clear without output
-  cecho( "infoWindow", "\n" )
+
+  -- For each sub/child window, clear it and then print a newline to "flush" the buffer
+  local userWindows = Geyser.windows
+  for _, window in ipairs( userWindows ) do
+    -- The Geyser.windows list appends 'Container' to window names but still seems to be the shortest/simplest way to get a list of all windows
+    local trimmedName = window:gsub( "Container", "" )
+    clearUserWindow( trimmedName )
+    cecho( trimmedName, "\n" )
+  end
 end
 
 --[[
