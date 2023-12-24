@@ -26,6 +26,7 @@ registerAnonymousEventHandler( [[eventWarn]], [[show_warning]] )
 
 registerAnonymousEventHandler( [[event_pcStatus_prompt]], [[pcStatusPromptEvent]] )
 
+registerAnonymousEventHandler( [[eventPCStatusAffect]], [[pcStatusAffectEvent]] )
 
 
 registerAnonymousEventHandler( [[event_pcStatus_score]], [[pcStatusScoreEvent]] )

@@ -76,15 +76,17 @@ end
 
 -- Prepare cloning sequence with gear assignments
 function startClone()
-  nadjaClones = {'staff', 'staff', 'staff', 'transparent', 'transparent'}
-  laszloClones = {'crocodile', 'gloves', 'gloves', 'masoch', 'masoch'}
+  nadjaClones = {'staff', 'staff', 'staff', 'cuffs', 'cuffs'}
+  laszloClones = {'crocodile', 'halo', 'halo'}
+
+  expandAlias( "nan rem halo", false )
+  expandAlias( "nan give halo laszlo", false )
 
   -- And remove the items to clone
   expandAlias( 'nad rem staff', false )
+  expandAlias( 'nad rem cuffs', false )
   expandAlias( 'las rem crocodile', false )
-  expandAlias( 'nad rem transparent', false )
-  expandAlias( 'las rem gloves', false )
-  expandAlias( 'las rem masoch', false )
+  expandAlias( 'las rem halo' )
 end
 
 -- Called repeatedly to iterate each list of cloning assignments until complete
@@ -96,7 +98,7 @@ function doClone()
     endClone()
   end
   -- If Nadja has clone mana, try the next clone
-  if pcStatus[2]["currentMana"] > 100 and #nadjaClones > 0 then
+  if pcStatus[2]["currentMana"] > 100 and nadjaClones and #nadjaClones > 0 then
     -- Stand up & attempt to clone after setting a fresh success trigger
     expandAlias( "nad stand" )
     if nadCloneTrigger then killTrigger( nadCloneTrigger ) end
@@ -107,7 +109,7 @@ function doClone()
     expandAlias( "nad rest" )
   end
   -- Repeat for Laszlo
-  if pcStatus[3]["currentMana"] > 100 and #laszloClones > 0 then
+  if pcStatus[3]["currentMana"] > 100 and laszloClones and #laszloClones > 0 then
     expandAlias( "las stand" )
     if lasCloneTrigger then killTrigger( lasCloneTrigger ) end
     lasCloneTrigger = tempTrigger( "Laszlo creates a duplicate", [[table.remove( laszloClones, 1 )]] )
@@ -119,40 +121,34 @@ function doClone()
 end
 
 function endClone()
-  nadjaClones = nil
-  laszloClones = nil
-
   if lasCloneTrigger then killTrigger( lasCloneTrigger ) end
   if nadCloneTrigger then killTrigger( nadCloneTrigger ) end
+  if nadjaClones then nadjaClones = nil end
+  if laszloClones then laszloClones = nil end
   expandAlias( 'col get staff', false )
-  expandAlias( 'col get crocodile', false )
-  expandAlias( 'col get gloves', false )
-  expandAlias( 'col get masoch', false )
-  expandAlias( 'las get transparent', false )
-  expandAlias( 'las get staff', false )
-  expandAlias( 'nan get staff', false )
-  expandAlias( 'nan get transparent', false )
-  expandAlias( 'nan get crocodile', false )
-  expandAlias( 'nan get gloves', false )
-  expandAlias( 'nan get masoch', false )
-  expandAlias( 'nad hold staff', false )
-  expandAlias( 'nad wear transparent', false )
-  expandAlias( 'nad wear gloves', false )
-  expandAlias( 'nad wear masoch', false )
-  expandAlias( 'las wear crocodile', false )
-  expandAlias( 'las wear transparent', false )
-  expandAlias( 'las wear gloves', false )
-  expandAlias( 'las wear masoch', false )
-  expandAlias( 'las hold staff', false )
+  expandAlias( 'col get halo', false )
+  expandAlias( 'col get cuffs', false )
   expandAlias( 'col hold staff', false )
-  expandAlias( 'col wear crocodile', false )
-  expandAlias( 'col wear gloves', false )
-  expandAlias( 'col wear masoch', false )
+  expandAlias( 'col wear halo', false )
+  expandAlias( 'col wear cuffs', false )
+
+  expandAlias( 'las get staff', false )
+  expandAlias( 'las get cuffs', false )
+  expandAlias( 'las hold staff', false )
+  expandAlias( 'las wear cuffs', false )
+  expandAlias( 'las wear crocodile', false )
+
+  expandAlias( 'nan get staff', false )
+  expandAlias( 'nan get crocodile', false )
   expandAlias( 'nan hold staff', false )
-  expandAlias( 'nan wear transparent', false )
   expandAlias( 'nan wear crocodile', false )
-  expandAlias( 'nan wear gloves', false )
-  expandAlias( 'nan wear masoch', false )
+
+  expandAlias( 'nad hold staff', false )
+  expandAlias( 'nad wear cuffs', false )
+
+  expandAlias( "las give halo nandor", false )
+  tempTimer( 1, [[expandAlias( "nan wear halo", false )]] )
+
   expandAlias( 'all save', false )
 end
 

@@ -56,3 +56,12 @@ end
 function pcStatusRoomEvent( raised_event, pc, room )
   pcStatusRoom( pc, room )
 end
+
+-- Handle events from other sessions to update affect states (i.e., buffs/debuffs).
+function pcStatusAffectEvent( raised_event, pc, affect, state )
+  if state then
+    applyAffect( affect, pc )
+  else
+    removeAffect( affect, pc )
+  end
+end

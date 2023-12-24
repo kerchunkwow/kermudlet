@@ -1,108 +1,110 @@
 cecho( f '\n\t<dark_violet>affect.lua<reset>: to maintain buffs/debuffs and track duration' )
 
 -- The affects we want to track; set this to "save" in Variables to maintain durations between sessions
-spellInfo = spellInfo or {
-  ["Sanctuary"] = {duration = nil, cost = 50},
-  ["Bless"] = {duration = nil, cost = 5},
-  ["Fury"] = {duration = nil, cost = 60},
-  ["Armor"] = {duration = nil, cost = 5},
+spellInfo = {
+  ["Sanctuary"] = {duration = nil, cost = 50, color = "lavender_blush", char = "🌟"},
+  ["Bless"]     = {duration = nil, cost = 5, color = "light_goldenrod", char = "🙏"},
+  ["Fury"]      = {duration = nil, cost = 60, color = "tomato", char = "😡"},
+  ["Armor"]     = {duration = nil, cost = 5, color = "steel_blue", char = "🛡️"},
 }
 
+affectStartTimes = {}
 
--- "Up" and "down" messages for each affect
-affectMessages = {
-  ["You start glowing."]                     = {affect = "Sanctuary", state = true},
-  ["The white aura around your body fades."] = {affect = "Sanctuary", state = false},
-  ["You feel righteous."]                    = {affect = "Bless", state = true},
-  ["You feel less righteous."]               = {affect = "Bless", state = false},
-  ["You feel very angry."]                   = {affect = "Fury", state = true},
-  ["You calm down."]                         = {affect = "Fury", state = false},
-  ["You feel someone protecting you."]       = {affect = "Armor", state = true},
-  ["You feel less protected."]               = {affect = "Armor", state = false},
-}
-
--- Highlights for console output
-affColor       = "<gold>"
-upColor        = "<chartreuse>"
-downColor      = "<firebrick>"
-
-
--- Create the structures & triggers for tracking affects
+-- Initialize tables to track the status of each affect and their strings on all PCs
 function initializeAffectTracking()
-  affectInfo = {}
-  maxAffectNameLength = 0
+  affectStatus = {}
+  affectStrings = {}
+  affectStartTimes = {}
 
-  -- Create an affect "object" for each affect
-  for _, affect in ipairs( spellInfo ) do
-    affectInfo[affect] = {
-      state     = false,
-      startTime = nil,
-      endTime   = nil,
-      duration  = nil
-    }
-    -- Keep track of the longest affect name for formatting later
-    maxAffectNameLength = math.max( maxAffectNameLength, #affect )
-  end
-  createStatusTriggers()
-end
-
--- We captured an affect message; update the corresponding affectInfo entry
-function updateAffectStatus( message )
-  local msgData = affectMessages[message]
-
-  if msgData then
-    local affect, state = msgData.affect, msgData.state
-    local currentTime = os.time()
-    local fgc = "dim_grey"
-
-    if state then
-      -- Affect is applied
-      affectInfo[affect].state = true
-      affectInfo[affect].startTime = currentTime
-      affectInfo[affect].endTime = nil
-      fgc = "chartreuse"
-    else
-      -- Affect expired
-      affectInfo[affect].endTime = currentTime
-      local affectDuration = currentTime - affectInfo[affect].startTime
-      affectInfo[affect].state = false
-      affectInfo[affect].startTime = nil
-      if not spellInfo[affect].duration then
-        spellInfo[affect].duration = affectDuration
-      end
-      cecho( f " [<dark_orange>{affectDuration}<reset>s]" )
-      fgc = "firebrick"
+  for pc = 1, 4 do
+    affectStatus[pc] = {}
+    affectStrings[pc] = ""
+    affectStartTimes[pc] = {}
+    for spellName, _ in pairs( spellInfo ) do
+      affectStatus[pc][spellName] = false
+      affectStartTimes[pc][spellName] = nil
     end
-    -- Highlight the message itself
-    selectString( line, 1 )
-    fg( fgc )
-    resetFormat()
   end
 end
 
--- At load, iterate the affectMessages table and create corresponding triggers for each message
-function createStatusTriggers()
-  for affectMessage, _ in pairs( affectMessages ) do
-    -- Get a regex pattern for the status message
-    local affectRegex = createLineRegex( affectMessage )
-
-    -- Make a code string to invoke the update function w/ the message
-    local affectCode = f "updateAffectStatus([[{affectMessage}]])"
-
-    -- Create the alias
-    tempRegexTrigger( affectRegex, affectCode )
+-- Update affect status to true and modify affect string
+function applyAffect( spellName, pc )
+  if affectStatus[pc] and spellInfo[spellName] then
+    if not affectStatus[pc][spellName] then
+      affectStatus[pc][spellName] = true
+      affectStrings[pc] = affectStrings[pc] .. spellInfo[spellName].char
+      affectStartTimes[pc][spellName] = getStopWatchTime( "timer" )
+    end
+  else
+    cecho( f "\n<orange_red>Invalid applyAffect: {spellName} for PC{pc}<reset>" )
   end
 end
 
-function displayAffectStatus()
-  local affectStrings = {}
-  local longestAffect = maxAffectNameLength + 5
-
-  for affect, info in pairs( affectInfo ) do
-    local statusText = info.state and f "{upColor}UP<reset>" or f "{downColor}down<reset>"
-    local durationText = spellInfo[affect].duration and f " [<dark_orange>{spellInfo[affect].duration}<reset>s]" or ""
-    local padding = string.rep( " ", maxAffectNameLength - #affect )
-    table.insert( affectStrings, f "{affColor}{affect}{padding}<reset> : {statusText}{durationText}" )
+function applyAffectTrigger()
+  local keyword = matches[2]
+  local appliedAffect = affectKeywords[keyword]
+  local affectColor, affectEmoji = spellInfo[appliedAffect].color, spellInfo[appliedAffect].char
+  selectString( keyword, 1 )
+  fg( affectColor )
+  resetFormat()
+  cecho( affectEmoji )
+  if session == 1 then
+    applyAffect( appliedAffect, 1 )
+  else
+    raiseGlobalEvent( "eventPCStatusAffect", session, appliedAffect, true )
   end
-  displayBox( affectStrings, longestAffect )
 end
+
+-- Update affect status to false and modify affect string; called by 'remove' triggers
+function removeAffect( spellName, pc )
+  if affectStatus[pc] and spellInfo[spellName] then
+    if affectStatus[pc][spellName] then
+      local endTime = getStopWatchTime( "timer" )
+      local startTime = affectStartTimes[pc][spellName]
+      if startTime then
+        local duration = endTime - startTime
+        spellInfo[spellName].duration = duration -- Update the duration in spellInfo
+      end
+      affectStatus[pc][spellName] = false
+      local charToRemove = spellInfo[spellName].char
+      affectStrings[pc] = affectStrings[pc]:gsub( charToRemove, '', 1 )
+    end
+  else
+    cecho( f "\n<orange_red>Invalid removeAffect: {spellName} for PC{pc}<reset>" )
+  end
+end
+
+function removeAffectTrigger()
+  local keyword = matches[2]
+  local removedAffect = affectKeywords[keyword]
+  local affectColor, affectEmoji = spellInfo[removedAffect].color, spellInfo[removedAffect].char
+  selectString( keyword, 1 )
+  fg( affectColor )
+  resetFormat()
+  cecho( affectEmoji )
+  if session == 1 then
+    removeAffect( removedAffect, 1 )
+  else
+    raiseGlobalEvent( "eventPCStatusAffect", session, removedAffect, false )
+  end
+end
+
+-- Function to print affect strings for each PC
+function printAffectStrings()
+  for pc = 1, 4 do
+    local affectString = affectStrings[pc]
+    if #affectString > 0 then
+      cecho( "info", f "\nAffects for {pc_tags[pc]}: {affectString}" )
+    end
+  end
+end
+
+initializeAffectTracking()
+
+--[[
+GitHub Copilot, ChatGPT notes:
+Collaborate on Lua 5.1 scripts for Mudlet in VSCode. Use f-strings, camelCase, UPPER_CASE constants.
+Prioritize performance, optimization, and modular design. Provide debugging output with cecho.
+Be critical, suggest improvements, don't apologize for errors.
+Respond concisely, treat me as a coworker.
+]]

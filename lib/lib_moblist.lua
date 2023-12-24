@@ -1,6 +1,8 @@
 cecho( f '\n\t<yellow_green>lib_moblist.lua<reset>: functions to maintain & update a list of mobs w/ counts' )
 
-mobList = {}
+mobList = {
+  ["A Yeti stares at your flesh with a hunger."] = {count = 1, color = "<maroon>"},
+}
 
 -- Update the mobList; pass modify true to insert/remove strings
 function updateMobList( str, number, modify )

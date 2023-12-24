@@ -14,34 +14,6 @@ function tempDisableTrigger( trigger, duration )
   tempTimer( duration, f [[enableTrigger( "{trigger}" )]] )
 end
 
--- Expand #WINTIN-style command strings
--- e.g., "#3 n;#2 u" = { "n", "n", "n", "u", "u" }
-function expandWintin( wintinString )
-  local commands = {}
-  display( wintinString )
-  -- Break on semi-colons
-  for command in wintinString:gmatch( "[^;]+" ) do
-    -- Insert 'command' '#' times
-    local count, cmd = command:match( "#(%d+)%s*(.+)" )
-    count = count or 1
-    cmd = cmd or command
-
-    for i = 1, tonumber( count ) do
-      table.insert( commands, cmd )
-    end
-  end
-  return commands
-end
-
--- Use expandWintin to execute WINTIN-style command lists
-function doWintin( wintinString )
-  local commands = expandWintin( wintinString )
-  for _, command in ipairs( commands ) do
-    send( command, false )
-    --cecho("\n" .. f "{command}")
-  end
-end
-
 -- "Nuclear option" that kills all temporary timers and triggers; will probably interfere with
 -- third party packages if you have any.
 function killAllTemps()
@@ -98,6 +70,23 @@ function makeAlias( aliasString )
 
   -- Get some info
   cecho( f "\nCreated alias: {pattern} to execute code: {code} (#{#tempAliases} active temps)" )
+end
+
+-- Use a temporary trigger to recast on lost concentration
+function sureCast( spell, target )
+  local castCode
+
+  if sureCastTrigger then killTrigger( sureCastTrigger ) end
+  tempTimer( 5, function () killTrigger( sureCastTrigger ) end )
+
+  if target then
+    castCode = f [[send("cast '{spell}' {target}")]]
+    send( f "cast '{spell}' {target}" )
+  else
+    castCode = f [[send("cast '{spell}'")]]
+    send( f "cast '{spell}'" )
+  end
+  sureCastTrigger = tempRegexTrigger( "^You lost your concentration!$", castCode, 1 )
 end
 
 --[[

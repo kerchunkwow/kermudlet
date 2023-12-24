@@ -1,3 +1,4 @@
+---@diagnostic disable: cast-local-type
 cecho( f '\n\t<dark_violet>parse_main.lua<reset>: main session prompt parser, it can access the pcStatus table directly' )
 
 -- Pull stats from the prompt and update status & status table

@@ -47,8 +47,8 @@ pc_colors          = {
 }
 my_color           = pc_colors[session]
 pc_tags            = {
-  f "<reset>[{pc_colors[1]}{pc_names[1]}<reset>]",
-  f "<reset>[{pc_colors[2]}{pc_names[2]}<reset>]",
+  f "<reset>[{pc_colors[1]}{pc_names[1] }<reset>]",
+  f "<reset>[{pc_colors[2]}{pc_names[2] }<reset>]",
   f "<reset>[{pc_colors[3]}{pc_names[3]}<reset>]",
   f "<reset>[{pc_colors[4]}{pc_names[4]}<reset>]",
 }
@@ -70,7 +70,7 @@ msg_colors         = {
 warning_messages   = {
   ["water"]     = "Needs a <light_sky_blue>water<reset> refill!",
   ["mvs"]       = "Getting low on <dark_goldenrod>moves<reset>.",
-  ["food"]      = "Out of <yellow_green>food<reset>!",
+  ["food"]      = "🍖 Needs more <yellow_green>food<reset>!",
   ["whacked"]   = "I just got <medium_violet_red>whACKed<reset>!",
   ["switched"]  = "Mob just <dark_violet>switched<reset> to me!",
   ["hp"]        = "Critical <orange_red>HP<reset>!",
@@ -84,6 +84,16 @@ critical_warnings  = {
   ["switched"]  = true,
 }
 
+-- Keywords to look for in output that indicate when spell status changes
+affectKeywords     = {
+  ["glowing"]    = "Sanctuary",
+  ["aura"]       = "Sanctuary",
+  ["righteous"]  = "Bless",
+  ["angry"]      = "Fury",
+  ["calm"]       = "Fury",
+  ["protecting"] = "Armor",
+  ["protected"]  = "Armor",
+}
 -- Not used just yet, but plan to use this in the future to gag output from non-main players
 alt_pcs            = {
   ["Nadja"]    = true,
@@ -142,6 +152,13 @@ ignored_items      = {
   ["a bottle of red potion"]           = true,
   ["a pouch of irridescent pollen"]    = true,
   ["a Frosty Potion"]                  = true,
+  ["a bloody brew"]                    = true,
+  ["a strong-smelling brew"]           = true,
+  ["a five cheesecake chit"]           = true,
+  ["a five brownie chit"]              = true,
+  ["a milky orange potion"]            = true,
+  ["a small ice opal"]                 = true,
+  ["a Christmas Stocking"]             = true,
 }
 
 -- Initializing some empty globals
@@ -151,20 +168,20 @@ temporary_triggers = {}
 -- A table for tracking spell effects and their duration
 pc_effects         = {}
 
-container          = "bag"
-waterskin          = "waterskin"
-food               = "bread"
+if session == 1 then container = "stocking" else container = "bag" end
+waterskin       = "waterskin"
+food            = "bread"
 
-new_room           = true
-my_room            = "The Bucklodge"
+new_room        = true
+my_room         = "The Bucklodge"
 
-casting_delayed    = false
+casting_delayed = false
 
-miracond           = "bad"
-warning_delayed    = false
-backup_mira        = false
+miracond        = "bad"
+warning_delayed = false
+backup_mira     = false
 
-gtank              = "Kevin"
+gtank           = "Kevin"
 
 -- Initial trigger states
 enableTrigger( "PC Login" )

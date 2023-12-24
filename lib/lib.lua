@@ -2,23 +2,7 @@ cecho( f '\n\t<yellow_green>lib.lua<reset>: entry to libraries for common/shared
 
 -- Use {dbc} whenever you're printing an error or important information with cecho()
 dbc = "<orange_red>"
-
--- Redefine this here so VSCode recognizes it
-function runLuaFile( filePath )
-  if lfs.attributes( filePath, "mode" ) == "file" then
-    cecho( f "\nLoading file: {dbc}{filePath}<reset>" )
-    dofile( filePath )
-  else
-    cecho( f "\n{dbc}{filePath}<reset> not found." )
-  end
-end
-
--- Use runLuaFile to run a table of Lua files
-function runLuaFiles( filePaths )
-  for _, filePath in ipairs( filePaths ) do
-    runLuaFile( f "{rootDirectory}{filePath}" )
-  end
-end
+sureCastTrigger = nil
 
 -- Compile and execute a lua function directly from the command-line; used
 -- throughout other scripts and in aliases as 'lua <command> <args>'
@@ -48,11 +32,29 @@ function runLuaLine()
   runFunc( func() )
 end
 
+-- Redefine this here so VSCode recognizes it
+function runLuaFile( filePath )
+  if lfs.attributes( filePath, "mode" ) == "file" then
+    cecho( f "\nLoading: <dim_grey>{filePath}<reset>" )
+    dofile( filePath )
+  else
+    cecho( f "\n{dbc}{filePath}<reset> not found." )
+  end
+end
+
+-- Use runLuaFile to run a table of Lua files
+function runLuaFiles( filePaths )
+  for _, filePath in ipairs( filePaths ) do
+    runLuaFile( f "{rootDirectory}{filePath}" )
+  end
+end
+
 -- Load all the sub-libraries
 runLuaFile( f '{rootDirectory}lib/lib_gui.lua' )
-runLuaFile( f '{rootDirectory}lib/lib_moblist.lua' )
+-- runLuaFile( f '{rootDirectory}lib/lib_moblist.lua' )
 runLuaFile( f '{rootDirectory}lib/lib_react.lua' )
 runLuaFile( f '{rootDirectory}lib/lib_string.lua' )
+-- runLuaFile( f '{rootDirectory}lib/lib_wintin.lua' )
 
 --[[
 GitHub Copilot, ChatGPT notes:

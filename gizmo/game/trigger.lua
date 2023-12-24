@@ -105,7 +105,11 @@ function triggerHunger()
   createTemporaryTrigger( "no_food_trigger", empty_str, warn_code, 3 )
   createTemporaryTrigger( "have_food_trigger", have_str, eat_code, 3 )
 
-  send( f "get {food} {container}", false )
+  if session == 1 then
+    send( f "get {food} stocking", false )
+  else
+    send( f "get {food} bag", false )
+  end
 end
 
 -- Drink when we're thirsty

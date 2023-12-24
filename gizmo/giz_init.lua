@@ -59,7 +59,7 @@ end
 --Create session-custom warning messages so they don't need to be created on demand
 warning_calls = createWarningCalls()
 
-tempTimer( 0.1, [[cecho(f"\n<olive_drab>(Game)<reset> configured for {my_color}{myself}<reset>.")]] )
+tempTimer( 0.1, [[cecho(f"\n<olive_drab>(Gizmo)<reset> loaded for {my_color}{myself}<reset>.")]] )
 --[[
 GitHub Copilot, ChatGPT notes:
 Collaborate on Lua 5.1 scripts for Mudlet in VSCode. Use f-strings, camelCase, UPPER_CASE constants.

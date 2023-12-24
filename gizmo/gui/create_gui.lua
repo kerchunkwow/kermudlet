@@ -225,7 +225,7 @@ function createPartyConsole()
   movesGauge           = {} -- Move Gauges
 
   nameLabel            = {} -- Player names
-  rm_labels            = {} -- Player rooms
+  roomLabel            = {} -- Player rooms
 
   combatIcons          = {} -- Combat icons (labels)
 
@@ -344,7 +344,7 @@ function createPartyConsole()
       fury_icon:setBackgroundImage( [[C:/Gizmo/Mudlet/fury.png]] )
       fury_icon:hide()
     end
-    rm_labels[pc] = Geyser.Label:new( {
+    roomLabel[pc] = Geyser.Label:new( {
 
       name   = "rm_label_" .. pc,
       x      = 0,
@@ -357,15 +357,15 @@ function createPartyConsole()
     local rm_label_border = ui_color["rm"]
     local CSS_label_rm = CSS_label .. f [[border-color: {rm_label_border};]]
 
-    rm_labels[pc]:setFgColor( "#6496fa" )
-    rm_labels[pc]:setFont( font_face["room"] )
-    rm_labels[pc]:setFormat( font_format["room"] )
-    rm_labels[pc]:setStyleSheet( CSS_label_rm )
+    roomLabel[pc]:setFgColor( "#6496fa" )
+    roomLabel[pc]:setFont( font_face["room"] )
+    roomLabel[pc]:setFormat( font_format["room"] )
+    roomLabel[pc]:setStyleSheet( CSS_label_rm )
 
-    rm_labels[pc]:echo( my_room )
+    roomLabel[pc]:echo( my_room )
 
     -- Call room_clicked( pc_name ) when double-clicking the room label
-    setLabelDoubleClickCallback( rm_labels[pc].name, "room_clicked", pc_names[pc] )
+    setLabelDoubleClickCallback( roomLabel[pc].name, "room_clicked", pc_names[pc] )
 
     combatIcons[pc] = Geyser.Label:new( {
       name = "combat_icon_" .. pc,

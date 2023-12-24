@@ -86,6 +86,20 @@ function createLineRegex( rawString )
   return lineRegex
 end
 
+-- Guess a string is regex if it starts with ^, ends with $, or contains a backslash
+function isRegex( str )
+  if string.sub( str, 1, 1 ) == '^' then
+    return true
+  end
+  if string.sub( str, -1 ) == '$' then
+    return true
+  end
+  if string.find( str, "\\" ) then
+    return true
+  end
+  return false
+end
+
 --[[
 GitHub Copilot, ChatGPT notes:
 Collaborate on Lua 5.1 scripts for Mudlet in VSCode. Use f-strings, camelCase, UPPER_CASE constants.

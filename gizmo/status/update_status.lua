@@ -103,7 +103,7 @@ end
 -- Update the room label for a pc
 function pcStatusRoom( pc, room )
   pcStatus[pc]["room"] = room
-  rm_labels[pc]:echo( room )
+  roomLabel[pc]:echo( room )
 end
 
 -- Create and default a table to hold status info for each pc

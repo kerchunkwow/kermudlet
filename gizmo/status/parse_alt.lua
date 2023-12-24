@@ -1,3 +1,4 @@
+---@diagnostic disable: cast-local-type
 cecho( f '\n\t<dark_violet>parse_alt.lua<reset>: alt session prompt parser, alts raise events to update the pcStatus table' )
 
 -- Parse prompt components and trigger an update if anything has changed; ignore maximum values
