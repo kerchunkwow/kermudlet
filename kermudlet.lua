@@ -1,3 +1,6 @@
+luasql = require( "luasql.sqlite3" )
+json   = require( "dkjson" )
+
 -- If we're reloading, clear the screen and reset the timers
 if clearScreen then clearScreen() end
 cecho( f '\n\t<yellow_green>kermudlet.lua<reset>: common entry point for all of my Mudlet stuff' )
@@ -11,6 +14,10 @@ if not timer then
   setStopWatchPersistence( "timer", true )
 end
 runLuaFile( f "{rootDirectory}lib/lib.lua" )
+
+matches = nil
+multimatches = nil
+line = nil
 
 -- Fork depending on which game we're playing
 local profileName = getProfileName()

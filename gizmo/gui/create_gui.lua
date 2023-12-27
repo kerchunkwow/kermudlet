@@ -137,6 +137,8 @@ function createConsoleStyles()
                   border-style:      solid;
                   border-radius:     2;]]
 
+  CSS_affect = f [[background-color: #000000;padding-left: 2px;qproperty-alignment: 'AlignVCenter';]]
+
   CSS_label_left = f [[
       border-color:      {ui_color["lbl_bd"]};
       padding-left:     10px;]] .. CSS_label
@@ -162,6 +164,7 @@ function deleteConsoleStyles()
   CSS_label       = nil
   CSS_label_left  = nil
   CSS_label_right = nil
+  CSS_affect      = nil
 end
 
 function getLabelCSS( bg, border )
@@ -226,14 +229,14 @@ function createPartyConsole()
   movesGauge           = {} -- Move Gauges
 
   nameLabel            = {} -- Player names
-  combatLabel          = {} -- Test for new combat label
+  affectLabel          = {} -- Test for new combat label
   roomLabel            = {} -- Player rooms
 
   combatIcons          = {} -- Combat icons (labels)
 
   for pc = 1, 4 do
     local nameLabelY = pc_y_top + (pc_area_h * (pc - 1))
-    local combatLabelY = nameLabelY
+    local affectLabelY = nameLabelY - 2
     local rm_label_y = nameLabelY + uiHeight["label"] + uiHeight["gap"]
 
     local hp_gauge_y = rm_label_y + uiHeight["label"] + uiHeight["gap"]
@@ -310,34 +313,32 @@ function createPartyConsole()
     -- Call mv_clicked( pc_name ) when clicking the move gauge
     setLabelClickCallback( movesGauge[pc].text.name, "mv_clicked", pc, pc_names[pc] )
 
-
     nameLabel[pc] = Geyser.Label:new( {
 
       name   = "pc_label_" .. pc,
-      x      = 0,
+      x      = "66%",
       y      = nameLabelY,
-      width  = "100%",
+      width  = "34%",
       height = uiHeight["label"],
 
     }, party_console )
 
-    -- combatLabel[pc] = Geyser.Label:new( {
+    affectLabel[pc] = Geyser.Label:new( {
 
-    --   name   = "combat_label_" .. pc,
-    --   x      = 0,
-    --   y      = combatLabelY,
-    --   width  = "100%",
-    --   height = uiHeight["label"],
+      name   = "affectLabel" .. pc,
+      x      = 0,
+      y      = affectLabelY,
+      width  = "66%",
+      height = uiHeight["label"],
 
-    -- }, party_console )
+    }, party_console )
+
+    affectLabel[pc]:setFormat( font_format["affect"] )
+    affectLabel[pc]:setStyleSheet( CSS_affect )
+    affectLabel[pc]:echo( "❓" )
 
     local pc_label_border = ui_color[f "pc_{pc}"]
     local CSS_label_pc = CSS_label .. f [[border-color: {pc_label_border};padding-right: 14px;]]
-    local CSS_label_aff = CSS_label .. f [[border-color: {pc_label_border};padding-left: 14px;]]
-
-    -- combatLabel[pc]:setFormat( font_format["affect"] )
-    -- combatLabel[pc]:setStyleSheet( CSS_label_aff )
-    --combatLabel[pc]:echo( "wtf" )
 
     nameLabel[pc]:setFgColor( ui_color[f "pc_{pc}"] )
     nameLabel[pc]:setFont( font_face["label"] )

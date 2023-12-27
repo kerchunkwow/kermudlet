@@ -10,6 +10,7 @@ local commonScripts = {
   "config/config_common.lua",
   "alias/game_alias.lua",
   "eq/eqdb.lua",
+  "status/affect.lua",
 }
 
 -- Specific to the main session
@@ -19,7 +20,6 @@ local mainScripts = {
   "gui/gui.lua",
   "status/update_status.lua",
   "status/parse_main.lua",
-  "status/affect.lua",
   "eq/inventory.lua",
 }
 

@@ -1,7 +1,7 @@
 cecho( f '\n\t<dark_violet>affect.lua<reset>: to maintain buffs/debuffs and track duration' )
 
 -- The affects we want to track; set this to "save" in Variables to maintain durations between sessions
-affectInfo = {
+affectInfo = affectInfo or {
   ["Sanctuary"] = {duration = nil, cost = 50, color = "lavender_blush", char = "🌟"},
   ["Bless"]     = {duration = nil, cost = 5, color = "light_goldenrod", char = "🙏"},
   ["Fury"]      = {duration = nil, cost = 60, color = "tomato", char = "😡"},
@@ -56,6 +56,7 @@ function updateAffectString( pc, spellName, addChar )
   else
     affectStrings[pc] = affectStrings[pc]:gsub( char, '', 1 )
   end
+  affectLabel[pc]:echo( affectStrings[pc] )
 end
 
 -- Function to calculate duration

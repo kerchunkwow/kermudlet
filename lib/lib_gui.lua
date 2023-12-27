@@ -1,5 +1,23 @@
 cecho( f '\n\t<yellow_green>lib_gui.lua<reset>: core GUI functions for windows, output, chat, etc.' )
 
+-- Use with cecho etc. to colorize output without massively long f-strings
+function ec( s, c )
+  local colors = {
+    err  = "orange_red",   -- Error
+    dbg  = "dodger_blue",  -- Debug
+    val  = "blue_violet",  -- Value
+    var  = "dark_orange",  -- Variable Name
+    func = "green_yellow", -- Function Name
+    info = "sea_green",    -- Info/Data
+  }
+  local sc = colors[c] or "ivory"
+  if c ~= 'func' then
+    return "<" .. sc .. ">" .. s .. "<reset>"
+  else
+    return "<" .. sc .. ">" .. s .. "<reset>()"
+  end
+end
+
 -- Standard format/highlight for chat message; pass a window name to route chat there
 function chatMessage( speaker, channel, message, window )
   local de, sh, ch = "<gainsboro>", "<yellow_green>", "<maroon>"
@@ -9,6 +27,7 @@ function chatMessage( speaker, channel, message, window )
     cecho( window, f "\n{sh}{speaker} {de}[{ch}{channel}{de}]<reset> {message}" )
   else
     cecho( f "\n{sh}{speaker} {de}[{ch}{channel}{de}]<reset> {message}" )
+    cecho( f "{ec('DB connect failed','err')} in {ec('loadAreaList','func')}" )
   end
 end
 

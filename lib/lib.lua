@@ -54,8 +54,7 @@ runLuaFile( f '{rootDirectory}lib/lib_gui.lua' )
 -- runLuaFile( f '{rootDirectory}lib/lib_moblist.lua' )
 runLuaFile( f '{rootDirectory}lib/lib_react.lua' )
 runLuaFile( f '{rootDirectory}lib/lib_string.lua' )
--- runLuaFile( f '{rootDirectory}lib/lib_wintin.lua' )
-
+runLuaFile( f '{rootDirectory}lib/lib_wintin.lua' )
 --[[
 GitHub Copilot, ChatGPT notes:
 Collaborate on Lua 5.1 scripts for Mudlet in VSCode. Use f-strings, camelCase, UPPER_CASE constants.

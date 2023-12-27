@@ -1,8 +1,8 @@
 cecho( f '\n\t<yellow_green>lib_string.lua<reset>: string manipulation, parsing, formatting, etc.' )
 
 -- Trim leading/trailing whitespace from a string
-function trim( str )
-  return str:match( "^%s*(.-)%s*$" )
+function trim( s )
+  return s:match( "^%s*(.-)%s*$" )
 end
 
 -- Get a list of substrings by splitting a string at delimeter
