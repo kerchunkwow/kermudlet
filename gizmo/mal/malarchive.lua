@@ -315,3 +315,73 @@ function printArea( areaNumber )
     cecho( "\n<reset>Room Extra Keyword: <gold>" .. room.roomExtraKeyword )
   end
 end
+
+function printMaxRoomNumber()
+  local maxRNumber = -1
+  for _, room in pairs( areaData["areaRooms"] ) do
+    if room["roomRNumber"] > maxRNumber then
+      maxRNumber = room["roomRNumber"]
+    end
+  end
+  print( "Area " .. currentArea .. " max roomRNumber: " .. maxRNumber )
+end
+
+function printAllMaxRoomNumbers()
+  currentArea = 0
+  while true do
+    if currentArea == 107 then
+      currentArea = 108
+    end
+    areaData = loadAreaData( currentArea )
+    if areaData then
+      printMaxRoomNumber()
+      currentArea = currentArea + 1
+    else
+      break
+    end
+  end
+end
+
+-- Load area data for a single area
+function loadAreaData( areaRNumber )
+  areaData = {}
+  currentArea = areaRNumber
+  local file = io.open( dataFile, 'r' )
+  if not file then
+    print( "Could not open dataFile" )
+    return nil
+  end
+  local content = file:read( "*all" )
+  file:close()
+
+  local data, pos, err = dkjson.decode( content, 1, nil )
+  if err then
+    print( "Error:", err )
+    return nil
+  end
+  local area = data[tostring( areaRNumber )]
+  if not area then
+    print( "Area not found with Area Number " .. areaRNumber )
+    return nil
+  end
+  local rooms = {}
+  for _, room in ipairs( area["areaRooms"] ) do
+    local roomRNumber = room["roomRNumber"]
+    rooms[roomRNumber] = room
+    local exits = {}
+    if room["roomExits"] then
+      for _, exit in ipairs( room["roomExits"] ) do
+        local exitDirection = DIRECTIONS[exit["exitDirection"]]
+        if exitDirection then
+          exits[exitDirection] = exit
+        else
+          print( "Invalid exit direction:", exit["exitDirection"] )
+        end
+      end
+    end
+    room["roomExits"] = exits
+  end
+  area["areaRooms"] = rooms
+
+  return area
+end

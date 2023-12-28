@@ -1,4 +1,3 @@
-mX, mY, mZ  = 0, 0, 0
 roomCoords  = {}
 roomCount   = 0
 

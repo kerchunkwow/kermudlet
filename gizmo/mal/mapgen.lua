@@ -11,7 +11,8 @@ Area:
 "areaMaxVNumberAllowed": number, -- The maximum allowable roomVnumber; not necessarily the actual maximum roomVNumber
 "areaResetType": string, -- A string describing when the Area "resets" or repopulates
 "areaFirstRoomName": string, -- The roomName of the first Room in the Area
-"areaFirstRoomRNumber": number, -- The roomRNumber of the first Room in the Area
+"areaMinRoomRNumber": number, -- The roomRNumber of the first Room in the Area
+"areaMaxRoomRNumber": number, -- The highest actual roomRNumber in the Area
 "areaMinVNumber": number, -- The minimum allowable roomVNumber; not necessarily the actual minimum roomVNumber
 "areaMaxVNumberActual": number, -- The actual maximum roomVNumber as opposed to areaMaxVNumber which is the maximum allowable roomVNumber
 "areaRoomCount": number, -- The actual number of Rooms in the Area
@@ -38,11 +39,20 @@ Exit:
 "exitDest": number -- The roomRNumber of the Room this Exit leads to
 ]]
 
-dkjson        = require( 'dkjson' )
+
+-- JSON Library & data file path
+dkjson      = require( 'dkjson' )
+dataFile    = "C:/Dev/mud/mudlet/gizmo/mal/areadata/gizmo_world.json"
 
 -- An initially empty table for holding data about Areas (either individually or in aggregate)
-areaData      = {}
-dataFile      = "C:/Dev/mud/mudlet/gizmo/mal/areadata/gizmo_world.json"
+areaData    = {}
+
+-- Globals for tracking my "virtual position" in the world
+currentArea = nil     -- The area I'm currently mapping
+currentRoom = nil     -- The room I'm currently mapping
+mX, mY, mZ  = 0, 0, 0 -- Coordinates of the room I'm currently mapping; for use by Mudlet to determine position in UI
+
+
 
 -- When outputting data related to map generation, use these colors to highlight specific fields wich cecho()
 -- e.g., cecho( MAPGEN_COLORS["areaName"] .. area["areaName"] .. "<reset>" )
@@ -50,10 +60,9 @@ MAPC          = {
   ["area"]     = "<deep_pink>",
   ["number"]   = "<dark_orange>",
   ["roomName"] = "<royal_blue>",
-  ["roomDesc"] = "<olive_drab>",
-  ["exit"]     = "<light_sea_green>",
-  ["exitDir"]  = "<medium_spring_green>",
-  ["exitTo"]   = "<gold>"
+  ["roomDesc"] = "<ansi_light_black>",
+  ["exitDir"]  = "<cyan>",
+  ["exitStr"]  = "<ansi_light_black>"
 }
 
 -- Global constant table of Terrain or "Sector" types for use in building and customizing rooms
@@ -70,12 +79,12 @@ TERRAIN_TYPES = {
 
 -- Valid directions for exits and travel; MUD does not support diagonal travel
 DIRECTIONS    = {
-  ["n"] = 1,
-  ["s"] = 2,
-  ["e"] = 3,
-  ["w"] = 4,
-  ["u"] = 5,
-  ["d"] = 6
+  ["north"] = 1,
+  ["south"] = 2,
+  ["east"]  = 3,
+  ["west"]  = 4,
+  ["up"]    = 5,
+  ["down"]  = 6
 }
 
 -- Bitmask used to encode/decode roomFlags which describe different properties of a Room
@@ -134,8 +143,9 @@ function createRoom( room, areaID, areaName )
   end
 end
 
--- Load area data for a single area
 function loadAreaData( areaRNumber )
+  areaData = {}
+  currentArea = areaRNumber
   local file = io.open( dataFile, 'r' )
   if not file then
     print( "Could not open dataFile" )
@@ -155,15 +165,17 @@ function loadAreaData( areaRNumber )
     return nil
   end
   local rooms = {}
-  for _, room in ipairs( area["areaRooms"] ) do
+  for _, room in pairs( area["areaRooms"] ) do
     local roomRNumber = room["roomRNumber"]
     rooms[roomRNumber] = room
     local exits = {}
     if room["roomExits"] then
-      for _, exit in ipairs( room["roomExits"] ) do
+      for _, exit in pairs( room["roomExits"] ) do
         local exitDirection = DIRECTIONS[exit["exitDirection"]]
         if exitDirection then
           exits[exitDirection] = exit
+        else
+          print( "Invalid exit direction:", exit["exitDirection"] )
         end
       end
     end
@@ -177,7 +189,7 @@ end
 -- Use loadAreaData() to load all areas
 function loadAllAreas()
   local areaData = {}
-  local file = io.open( 'C:/Dev/mud/mudlet/gizmo/mal/areadata', 'r' )
+  local file = io.open( dataFile, 'r' )
   if not file then
     print( "Could not open file gizmo_world.json" )
     return areaData
@@ -199,38 +211,13 @@ function loadAllAreas()
   return areaData
 end
 
+-- Print the content of a room with highlights similar to the MUD output
 function printRoom( roomRNumber )
-  for _, area in pairs( areaData ) do
-    if type( area ) == "table" then -- Check if area is a table
-      local room = area["areaRooms"][roomRNumber]
-      if room then
-        cecho( "\nRoom Name: " .. room["roomName"] )
-        cecho( "\nRoom Area Number: " .. room["roomAreaNumber"] )
-        cecho( "\nRoom VNumber: " .. room["roomVNumber"] )
-        cecho( "\nRoom RNumber: " .. room["roomRNumber"] )
-        cecho( "\nRoom Type: " .. room["roomType"] )
-        cecho( "\nRoom Spec: " .. tostring( room["roomSpec"] ) )
-        cecho( "\nRoom Flags: " .. room["roomFlags"] )
-        cecho( "\nRoom Description: " .. room["roomDescription"] )
-        cecho( "\nRoom Extra Keyword: " .. room["roomExtraKeyword"] )
-        for _, exit in ipairs( room["exits"] ) do
-          cecho( "\nExit Direction: " .. exit["exitDirection"] )
-          cecho( "\nExit Keyword: " .. exit["exitKeyword"] )
-          cecho( "\nExit Flags: " .. exit["exitFlags"] )
-          cecho( "\nExit Key: " .. exit["exitKey"] )
-          cecho( "\nExit Description: " .. exit["exitDescription"] )
-          cecho( "\nExit Dest: " .. exit["exitDest"] )
-        end
-        return
-      end
-    end
-  end
-  cecho( "\nRoom not found with Room Number " .. roomRNumber )
-end
-
-function myPrintRoom( roomRNumber )
+  currentRoom = tonumber( roomRNumber )
+  currentMaxRnum = areaData["areaMaxRoomRNumber"]
+  currentMinRnum = areaData["areaMinRoomRNumber"]
   local roomData = areaData["areaRooms"][roomRNumber]
-  local exitData = areaData["areaRooms"][roomRNumber]["roomExits"]
+  --display( roomData )
   local areaNumber = roomData["roomAreaNumber"]
   local description = roomData["roomDescription"]
   local roomNum = roomData["roomRNumber"]
@@ -239,14 +226,58 @@ function myPrintRoom( roomRNumber )
 
   local rn = MAPC["roomName"]
   local rd = MAPC["roomDesc"]
-  local tc = TERRAIN_TYPES[type]
   local nc = MAPC["number"]
+  local tc = TERRAIN_TYPES[type]
 
-  cecho( f "\n{rn}{name}<reset> [{tc}{type}<reset>] ({nc}{roomNum}<reset>)" )
+  cecho( f "\n\n{rn}{name}<reset> [{tc}{type}<reset>] ({nc}{roomNum}<reset>)" )
   cecho( f "\n{rd}{description}<reset>" )
-  display( exitData )
+  printExits( roomRNumber )
+
+  --printExits( roomRNumber )
+end
+
+-- Given a room number, print that room's exits assuming it is in the areaData table
+-- Use pairs to iterate because exits are not guaranteed to be contiguous (or present at all)
+-- Print exits outside the range of the current area in a different color
+function printExits( roomRNumber )
+  local exitData = areaData["areaRooms"][roomRNumber]["roomExits"]
+
+  local ec = MAPC["exitDir"]
+  local es = MAPC["exitStr"]
+
+  local exitString = ""
+  local isFirstExit = true
+  for _, exit in pairs( exitData ) do
+    local dir = exit["exitDirection"]
+    local to = exit["exitDest"]
+    local nc = to > currentMaxRnum or to < currentMinRnum and MAPC["area"] or MAPC["number"]
+    local nextExit = f "{ec}{dir}<reset> ({nc}{to}<reset>)"
+    if isFirstExit then
+      exitString = f "{es}Obvious Exits:   [" .. nextExit .. f "{es}]<reset>"
+      isFirstExit = false
+    else
+      exitString = exitString .. f "  {es}[<reset>" .. nextExit .. f "{es}]<reset>"
+    end
+  end
+  cecho( f "\n\t{exitString}" )
+end
+
+function updateCoordinates( direction )
+  if direction == "north" then
+    mY = mY + 1
+  elseif direction == "south" then
+    mY = mY - 1
+  elseif direction == "east" then
+    mX = mX + 1
+  elseif direction == "west" then
+    mX = mX - 1
+  elseif direction == "up" then
+    mZ = mZ + 1
+  elseif direction == "down" then
+    mZ = mZ - 1
+  end
 end
 
 deleteMap()
+clearScreen()
 areaData = loadAreaData( 121 )
-myPrintRoom( 7590 )
