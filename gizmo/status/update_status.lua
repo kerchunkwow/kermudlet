@@ -51,10 +51,10 @@ function pcStatusPrompt( pc, hpc, mnc, mvc, tnk, trg )
     if trg and #trg > 1 then
       if tnk and #tnk > 1 then
         -- We also have a tank; use the standard indicator
-        combatIcons[pc]:setBackgroundImage( [[C:/Gizmo/Mudlet/combat.png]] )
+        combatIcons[pc]:setBackgroundImage( [[C:/Dev/mud/mudlet/gizmo/assets/img/combat.png]] )
       else
         -- Target w/ no tank; use the primary target indicator
-        combatIcons[pc]:setBackgroundImage( [[C:/Gizmo/Mudlet/targeted.png]] )
+        combatIcons[pc]:setBackgroundImage( [[C:/Dev/mud/mudlet/gizmo/assets/img/targeted.png]] )
 
         -- If we're not Nandor and we lost our tank mid-combat and we didn't recently incap a target
         if pc ~= 4 and myStatus["tank"] and #myStatus["tank"] > 1 and not incap_delay then

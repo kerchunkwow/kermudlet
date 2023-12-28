@@ -360,7 +360,7 @@ function createPartyConsole()
 
       }, party_console )
 
-      fury_icon:setBackgroundImage( [[C:/Gizmo/Mudlet/fury.png]] )
+      fury_icon:setBackgroundImage( [[C:/Dev/mud/mudlet/gizmo/assets/img/fury.png]] )
       fury_icon:hide()
     end
     roomLabel[pc] = Geyser.Label:new( {
@@ -399,9 +399,9 @@ function createPartyConsole()
     setLabelClickCallback( combatIcons[pc].name, "combat_clicked", pc, pc_names[pc] )
 
     if pc == 4 then
-      combatIcons[pc]:setBackgroundImage( [[C:/Gizmo/Mudlet/targeted.png]] )
+      combatIcons[pc]:setBackgroundImage( [[C:/Dev/mud/mudlet/gizmo/assets/img/targeted.png]] )
     else
-      combatIcons[pc]:setBackgroundImage( [[C:/Gizmo/Mudlet/combat.png]] )
+      combatIcons[pc]:setBackgroundImage( [[C:/Dev/mud/mudlet/gizmo/assets/img/combat.png]] )
     end
     combatIcons[pc]:hide()
   end

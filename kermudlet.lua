@@ -1,5 +1,4 @@
 luasql = require( "luasql.sqlite3" )
-json   = require( "dkjson" )
 
 -- If we're reloading, clear the screen and reset the timers
 if clearScreen then clearScreen() end
@@ -25,6 +24,7 @@ local profileName = getProfileName()
 if profileName == "IMM" then -- Gizmo IMM
   rootDirectory = rootDirectory .. "gizmo/mal/"
   runLuaFile( f "{rootDirectory}mal.lua" )
+  runLuaFile( f "{rootDirectory}mapgen.lua" )
 elseif profileName == "DD" then -- Death's Domain
   rootDirectory = rootDirectory .. "dd/"
   runLuaFile( f "{rootDirectory}dd_init.lua" )
