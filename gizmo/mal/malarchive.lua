@@ -385,3 +385,136 @@ function loadAreaData( areaRNumber )
 
   return area
 end
+
+-- Use loadAreaData() to load all areas
+function loadAllAreas()
+  local areaData = {}
+  local file = io.open( dataFile, 'r' )
+  if not file then
+    print( "Could not open file gizmo_world.json" )
+    return areaData
+  end
+  local content = file:read( "*all" )
+  file:close()
+
+  local data, pos, err = dkjson.decode( content, 1, nil )
+  if err then
+    print( "Error:", err )
+    return areaData
+  end
+  for areaRNumber, _ in pairs( data ) do
+    local area = loadAreaData( areaRNumber )
+    if area then
+      areaData[tonumber( areaRNumber )] = area
+    end
+  end
+  return areaData
+end
+
+function createAreas()
+  cecho( "\n<blue>Starting to create areas...<reset>" )
+  local areaNumber = 0
+
+  while true do
+    local file = io.open( 'C:/Dev/mud/mudlet/gizmo/mal/areadata/' .. areaNumber .. '.json', 'r' )
+    if file then
+      cecho( "\n<dodger_blue>Creating area for file: " .. areaNumber .. ".json<reset>" )
+      createArea( areaNumber )
+      file:close()
+      areaNumber = areaNumber + 1
+      if areaNumber == 107 then areaNumber = 108 elseif areaNumber == 129 then areaNumber = 130 end
+    else
+      break
+    end
+  end
+  createRooms()
+end
+
+function createRooms()
+  cecho( "\n<blue>Starting to create rooms for all areas...<reset>" )
+  local areaNumber = 0
+  while true do
+    local file = io.open( 'C:/Dev/mud/mudlet/gizmo/mal/areadata/' .. areaNumber .. '.json', 'r' )
+    if file then
+      cecho( "\n<dodger_blue>Creating rooms for area: " .. areaNumber .. "<reset>" )
+      local area_data = file:read( "*all" )
+      file:close()
+      local area = json.decode( area_data )
+      local areaName = area["areaName"]
+      local areaID = getAreaTable()[areaName]
+      if area["areaRooms"] then
+        for _, room in ipairs( area["areaRooms"] ) do
+          createRoom( room, areaID, areaName )
+        end
+      else
+        cecho( "\n<red>No rooms found in area: " .. areaNumber .. "<reset>" )
+      end
+      areaNumber = areaNumber + 1
+      if areaNumber == 107 then areaNumber = 108 elseif areaNumber == 129 then areaNumber = 130 end
+    else
+      break
+    end
+  end
+  setRoomExitsAndCoordinates()
+end
+
+function setRoomExitsAndCoordinates()
+  cecho( "\n<blue>Setting room exits and coordinates...<reset>" )
+  local areaNumber = 0
+  while true do
+    local file = io.open( 'C:/Dev/mud/mudlet/gizmo/mal/areadata/' .. areaNumber .. '.json', 'r' )
+    if file then
+      cecho( "\n<dodger_blue>Setting exits and coordinates for area: " .. areaNumber .. "<reset>" )
+      local area_data = file:read( "*all" )
+      file:close()
+      local area = json.decode( area_data )
+      if area["areaRooms"] then
+        for _, room in ipairs( area["areaRooms"] ) do
+          setRoomExitsAndCoordinatesForRoom( room )
+        end
+      else
+        cecho( "\n<red>No rooms found in area: " .. areaNumber .. "<reset>" )
+      end
+      areaNumber = areaNumber + 1
+      if areaNumber == 107 then areaNumber = 108 elseif areaNumber == 129 then areaNumber = 130 end
+    else
+      break
+    end
+  end
+end
+
+function setRoomExitsAndCoordinatesForRoom( room )
+  local roomRNumber = room["roomRNumber"]
+  if room["exits"] then
+    for _, exit in ipairs( room["exits"] ) do
+      local direction = string.lower( exit["exitDirection"] )
+      local exitDest = exit["exitDest"]
+      setExit( roomRNumber, exitDest, direction )
+      if direction == "north" then
+        mY = mY + 1
+      elseif direction == "south" then
+        mY = mY - 1
+      elseif direction == "east" then
+        mX = mX + 1
+      elseif direction == "west" then
+        mX = mX - 1
+      elseif direction == "up" then
+        mZ = mZ + 1
+      elseif direction == "down" then
+        mZ = mZ - 1
+      end
+      setRoomCoordinates( roomRNumber, mX, mY, mZ )
+    end
+  end
+end
+
+ROOM_STYLES = {
+  ['DEATH']     = {color = {0, 0, 0, 0}, char = "💀"},
+  ['MANA']      = {color = {0, 0, 0, 0}, char = "⚡"},
+  ['BOSS']      = {color = {0, 0, 0, 0}, char = "👿"},
+  ["Inside"]    = {color = {0, 0, 0, 0}, char = nil},
+  ["Forest"]    = {color = {0, 0, 0, 0}, char = nil},
+  ["Mountains"] = {color = {0, 0, 0, 0}, char = nil},
+  ["City"]      = {color = {0, 0, 0, 0}, char = nil},
+  ["Water"]     = {color = {0, 0, 0, 0}, char = nil},
+}

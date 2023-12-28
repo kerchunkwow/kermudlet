@@ -21,6 +21,13 @@ function split( str, delimiter )
   return substrings
 end
 
+function splitPrint( str, delimiter )
+  local substrings = split( str, delimiter )
+  for _, substring in ipairs( substrings ) do
+    print( substring )
+  end
+end
+
 -- Given a large number as a string, return a abbreviated version like '1.2B'
 function abbreviateNumber( numberString )
   local str = string.gsub( numberString, ",", "" )
@@ -96,6 +103,16 @@ function isRegex( str )
   end
   if string.find( str, "\\" ) then
     return true
+  end
+  return false
+end
+
+-- Test for string membership in a list of strings
+function isIn( list, item )
+  for _, value in ipairs( list ) do
+    if value == item then
+      return true
+    end
   end
   return false
 end

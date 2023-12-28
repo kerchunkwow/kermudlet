@@ -89,6 +89,10 @@ function clearScreen()
   end
 end
 
+function gizErr( msg )
+  cecho( f "\n{ec('Error','err')}: {msg}" )
+end
+
 --[[
 GitHub Copilot, ChatGPT notes:
 Collaborate on Lua 5.1 scripts for Mudlet in VSCode. Use f-strings, camelCase, UPPER_CASE constants.
