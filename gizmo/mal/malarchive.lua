@@ -323,19 +323,19 @@ function printMaxRoomNumber()
       maxRNumber = room["roomRNumber"]
     end
   end
-  print( "Area " .. currentArea .. " max roomRNumber: " .. maxRNumber )
+  print( "Area " .. currentAreaNumber .. " max roomRNumber: " .. maxRNumber )
 end
 
 function printAllMaxRoomNumbers()
-  currentArea = 0
+  currentAreaNumber = 0
   while true do
-    if currentArea == 107 then
-      currentArea = 108
+    if currentAreaNumber == 107 then
+      currentAreaNumber = 108
     end
-    areaData = loadAreaData( currentArea )
+    areaData = loadAreaData( currentAreaNumber )
     if areaData then
       printMaxRoomNumber()
-      currentArea = currentArea + 1
+      currentAreaNumber = currentAreaNumber + 1
     else
       break
     end
@@ -345,7 +345,7 @@ end
 -- Load area data for a single area
 function loadAreaData( areaRNumber )
   areaData = {}
-  currentArea = areaRNumber
+  currentAreaNumber = areaRNumber
   local file = io.open( dataFile, 'r' )
   if not file then
     print( "Could not open dataFile" )
@@ -518,3 +518,17 @@ ROOM_STYLES = {
   ["City"]      = {color = {0, 0, 0, 0}, char = nil},
   ["Water"]     = {color = {0, 0, 0, 0}, char = nil},
 }
+-- Given a room number, decide what color the exit should be based on room attributes
+function exitColor( roomRNumber )
+  if roomRNumber > currentMaxRnum or roomRNumber < currentMinRnum then
+    return MAP_COLOR["area"]
+  else
+    local dstData = areaData["areaRooms"][roomRNumber]
+    local dstFlags = split( dstData["roomFlags"], " " )
+    if isIn( dstFlags, "DEATH" ) then
+      return MAP_COLOR["death"]
+    else
+      return MAP_COLOR["number"]
+    end
+  end
+end

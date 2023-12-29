@@ -6,53 +6,41 @@ Exits describe connections to other Rooms, which can include travel between Area
 Here is the JSON structure for the 3 objects that define the world:
 
 Area:
-"areaRNumber": number, -- The primary identifier for an Area; a unique number greater >= 0 and <= 130
-"areaName": string, -- The in-game name of the Area (e.g. "The City of Midgaard")
-"areaMaxVNumberAllowed": number, -- The maximum allowable roomVnumber; not necessarily the actual maximum roomVNumber
-"areaResetType": string, -- A string describing when the Area "resets" or repopulates
-"areaFirstRoomName": string, -- The roomName of the first Room in the Area
-"areaMinRoomRNumber": number, -- The roomRNumber of the first Room in the Area
-"areaMaxRoomRNumber": number, -- The highest actual roomRNumber in the Area
-"areaMinVNumber": number, -- The minimum allowable roomVNumber; not necessarily the actual minimum roomVNumber
-"areaMaxVNumberActual": number, -- The actual maximum roomVNumber as opposed to areaMaxVNumber which is the maximum allowable roomVNumber
-"areaRoomCount": number, -- The actual number of Rooms in the Area
+"areaRNumber": number; The primary identifier for an Area; a unique number greater >= 0 and <= 130
+"areaName": string; The in-game name of the Area (e.g. "The City of Midgaard")
+"areaMaxVNumberAllowed": number; The maximum allowable roomVnumber; not necessarily the actual maximum roomVNumber
+"areaResetType": string; A string describing when the Area "resets" or repopulates
+"areaFirstRoomName": string; The roomName of the first Room in the Area
+"areaMinRoomRNumber": number; The roomRNumber of the first Room in the Area
+"areaMaxRoomRNumber": number; The highest actual roomRNumber in the Area
+"areaMinVNumber": number; The minimum allowable roomVNumber; not necessarily the actual minimum roomVNumber
+"areaMaxVNumberActual": number; The actual maximum roomVNumber as opposed to areaMaxVNumber which is the maximum allowable roomVNumber
+"areaRoomCount": number; The actual number of Rooms in the Area
 "areaRooms": dictionary -- A dictionary of Rooms in the Area; each Room is a dictionary
 
 Room:
-"roomName": string, -- The name of the Room (e.g. "The Baker's Shop")
-"roomAreaNumber": number, -- The areaRNumber of the area the Room is in; outside the structure of JSON, this is how Rooms are assigned to Areas
-"roomVNumber": number, -- A secondary identifier for a room; a unique number greater >= 0
-"roomRNumber": number, -- The primary identifier for a Room; a unique number greater >= 0
-"roomType": string, -- The type of terrain; one of the TERRAIN_TYPES
-"roomSpec": boolean, -- Whether this room has a "special procedure" which are effects the player will experience when in the room
-"roomFlags": number, -- A bitmask of flags which describe the room; see ROOM_FLAGS
-"roomDescription": string, -- Long string describing the room; can span hundreds of characters
-"roomExtraKeyword": string, -- Keywords that can be used to reference the room; can be multiple words space-delimited
+"roomName": string; The name of the Room (e.g. "The Baker's Shop")
+"roomAreaNumber": number; The areaRNumber of the area the Room is in; outside the structure of JSON, this is how Rooms are assigned to Areas
+"roomVNumber": number; A secondary identifier for a room; a unique number greater >= 0
+"roomRNumber": number; The primary identifier for a Room; a unique number greater >= 0
+"roomType": string; The type of terrain; one of the TERRAIN_TYPES
+"roomSpec": boolean; Whether this room has a "special procedure" which are effects the player will experience when in the room
+"roomFlags": number; A bitmask of flags which describe the room; see ROOM_FLAGS
+"roomDescription": string; Long string describing the room; can span hundreds of characters
+"roomExtraKeyword": string; Keywords that can be used to reference the room; can be multiple words space-delimited
 "roomExits": dictionary -- A dictionary of Exits in the Room; Exits are dictionaries because they have multiple properties
 
 Exit:
-"exitDirection": string, -- The direction of travel to "use" this exit; must be one of the DIRECTIONS
-"exitKeyword": string, -- Word to interact with this exit like "door" or "gate"
-"exitFlags": number, -- A bitmask of flags describing extra properties of the exit; see EXIT_FLAGS; -1 if no flags
-"exitKey": number, -- An integer corresponding to the in-game object that locks/unlocks this Exit; -1 if no key
-"exitDescription": "", -- Some exits have an additional description like "There's a gate here."
-"exitDest": number -- The roomRNumber of the Room this Exit leads to
-]]
-
+"exitDirection": string; The direction of travel to "use" this exit; must be one of the DIRECTIONS
+"exitKeyword": string; Word to interact with this exit like "door" or "gate"
+"exitFlags": number; A bitmask of flags describing extra properties of the exit; see EXIT_FLAGS; -1 if no flags
+"exitKey": number; An integer corresponding to the in-game object that locks/unlocks this Exit; -1 if no key
+"exitDescription": ""; Some exits have an additional description like "There's a gate here."
+"exitDest": number -- The roomRNumber of the Room this Exit leads to]]
 
 -- JSON Library & data file path
-dkjson      = require( 'dkjson' )
-dataFile    = "C:/Dev/mud/mudlet/gizmo/mal/areadata/gizmo_world.json"
-
--- An initially empty table for holding data about Areas (either individually or in aggregate)
-areaData    = {}
-
--- Globals for tracking my "virtual position" in the world
-currentArea = nil     -- The area I'm currently mapping
-mX, mY, mZ  = 0, 0, 0 -- Coordinates of the room I'm currently mapping; for use by Mudlet to determine position in UI
-
-
-
+dkjson     = require( 'dkjson' )
+dataFile   = "C:/Dev/mud/mudlet/gizmo/mal/areadata/gizmo_world.json"
 
 -- When outputting data related to map generation, use these colors to highlight specific fields wich cecho()
 -- e.g., cecho( MAPGEN_COLORS["areaName"] .. area["areaName"] .. "<reset>" )
@@ -63,8 +51,11 @@ MAP_COLOR  = {
   ["roomName"]  = "<royal_blue>",
   ["roomDesc"]  = "<ansi_light_black>",
   ["exitDir"]   = "<cyan>",
-  ["exitStr"]   = "<ansi_light_black>",
+  ["exitStr"]   = "<dark_slate_grey>",
+  ["exitSpec"]  = "<gold>",
   ["death"]     = "<ansi_red>",
+  ["mapui"]     = "<medium_orchid>",
+  ["cmd"]       = "<light_steel_blue>",
   -- Terrain/Sector Types
   ["Inside"]    = "<sienna>",
   ["Forest"]    = "<forest_green>",
@@ -83,10 +74,43 @@ DIRECTIONS = {
   ["east"]  = 3,
   ["west"]  = 4,
   ["up"]    = 5,
-  ["down"]  = 6
+  ["down"]  = 6,
+  ["n"]     = 1,
+  ["s"]     = 2,
+  ["e"]     = 3,
+  ["w"]     = 4,
+  ["u"]     = 5,
+  ["d"]     = 6
 }
 
 
+--[[
+These globals are used to hold data related to the current Area and Room and track our "virtual position" on the map.
+  currentAreaNumber: number; The areaRNumber of the Area we're mapping
+  mX, mY, mZ: number; coordinates of Room we're mapping; used to draw room in Mudlet UI
+currentRoom: dictionary; Room we're mapping as dictionary properties
+areaData: dictionary; Area we're mapping as dictionary of properties
+lastRoom: the roomRNumber of the room previous room
+lastDir: the direction of our last movement; useful for linking]]
+
+areaData          = {}
+currentAreaNumber = nil
+mX, mY, mZ        = 0, 0, 0
+lastRoom          = nil
+lastDir           = nil
+
+currentRoom       = {
+  roomName         = nil,
+  roomAreaNumber   = nil,
+  roomVNumber      = nil,
+  roomRNumber      = nil,
+  roomType         = nil,
+  roomSpec         = nil,
+  roomFlags        = nil,
+  roomDescription  = nil,
+  roomExtraKeyword = nil,
+  roomExits        = {}
+}
 
 function createRoom( room, areaID, areaName )
   -- Create the room
@@ -116,7 +140,7 @@ end
 -- Reset and repopulate the areaData table with data from the world file
 function loadAreaData( areaRNumber )
   areaData = {}
-  currentArea = areaRNumber
+  currentAreaNumber = areaRNumber
 
   local file = io.open( dataFile, 'r' )
   local content = file:read( "*all" )
@@ -153,20 +177,6 @@ function loadAreaData( areaRNumber )
   areaData["areaRooms"] = rooms
 end
 
--- A global table to store the contents of the room we're curenting "in" as we map for Mudlet
-currentRoom = {
-  roomName         = nil,
-  roomAreaNumber   = nil,
-  roomVNumber      = nil,
-  roomRNumber      = nil,
-  roomType         = nil,
-  roomSpec         = nil,
-  roomFlags        = nil,
-  roomDescription  = nil,
-  roomExtraKeyword = nil,
-  roomExits        = {}
-}
-
 -- Reset then set values in the currentRoom table based on the room we're currently mapping
 function setCurrentRoom( roomRNumber )
   currentRoomNumber               = tonumber( roomRNumber )
@@ -178,10 +188,11 @@ function setCurrentRoom( roomRNumber )
   currentRoom["roomRNumber"]      = roomData["roomRNumber"]
   currentRoom["roomType"]         = roomData["roomType"]
   currentRoom["roomSpec"]         = roomData["roomSpec"]
-  currentRoom["roomFlags"]        = decodeValue( roomData["roomFlags"], ROOM_FLAGS )
+  currentRoom["roomFlags"]        = split( roomData["roomFlags"], " " )
   currentRoom["roomDescription"]  = roomData["roomDescription"]
   currentRoom["roomExtraKeyword"] = roomData["roomExtraKeyword"]
   currentRoom["roomExits"]        = roomData["roomExits"]
+  currentRoom["deathTrap"]        = isIn( currentRoom["roomFlags"], "DEATH" )
 end
 
 -- Print the content of the currentRoom w/ highlighting similar to MUD output
@@ -196,55 +207,135 @@ function printRoom()
   local rd          = MAP_COLOR["roomDesc"]
   local nc          = MAP_COLOR["number"]
   local tc          = MAP_COLOR[type]
+  local uc          = MAP_COLOR["mapui"]
 
-  cecho( f "\n\n{rn}{name}<reset> [{tc}{type}<reset>] ({nc}{roomNum}<reset>)" )
+  cecho( f "\n\n{rn}{name}<reset> [{tc}{type}<reset>] ({nc}{roomNum}<reset>) ({uc}{mX}<reset>, {uc}{mY}<reset>, {uc}{mZ}<reset>)" )
   cecho( f "\n{rd}{description}<reset>" )
-  printExits( roomRNumber )
+  printExits( roomNum )
+
+  if currentRoom["deathTrap"] then
+    cecho( f "\n\nThis is a {MAP_COLOR['death']}Death Trap<reset>; good thing this is all a dream." )
+  end
+  -- A little padding
+  print( "\n" )
 end
 
 -- Given a room number, print that room's exits assuming it is in the areaData table
 -- Use pairs to iterate because exits are not guaranteed to be contiguous (or present at all)
 -- Print exits outside the range of the current area in a different color
 function printExits( roomRNumber )
-  --local exitData = areaData["areaRooms"][roomRNumber]["roomExits"]
   local exitData = currentRoom["roomExits"]
 
   -- Exit string and styling variables
   local exitString = ""
   local ec = MAP_COLOR["exitDir"]
   local es = MAP_COLOR["exitStr"]
+  local esp = MAP_COLOR["exitSpec"]
   local isFirstExit = true
 
-
+  -- Assemble a complete exit string by iterating over the exit table and concatening each exit
   for _, exit in pairs( exitData ) do
-    local dir = exit["exitDirection"]
-    local to = exit["exitDest"]
-    local nc = to > currentMaxRnum or to < currentMinRnum and MAP_COLOR["area"] or MAP_COLOR["number"]
+    local dir      = exit["exitDirection"]
+    local to       = exit["exitDest"]
+    local keywords = exit["exitKeyword"]
+    local flags    = exit["exitFlags"]
+    local key      = exit["exitKey"]
+
+    -- Given a room number, decide what color the exit should be based on room attributes
+    local function exitColor()
+      if to > currentMaxRnum or to < currentMinRnum then
+        -- Exit leads out of the current area
+        return MAP_COLOR["area"]
+      elseif keywords ~= "" or flags ~= -1 or key > 0 then
+        -- Exit has special properties (e.g., is a door, secret, etc.)
+        return MAP_COLOR["exitSpec"]
+      else
+        local dstData = areaData["areaRooms"][to]
+        local dstFlags = split( dstData["roomFlags"], " " )
+        if isIn( dstFlags, "DEATH" ) then
+          -- Exit leads to a death trap
+          return MAP_COLOR["death"]
+        else
+          -- Exit is normal
+          return MAP_COLOR["number"]
+        end
+      end
+    end
+
+    local nc       = exitColor( exit )
+
     local nextExit = f "{ec}{dir}<reset> ({nc}{to}<reset>)"
     if isFirstExit then
-      exitString = f "{es}Obvious Exits:   [" .. nextExit .. f "{es}]<reset>"
+      exitString = f "{es}Obvious Exits:  [" .. nextExit .. f "{es}]<reset>"
       isFirstExit = false
     else
       exitString = exitString .. f "  {es}[<reset>" .. nextExit .. f "{es}]<reset>"
     end
   end
-  cecho( f "\n\t{exitString}" )
+  cecho( f "\n   {exitString}" )
 end
 
--- Given a room number, decide what color the exit should be based on room attributes
-function exitColor( roomRNumber )
-  local dstData = areaData["areaRooms"][roomRNumber]
-  local dstFlags = decodeValue( dstData["roomFlags"], ROOM_FLAGS )
-  if isIn( dstFlags, "DEATH" ) then
-    return MAP_COLOR["death"]
-  end
-  if roomRNumber > currentMaxRnum or roomRNumber < currentMinRnum then
-    return MAP_COLOR["area"]
+-- Print information on a specific exit; useful especially for "special" exits
+function printExit( direction )
+  local exitData = currentRoom["roomExits"][DIRECTIONS[direction]]
+  if exitData then
+    local dir        = exitData["exitDirection"]
+    local to         = exitData["exitDest"]
+    local keywords   = exitData["exitKeyword"]
+    local flags      = exitData["exitFlags"]
+    local key        = exitData["exitKey"]
+    local desc       = exitData["exitDescription"]
+    local ec         = MAP_COLOR["exitDir"]
+    local es         = MAP_COLOR["exitStr"]
+    local esp        = MAP_COLOR["exitSpec"]
+    local nc         = MAP_COLOR["number"]
+    local exitString = ""
+
+    local exitStr    = f "The {ec}{dir}<reset> exit: "
+    if keywords and #keywords > 0 then exitStr = exitStr .. f "\n  keywords: {es}{keywords}<reset>" end
+    if flags and flags ~= -1 then exitStr = exitStr .. f "\n  flags: {esp}{flags}<reset>" end
+    if key and key > 0 then exitStr = exitStr .. f "\n  key: {nc}{key}<reset>, " end
+    if desc and #desc > 0 then exitStr = exitStr .. f "\n  description: {es}{desc}<reset>" end
+    cecho( f "\n{exitStr}" )
   else
-    return MAP_COLOR["number"]
+    cecho( f "\n{MAP_COLOR['roomDesc']}You see no exit in that direction.<reset>" )
   end
 end
 
+-- Attempt to a virtual "move" by testing the direction then updating our position
+function moveExit( direction )
+  cecho( f "\n{MAP_COLOR['cmd']}{direction}" )
+  -- See if this direction is valid (appears in the roomExits table of the current room)
+  for _, exit in pairs( currentRoom["roomExits"] ) do
+    if exit.exitDirection == direction then
+      local dst = exit.exitDest
+      if dst > currentMaxRnum or dst < currentMinRnum then
+        local nextArea = getRoomArea( dst )
+        if nextArea then
+          -- This direction leads to a different area; load that area then update and print the new room
+          loadAreaData( nextArea )
+          currentMaxRnum = areaData["areaMaxRoomRNumber"]
+          currentMinRnum = areaData["areaMinRoomRNumber"]
+        end
+        -- This direction leaves the current area; for now just print an error (later we can load that area)
+        -- cecho( f "\n<dim_grey>Alas, that would take you {MAP_COLOR['area']}elsewhere<reset>." )
+        -- return
+      end
+      -- Direction and destination are valid; store our current room then update and print the new room
+      lastRoom = currentRoom["roomRNumber"]
+      lastDir = direction
+      updateCoordinates( direction )
+      setCurrentRoom( exit.exitDest )
+      printRoom()
+      return
+    end
+  end
+  -- Direction wasn't in the table of valid directions, print a MUD-like error
+  cecho( f "\n<dim_grey>Alas, you cannot go that way.<reset>" )
+  return false
+end
+
+-- These coordinates are used to position new rooms in the Mudlet mapper UI; update them when we move
 function updateCoordinates( direction )
   if direction == "north" then
     mY = mY + 1
@@ -261,21 +352,21 @@ function updateCoordinates( direction )
   end
 end
 
-function moveExit( direction )
-  for _, exit in pairs( currentRoom["roomExits"] ) do
-    if exit.exitDirection == direction then
-      local dst = exit.exitDest
-      if dst > currentMaxRnum or dst < currentMinRnum then
-        cecho( f "\n<dim_grey>Alas, that would take you {MAP_COLOR['area']}elsewhere<reset>." )
-        return
-      end
-      setCurrentRoom( exit.exitDest )
-      printRoom()
-      return
+-- Given a roomRNumber, return the areaRNumber of the area it's in; used to move between areas
+function getRoomArea( roomRNumber )
+  local str = io.open( dataFile, 'r' ):read( '*all' )
+  local obj, pos, err = dkjson.decode( str, 1, nil )
+
+  if err then
+    gizErr( f "Error decoding JSON: {err}" )
+    return nil
+  end
+  for areaRNumber, areaData in pairs( obj ) do
+    if roomRNumber >= areaData["areaMinRoomRNumber"] and roomRNumber <= areaData["areaMaxRoomRNumber"] then
+      return areaRNumber
     end
   end
-  cecho( f "\n<dim_grey>Alas, you cannot go that way.<reset>" )
-  return false
+  return nil
 end
 
 deleteMap()

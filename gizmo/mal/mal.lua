@@ -10,27 +10,6 @@ reverseDirs = {
   down  = "up"
 }
 
-exitMap     = {
-  n     = 1,
-  north = 1,
-  e     = 4,
-  east  = 4,
-  w     = 5,
-  west  = 5,
-  s     = 6,
-  south = 6,
-  u     = 9,
-  up    = 9,
-  d     = 10,
-  down  = 10,
-  [1]   = "north",
-  [4]   = "east",
-  [5]   = "west",
-  [6]   = "south",
-  [9]   = "up",
-  [10]  = "down",
-}
-
 function createRoom( room, areaID, areaName )
   -- Create the room
   local roomRNumber = room["roomRNumber"]
