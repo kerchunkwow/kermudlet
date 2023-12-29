@@ -39,12 +39,20 @@ Exit:
 "exitDest": number -- The roomRNumber of the Room this Exit leads to]]
 
 -- JSON Library & data file path
-dkjson     = require( 'dkjson' )
-dataFile   = "C:/Dev/mud/mudlet/gizmo/mal/areadata/gizmo_world.json"
+dkjson   = require( 'dkjson' )
+dataFile = "C:/Dev/mud/mudlet/gizmo/mal/areadata/gizmo_world.json"
+
+
+-- Table to keep track of which areas and rooms have been successfully mapped
+mappedStatus      = mappedStatus or {}
+
+-- A table to track Mudlet area numbers which will not necessarily be equal to areaRNumbers
+-- Make sure we don't overwrite this on new sessions
+areaMudletNumbers = areaMudletNumbers or {}
 
 -- When outputting data related to map generation, use these colors to highlight specific fields wich cecho()
 -- e.g., cecho( MAPGEN_COLORS["areaName"] .. area["areaName"] .. "<reset>" )
-MAP_COLOR  = {
+MAP_COLOR         = {
   -- Area, Room, Exit Data
   ["area"]      = "<deep_pink>",
   ["number"]    = "<dark_orange>",
@@ -68,7 +76,7 @@ MAP_COLOR  = {
 }
 
 -- Valid directions for exits and travel; MUD does not support diagonal travel
-DIRECTIONS = {
+DIRECTIONS        = {
   ["north"] = 1,
   ["south"] = 2,
   ["east"]  = 3,
@@ -93,13 +101,15 @@ areaData: dictionary; Area we're mapping as dictionary of properties
 lastRoom: the roomRNumber of the room previous room
 lastDir: the direction of our last movement; useful for linking]]
 
-areaData          = {}
-currentAreaNumber = nil
-mX, mY, mZ        = 0, 0, 0
-lastRoom          = nil
-lastDir           = nil
+areaData           = {}
+currentAreaNumber  = nil
+currentAreaName    = nil
+currentAreaRNumber = nil
+mX, mY, mZ         = 0, 0, 0
+lastRoom           = nil
+lastDir            = nil
 
-currentRoom       = {
+currentRoom        = {
   roomName         = nil,
   roomAreaNumber   = nil,
   roomVNumber      = nil,
@@ -112,30 +122,8 @@ currentRoom       = {
   roomExits        = {}
 }
 
-function createRoom( room, areaID, areaName )
-  -- Create the room
-  local roomRNumber = room["roomRNumber"]
-  addRoom( roomRNumber )
 
-  -- Assign the room to the area
-  setRoomArea( roomRNumber, areaName )
 
-  -- Set the room name
-  setRoomName( roomRNumber, room["roomName"] )
-
-  -- Store the extra room data
-  setRoomUserData( roomRNumber, "roomVNumber", tostring( room["roomVNumber"] ) )
-  setRoomUserData( roomRNumber, "roomType", tostring( room["roomType"] ) )
-  setRoomUserData( roomRNumber, "roomSpec", tostring( room["roomSpec"] ) )
-  setRoomUserData( roomRNumber, "roomFlags", tostring( room["roomFlags"] ) )
-  setRoomUserData( roomRNumber, "roomDescription", room["roomDescription"] )
-  setRoomUserData( roomRNumber, "roomExtraKeyword", room["roomExtraKeyword"] )
-
-  -- Create the exits
-  for _, exit in ipairs( room["exits"] ) do
-    setExit( roomRNumber, exit["exitDest"], exit["exitDirection"] )
-  end
-end
 
 -- Reset and repopulate the areaData table with data from the world file
 function loadAreaData( areaRNumber )
@@ -175,6 +163,11 @@ function loadAreaData( areaRNumber )
     room["roomExits"] = exits
   end
   areaData["areaRooms"] = rooms
+  currentAreaRNumber    = areaData["areaRNumber"]
+  currentMaxRnum        = areaData["areaMaxRoomRNumber"]
+  currentMinRnum        = areaData["areaMinRoomRNumber"]
+  currentAreaName       = areaData["areaName"]
+  mX, mY, mZ            = 0, 0, 0
 end
 
 -- Reset then set values in the currentRoom table based on the room we're currently mapping
@@ -266,10 +259,10 @@ function printExits( roomRNumber )
 
     local nextExit = f "{ec}{dir}<reset> ({nc}{to}<reset>)"
     if isFirstExit then
-      exitString = f "{es}Obvious Exits:  [" .. nextExit .. f "{es}]<reset>"
+      exitString = f "{es}Exits:  [" .. nextExit .. f "{es}]<reset>"
       isFirstExit = false
     else
-      exitString = exitString .. f "  {es}[<reset>" .. nextExit .. f "{es}]<reset>"
+      exitString = exitString .. f " {es}[<reset>" .. nextExit .. f "{es}]<reset>"
     end
   end
   cecho( f "\n   {exitString}" )
@@ -316,15 +309,16 @@ function moveExit( direction )
           loadAreaData( nextArea )
           currentMaxRnum = areaData["areaMaxRoomRNumber"]
           currentMinRnum = areaData["areaMinRoomRNumber"]
+          currentAreaName = areaData["areaName"]
+          cecho( f "\n<dim_grey>Entering... [{MAP_COLOR['area']}{currentAreaName}<reset>]" )
         end
-        -- This direction leaves the current area; for now just print an error (later we can load that area)
-        -- cecho( f "\n<dim_grey>Alas, that would take you {MAP_COLOR['area']}elsewhere<reset>." )
-        -- return
+      else
+        -- We stayed within the area; update our coordinates
+        updateCoordinates( direction )
       end
       -- Direction and destination are valid; store our current room then update and print the new room
       lastRoom = currentRoom["roomRNumber"]
       lastDir = direction
-      updateCoordinates( direction )
       setCurrentRoom( exit.exitDest )
       printRoom()
       return
@@ -369,10 +363,65 @@ function getRoomArea( roomRNumber )
   return nil
 end
 
-deleteMap()
+-- Define a global table to track mapped areas and rooms
+mappedData = {}
+
+-- Function to check if an area or room is mapped
+function isMapped( type, number )
+  if mappedData[type] and mappedData[type][number] then
+    return true
+  else
+    return false
+  end
+end
+
+-- Attempt to add the current area to the Mudlet Mapper
+function createCurrentArea()
+  if not isMapped( "areas", currentAreaNumber ) then
+    mappedStatus[currentAreaNumber] = {}
+    mappedStatus[currentAreaNumber]["rooms"] = {}
+    mappedStatus[currentAreaNumber]["mapped"] = true
+    -- Save the ID returned by addAreaName for later mapping if needed
+    areaMudletNumbers[currentAreaNumber] = addAreaName( currentAreaName )
+  end
+end
+
+function createCurrentRoom()
+  local roomRNumber = currentRoom["roomRNumber"]
+
+  -- Check if the room has already been mapped
+  if not isMapped( "rooms", roomRNumber ) then
+    mappedStatus[currentAreaNumber]["rooms"][roomRNumber] = true
+
+    -- Create the room
+    addRoom( roomRNumber )
+
+    -- Assign the room to the area
+    setRoomArea( roomRNumber, currentAreaName )
+
+    -- Set the room name
+    setRoomName( roomRNumber, currentRoom["roomName"] )
+
+    -- Store the extra room data
+    setRoomUserData( roomRNumber, "roomVNumber", tostring( currentRoom["roomVNumber"] ) )
+    setRoomUserData( roomRNumber, "roomType", tostring( currentRoom["roomType"] ) )
+    setRoomUserData( roomRNumber, "roomSpec", tostring( currentRoom["roomSpec"] ) )
+    setRoomUserData( roomRNumber, "roomFlags", tostring( currentRoom["roomFlags"] ) )
+    setRoomUserData( roomRNumber, "roomDescription", tostring( currentRoom["roomDescription"] ) )
+    setRoomUserData( roomRNumber, "roomExtraKeyword", tostring( currentRoom["roomExtraKeyword"] ) )
+    setRoomCoordinates( roomRNumber, mX, mY, mZ )
+    centerview( roomRNumber )
+  end
+end
+
+-- Complete delete and reset the map and status tables
+function deleteAndReset()
+  deleteMap()
+  mappedStatus = {}
+  areaMudletNumbers = {}
+end
+
 clearScreen()
-loadAreaData( 121 )
-currentMaxRnum = areaData["areaMaxRoomRNumber"]
-currentMinRnum = areaData["areaMinRoomRNumber"]
-setCurrentRoom( 7590 )
+loadAreaData( 21 )
+setCurrentRoom( 1121 )
 printRoom()

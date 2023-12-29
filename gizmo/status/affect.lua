@@ -2,10 +2,11 @@ cecho( f '\n\t<dark_violet>affect.lua<reset>: to maintain buffs/debuffs and trac
 
 -- The affects we want to track; set this to "save" in Variables to maintain durations between sessions
 affectInfo = affectInfo or {
-  ["Sanctuary"] = {duration = nil, cost = 50, color = "lavender_blush", char = "🌟"},
-  ["Bless"]     = {duration = nil, cost = 5, color = "light_goldenrod", char = "🙏"},
-  ["Fury"]      = {duration = nil, cost = 60, color = "tomato", char = "😡"},
-  ["Armor"]     = {duration = nil, cost = 5, color = "steel_blue", char = "🛡️"},
+  ["Sanctuary"]        = {duration = nil, cost = 50, color = "lavender_blush", char = "🌟"},
+  ["Bless"]            = {duration = nil, cost = 5, color = "light_goldenrod", char = "🙏"},
+  ["Fury"]             = {duration = nil, cost = 60, color = "tomato", char = "😡"},
+  ["Armor"]            = {duration = nil, cost = 5, color = "steel_blue", char = "🛡️"},
+  ["Detect Invisible"] = {duration = 60, cost = 5, color = "steel_blue", char = "🛡️"},
 }
 
 -- Initialize affect status, strings, and start times
@@ -39,7 +40,7 @@ end
 function removeAffect( spellName, pc )
   if affectStatus[pc] and affectInfo[spellName] then
     if affectStatus[pc][spellName] then
-      affectInfo[spellName].duration = calculateDuration( pc, spellName )
+      --affectInfo[spellName].duration = calculateDuration( pc, spellName )
       affectStatus[pc][spellName] = false
       updateAffectString( pc, spellName, false )
     end

@@ -77,10 +77,12 @@ end
 -- Prepare cloning sequence with gear assignments
 function startClone()
   nadjaClones = {'staff', 'staff', 'staff', 'cuffs', 'cuffs'}
-  laszloClones = {'crocodile', 'halo', 'halo'}
+  laszloClones = {'crocodile', 'halo', 'halo', 'salamander'}
 
   expandAlias( "nan rem halo", false )
+  expandAlias( "nan rem salamander", false )
   expandAlias( "nan give halo laszlo", false )
+  expandAlias( "nan give salamander laszlo", false )
 
   -- And remove the items to clone
   expandAlias( 'nad rem staff', false )
