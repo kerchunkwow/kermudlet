@@ -5,13 +5,12 @@ function triggerAutoMira()
   if pcStatus[1]["currentMana"] < 100 then return end
   local tankCondition = matches[2]
 
-  local needMiracle   = (tankCondition == "bleeding") or (tankCondition == miracleCondition)
+  local needMiracle = (tankCondition == "bleeding") or (tankCondition == miracleCondition)
 
   if needMiracle and not castingDelayed then
     send( f "cast 'miracle' {gtank}" )
-
     castingDelayed = true
-    tempTimer( 2.6, [[castingDelayed = false]] )
+    tempTimer( 2.8, [[castingDelayed = false]] )
     checkMiraMana()
   end
 end

@@ -1,14 +1,6 @@
-roomCoords  = {}
-roomCount   = 0
+roomCoords = nil
+roomCount  = nil
 
-reverseDirs = {
-  north = "south",
-  south = "north",
-  east  = "west",
-  west  = "east",
-  up    = "down",
-  down  = "up"
-}
 
 function createRoom( room, areaID, areaName )
   -- Create the room

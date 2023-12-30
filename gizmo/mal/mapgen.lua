@@ -1,54 +1,12 @@
---[[
-The purpose of mapgen.lua is to retrieve area data from JSON to create a map within the Mudlet client.
-Each Area has a dictionary of Rooms which themselves have a dictionary of Exits.
-Exits describe connections to other Rooms, which can include travel between Areas.
-
-Here is the JSON structure for the 3 objects that define the world:
-
-Area:
-"areaRNumber": number; The primary identifier for an Area; a unique number greater >= 0 and <= 130
-"areaName": string; The in-game name of the Area (e.g. "The City of Midgaard")
-"areaMaxVNumberAllowed": number; The maximum allowable roomVnumber; not necessarily the actual maximum roomVNumber
-"areaResetType": string; A string describing when the Area "resets" or repopulates
-"areaFirstRoomName": string; The roomName of the first Room in the Area
-"areaMinRoomRNumber": number; The roomRNumber of the first Room in the Area
-"areaMaxRoomRNumber": number; The highest actual roomRNumber in the Area
-"areaMinVNumber": number; The minimum allowable roomVNumber; not necessarily the actual minimum roomVNumber
-"areaMaxVNumberActual": number; The actual maximum roomVNumber as opposed to areaMaxVNumber which is the maximum allowable roomVNumber
-"areaRoomCount": number; The actual number of Rooms in the Area
-"areaRooms": dictionary -- A dictionary of Rooms in the Area; each Room is a dictionary
-
-Room:
-"roomName": string; The name of the Room (e.g. "The Baker's Shop")
-"roomAreaNumber": number; The areaRNumber of the area the Room is in; outside the structure of JSON, this is how Rooms are assigned to Areas
-"roomVNumber": number; A secondary identifier for a room; a unique number greater >= 0
-"roomRNumber": number; The primary identifier for a Room; a unique number greater >= 0
-"roomType": string; The type of terrain; one of the TERRAIN_TYPES
-"roomSpec": boolean; Whether this room has a "special procedure" which are effects the player will experience when in the room
-"roomFlags": number; A bitmask of flags which describe the room; see ROOM_FLAGS
-"roomDescription": string; Long string describing the room; can span hundreds of characters
-"roomExtraKeyword": string; Keywords that can be used to reference the room; can be multiple words space-delimited
-"roomExits": dictionary -- A dictionary of Exits in the Room; Exits are dictionaries because they have multiple properties
-
-Exit:
-"exitDirection": string; The direction of travel to "use" this exit; must be one of the DIRECTIONS
-"exitKeyword": string; Word to interact with this exit like "door" or "gate"
-"exitFlags": number; A bitmask of flags describing extra properties of the exit; see EXIT_FLAGS; -1 if no flags
-"exitKey": number; An integer corresponding to the in-game object that locks/unlocks this Exit; -1 if no key
-"exitDescription": ""; Some exits have an additional description like "There's a gate here."
-"exitDest": number -- The roomRNumber of the Room this Exit leads to]]
-
--- JSON Library & data file path
-dkjson   = require( 'dkjson' )
-dataFile = "C:/Dev/mud/mudlet/gizmo/mal/areadata/gizmo_world.json"
-
+-- The purpose of mapgen.lua is to retrieve area data from a SQLite database to create a map within the Mudlet client.
 
 -- Table to keep track of which areas and rooms have been successfully mapped
-mappedStatus      = mappedStatus or {}
-
+mappedStatus      = nil
+-- Define a global table to track mapped areas and rooms
+mappedData        = nil
 -- A table to track Mudlet area numbers which will not necessarily be equal to areaRNumbers
 -- Make sure we don't overwrite this on new sessions
-areaMudletNumbers = areaMudletNumbers or {}
+areaMudletNumbers = nil
 
 -- When outputting data related to map generation, use these colors to highlight specific fields wich cecho()
 -- e.g., cecho( MAPGEN_COLORS["areaName"] .. area["areaName"] .. "<reset>" )
@@ -91,6 +49,15 @@ DIRECTIONS        = {
   ["d"]     = 6
 }
 
+-- Table to get the reverse of a direction; useful for bi-directional linking
+REVERSE           = {
+  north = "south",
+  south = "north",
+  east  = "west",
+  west  = "east",
+  up    = "down",
+  down  = "up"
+}
 
 --[[
 These globals are used to hold data related to the current Area and Room and track our "virtual position" on the map.
@@ -101,7 +68,8 @@ areaData: dictionary; Area we're mapping as dictionary of properties
 lastRoom: the roomRNumber of the room previous room
 lastDir: the direction of our last movement; useful for linking]]
 
-areaData           = {}
+areaData           = nil
+areaDataCache      = nil
 currentAreaNumber  = nil
 currentAreaName    = nil
 currentAreaRNumber = nil
@@ -109,32 +77,38 @@ mX, mY, mZ         = 0, 0, 0
 lastRoom           = nil
 lastDir            = nil
 
-currentRoom        = {
-  roomName         = nil,
-  roomAreaNumber   = nil,
-  roomVNumber      = nil,
-  roomRNumber      = nil,
-  roomType         = nil,
-  roomSpec         = nil,
-  roomFlags        = nil,
-  roomDescription  = nil,
-  roomExtraKeyword = nil,
-  roomExits        = {}
-}
+currentRoom        = nil
+-- {
+--   roomName         = nil,
+--   roomAreaNumber   = nil,
+--   roomVNumber      = nil,
+--   roomRNumber      = nil,
+--   roomType         = nil,
+--   roomSpec         = nil,
+--   roomFlags        = nil,
+--   roomDescription  = nil,
+--   roomExtraKeyword = nil,
+--   roomExits        = {}
+-- }
 
-
-
-
--- Reset and repopulate the areaData table with data from the world file
+-- Load the new area from cache or JSON
 function loadAreaData( areaRNumber )
-  areaData = {}
+  -- If the destination area has been cached, load it from cache
+  if areaDataCache[areaRNumber] then
+    cecho( f "\nLoading area {MAP_COLOR['area']}{areaRNumber}<reset> from cache..." )
+    areaData = areaDataCache[areaRNumber]
+    return
+  end
+  -- Update currentAreaNumber to the destination area
   currentAreaNumber = areaRNumber
+
+  -- Clear the primary areaData and load the new area from JSON
+  areaData = {}
 
   local file = io.open( dataFile, 'r' )
   local content = file:read( "*all" )
   file:close()
 
-  -- Use dkjson library to parse the world JSON data
   local data, pos, err = dkjson.decode( content, 1, nil )
   if err then
     gizErr( f "Error decoding JSON: {err}" )
@@ -162,12 +136,15 @@ function loadAreaData( areaRNumber )
     end
     room["roomExits"] = exits
   end
-  areaData["areaRooms"] = rooms
-  currentAreaRNumber    = areaData["areaRNumber"]
-  currentMaxRnum        = areaData["areaMaxRoomRNumber"]
-  currentMinRnum        = areaData["areaMinRoomRNumber"]
-  currentAreaName       = areaData["areaName"]
-  mX, mY, mZ            = 0, 0, 0
+  areaData["areaRooms"]            = rooms
+  currentAreaRNumber               = areaData["areaRNumber"]
+  currentMaxRnum                   = areaData["areaMaxRoomRNumber"]
+  currentMinRnum                   = areaData["areaMinRoomRNumber"]
+  currentAreaName                  = areaData["areaName"]
+  mX, mY, mZ                       = 0, 0, 0
+
+  -- Cache the newly loaded area
+  areaDataCache[currentAreaNumber] = areaData
 end
 
 -- Reset then set values in the currentRoom table based on the room we're currently mapping
@@ -297,7 +274,6 @@ end
 
 -- Attempt to a virtual "move" by testing the direction then updating our position
 function moveExit( direction )
-  cecho( f "\n{MAP_COLOR['cmd']}{direction}" )
   -- See if this direction is valid (appears in the roomExits table of the current room)
   for _, exit in pairs( currentRoom["roomExits"] ) do
     if exit.exitDirection == direction then
@@ -306,7 +282,11 @@ function moveExit( direction )
         local nextArea = getRoomArea( dst )
         if nextArea then
           -- This direction leads to a different area; load that area then update and print the new room
+          local startLoad = getStopWatchTime( "timer" )
           loadAreaData( nextArea )
+          local endLoad = getStopWatchTime( "timer" )
+          local loadTime = string.format( "%.3f", endLoad - startLoad )
+          cecho( f "\n{MAP_COLOR['area']}Loading {MAP_COLOR['number']}{nextArea}<reset> took {MAP_COLOR['number']}{loadTime}<reset> seconds." )
           currentMaxRnum = areaData["areaMaxRoomRNumber"]
           currentMinRnum = areaData["areaMinRoomRNumber"]
           currentAreaName = areaData["areaName"]
@@ -362,9 +342,6 @@ function getRoomArea( roomRNumber )
   end
   return nil
 end
-
--- Define a global table to track mapped areas and rooms
-mappedData = {}
 
 -- Function to check if an area or room is mapped
 function isMapped( type, number )
@@ -422,6 +399,6 @@ function deleteAndReset()
 end
 
 clearScreen()
-loadAreaData( 21 )
-setCurrentRoom( 1121 )
-printRoom()
+--loadAreaData( 21 )
+--setCurrentRoom( 1121 )
+--printRoom()
