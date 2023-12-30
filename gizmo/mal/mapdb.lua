@@ -1,7 +1,7 @@
 --[[
 The db: 'C:/Dev/mud/gizmo/data/gizwrld.db' and has 3 Tables: Area, Room, and Exit
-There are 128 Areas, 8176, and 19133 Exits.
-The basic structure of the World is that
+There are 128 Areas, 8149 Rooms, and 19101 Exits.
+The basic structure of the World is that Areas contain Rooms and Rooms contain Exits
 
 Area Table:
 areaRNumber INTEGER; A unique identifier and primary key for Area
@@ -42,22 +42,30 @@ function loadWorldData()
   local env = luasql.sqlite3()
   local conn = env:connect( 'C:/Dev/mud/gizmo/data/gizwrld.db' )
 
-  -- Check connection
   if not conn then
     cecho( f '{{Error connecting to the database.\n' )
     return nil
   end
-  -- Load Areas
   local areas = {}
-  local cursor = conn:execute( "SELECT * FROM Area" )
+  local cursor
+
+  -- Load Areas
+  cursor = conn:execute( "SELECT * FROM Area" )
   local row = cursor:fetch( {}, "a" )
   while row do
-    local area = {
+    areas[row.areaRNumber] = {
       areaRNumber = row.areaRNumber,
       areaName = row.areaName,
+      areaResetType = row.areaResetType,
+      areaFirstRoomName = row.areaFirstRoomName,
+      areaMinRoomRNumber = row.areaMinRoomRNumber,
+      areaMaxRoomRNumber = row.areaMaxRoomRNumber,
+      areaMinVNumber = row.areaMinVNumber,
+      areaMaxVNumberActual = row.areaMaxVNumberActual,
+      areaMaxVNumberAllowed = row.areaMaxVNumberAllowed,
+      areaRoomCount = row.areaRoomCount,
       rooms = {}
     }
-    areas[row.areaRNumber] = area
     row = cursor:fetch( row, "a" )
   end
   cursor:close()
@@ -65,22 +73,21 @@ function loadWorldData()
   -- Load Rooms
   cursor = conn:execute( "SELECT * FROM Room" )
   row = cursor:fetch( {}, "a" )
-  local processedRooms = {}
   while row do
-    if not processedRooms[row.roomRNumber] then
-      local room = {
+    if areas[row.areaRNumber] then
+      areas[row.areaRNumber].rooms[row.roomRNumber] = {
         roomRNumber = row.roomRNumber,
         roomName = row.roomName,
+        roomType = row.roomType,
+        roomSpec = row.roomSpec,
+        roomFlags = row.roomFlags,
+        roomDescription = row.roomDescription,
+        roomExtraKeyword = row.roomExtraKeyword,
+        roomVNumber = row.roomVNumber,
         exits = {}
       }
-      if areas[row.areaRNumber] then
-        areas[row.areaRNumber].rooms[row.roomRNumber] = room
-        processedRooms[row.roomRNumber] = true
-      else
-        cecho( f '{{Unmatched Room: {row.roomRNumber} in Area: {row.areaRNumber}\n' )
-      end
     else
-      cecho( f '{{Duplicate Room Found: {row.roomRNumber}\n' )
+      cecho( f '{{Unmatched Room: {row.roomRNumber} in Area: {row.areaRNumber}\n' )
     end
     row = cursor:fetch( row, "a" )
   end
@@ -90,73 +97,42 @@ function loadWorldData()
   cursor = conn:execute( "SELECT * FROM Exit" )
   row = cursor:fetch( {}, "a" )
   while row do
-    local exit = {
-      exitDirection = row.exitDirection,
-      exitDest = row.exitDest
-    }
     for _, area in pairs( areas ) do
       if area.rooms[row.roomRNumber] then
-        area.rooms[row.roomRNumber].exits[#area.rooms[row.roomRNumber].exits + 1] = exit
-        break
+        table.insert( area.rooms[row.roomRNumber].exits, {
+          exitID = row.exitID,
+          exitDirection = row.exitDirection,
+          exitDest = row.exitDest,
+          exitKeyword = row.exitKeyword,
+          exitFlags = row.exitFlags,
+          exitKey = row.exitKey,
+          exitDescription = row.exitDescription
+        } )
+        break -- Exit found and added, no need to continue looping through areas
       end
     end
     row = cursor:fetch( row, "a" )
   end
   cursor:close()
 
-  -- Close connection
   conn:close()
   env:close()
 
   return areas
 end
 
-function validateWorldData( worldData )
-  if not worldData then
-    cecho( f '{{worldData is nil or not provided.\n' )
-    return
-  end
+function countWorldDataElements()
   local areaCount = 0
   local roomCount = 0
   local exitCount = 0
 
   for _, area in pairs( worldData ) do
     areaCount = areaCount + 1
+
     for _, room in pairs( area.rooms ) do
       roomCount = roomCount + 1
       exitCount = exitCount + #room.exits
     end
   end
-  cecho( f 'Total Areas: {areaCount}\n' )
-  cecho( f 'Total Rooms: {roomCount}\n' )
-  cecho( f 'Total Exits: {exitCount}\n' )
+  return areaCount, roomCount, exitCount
 end
-
-function checkForDuplicateRooms( worldData )
-  if not worldData then
-    cecho( f '{{worldData is nil or not provided.\n' )
-    return
-  end
-  local roomTracker = {}
-  local duplicateCount = 0
-
-  for _, area in pairs( worldData ) do
-    for roomRNumber, _ in pairs( area.rooms ) do
-      if roomTracker[roomRNumber] then
-        cecho( f '{{Duplicate Room Found: RoomRNumber = {roomRNumber}\n' )
-        duplicateCount = duplicateCount + 1
-      else
-        roomTracker[roomRNumber] = true
-      end
-    end
-  end
-  if duplicateCount == 0 then
-    cecho( f '{{No duplicate rooms found.\n' )
-  else
-    cecho( f '{{Total Duplicate Rooms Found: {duplicateCount}\n' )
-  end
-end
-
--- Example usage:
--- checkForDuplicateRooms(worldData)
-worldData = loadWorldData()

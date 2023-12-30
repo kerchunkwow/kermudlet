@@ -532,3 +532,84 @@ function exitColor( roomRNumber )
     end
   end
 end
+
+-- Print the content of the currentRoom w/ highlighting similar to MUD output
+function printRoom()
+  local areaNumber  = currentRoom["roomAreaNumber"]
+  local description = currentRoom["roomDescription"]
+  local roomNum     = currentRoom["roomRNumber"]
+  local name        = currentRoom["roomName"]
+  local type        = currentRoom["roomType"]
+
+  local rn          = MAP_COLOR["roomName"]
+  local rd          = MAP_COLOR["roomDesc"]
+  local nc          = MAP_COLOR["number"]
+  local tc          = MAP_COLOR[type]
+  local uc          = MAP_COLOR["mapui"]
+
+  cecho( f "\n\n{rn}{roomName}<reset> [{tc}{roomType}<reset>] ({nc}{roomRNumber}<reset>) ({uc}{mX}<reset>, {uc}{mY}<reset>, {uc}{mZ}<reset>)" )
+  cecho( f "\n{rd}{roomDescription}<reset>" )
+  printExits( roomNum )
+
+  if currentRoom["deathTrap"] then
+    cecho( f "\n\nThis is a {MAP_COLOR['death']}Death Trap<reset>; good thing this is all a dream." )
+  end
+  -- A little padding
+  print( "\n" )
+end
+
+-- Load the new area from cache or JSON
+function loadAreaData( areaRNumber )
+  -- If the destination area has been cached, load it from cache
+  if areaDataCache[areaRNumber] then
+    cecho( f "\nLoading area {MAP_COLOR['area']}{areaRNumber}<reset> from cache..." )
+    areaData = areaDataCache[areaRNumber]
+    return
+  end
+  -- Update currentAreaNumber to the destination area
+  currentAreaNumber = areaRNumber
+
+  -- Clear the primary areaData and load the new area from JSON
+  areaData = {}
+
+  local file = io.open( dataFile, 'r' )
+  local content = file:read( "*all" )
+  file:close()
+
+  local data, pos, err = dkjson.decode( content, 1, nil )
+  if err then
+    gizErr( f "Error decoding JSON: {err}" )
+    return nil
+  end
+  areaData = data[tostring( areaRNumber )]
+  if not areaData then
+    gizErr( f "Invalid area number: {areaRNumber}" )
+    return nil
+  end
+  local rooms = {}
+  for _, room in pairs( areaData["areaRooms"] ) do
+    local roomRNumber = room["roomRNumber"]
+    rooms[roomRNumber] = room
+    local exits = {}
+    if room["roomExits"] then
+      for _, exit in pairs( room["roomExits"] ) do
+        local exitDirection = DIRECTIONS[exit["exitDirection"]]
+        if exitDirection then
+          exits[exitDirection] = exit
+        else
+          gizErr( f "Invalid exit direction in room {roomRNumber}" )
+        end
+      end
+    end
+    room["roomExits"] = exits
+  end
+  areaData["areaRooms"]            = rooms
+  currentAreaRNumber               = areaData["areaRNumber"]
+  currentMaxRnum                   = areaData["areaMaxRoomRNumber"]
+  currentMinRnum                   = areaData["areaMinRoomRNumber"]
+  currentAreaName                  = areaData["areaName"]
+  mX, mY, mZ                       = 0, 0, 0
+
+  -- Cache the newly loaded area
+  areaDataCache[currentAreaNumber] = areaData
+end
