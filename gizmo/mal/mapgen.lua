@@ -104,6 +104,7 @@ function moveExit( direction )
           updateCoordinates( direction, dst, area.areaRNumber )
           setCurrentRoom( dst )
           displayRoom()
+          walkRoom() -- TEMPORARY; add this room to our walked rooms path
           return true
         end
       end
@@ -132,29 +133,39 @@ function updateCoordinates( direction, roomRNumber, areaRNumber )
 
   -- Only set coordinates for a room once
   if not areaCoordinates[roomRNumber] then
-    -- Assign the first Room in each Area 0,0,0
-    if next( areaCoordinates ) == nil then
-      local nc = MAP_COLOR["number"]
-      local ac = MAP_COLOR["area"]
-      local mc = MAP_COLOR["mapui"]
-      mapInfo( f "New Area {ac}30<reset>; Room {nc}{roomRNumber}<reset>" )
-      mX, mY, mZ = 0, 0, 0
-    else
-      -- Update and assign new coordinates
-      if direction == "north" then
-        mY = mY + 1
-      elseif direction == "south" then
-        mY = mY - 1
-      elseif direction == "east" then
-        mX = mX + 1
-      elseif direction == "west" then
-        mX = mX - 1
-      elseif direction == "up" then
-        mZ = mZ + 1
-      elseif direction == "down" then
-        mZ = mZ - 1
+    local nc = MAP_COLOR["number"]
+    local ac = MAP_COLOR["area"]
+    -- Calculate new coordinates
+    local newX, newY, newZ = mX, mY, mZ
+    if direction == "north" then
+      newY = newY + 1
+    elseif direction == "south" then
+      newY = newY - 1
+    elseif direction == "east" then
+      newX = newX + 1
+    elseif direction == "west" then
+      newX = newX - 1
+    elseif direction == "up" then
+      newZ = newZ + 1
+    elseif direction == "down" then
+      newZ = newZ - 1
+    end
+    -- Check for rooms that have already been assigned to these coordinates (overlapping)
+    for otherRoom, coords in pairs( areaCoordinates ) do
+      if coords[1] == newX and coords[2] == newY and coords[3] == newZ and otherRoom ~= roomRNumber then
+        local nc = MAP_COLOR["number"]
+        mapInfo( f "Room {nc}{roomRNumber}<reset> overlaps Room {nc}{otherRoom}<reset>" )
+        break
       end
     end
+    -- Assign the first Room in each Area 0,0,0 if it's the first room being mapped
+    if next( areaCoordinates ) == nil then
+      local nc = MAP_COLOR["number"]
+      mapInfo( f "New Area {ac}{areaRNumber}<reset>; Room {nc}{roomRNumber}<reset>" )
+      newX, newY, newZ = 0, 0, 0
+    end
+    -- Update global coordinates and assign to the room
+    mX, mY, mZ = newX, newY, newZ
     areaCoordinates[roomRNumber] = {mX, mY, mZ}
   else
     -- Use previously assigned coordinates
@@ -178,5 +189,47 @@ function virtualRecall()
   tempTimer( 0.2, function () displayRoom() end )
 end
 
+-- Function to traverse a list of rooms and return the sequence of directions taken
+function traverseRooms( roomList )
+  -- Ensure the room list is provided and valid
+  if not roomList or #roomList == 0 then
+    cecho( "\nError: Invalid room list provided." )
+    return
+  end
+  local directionsTaken = {} -- Store the sequence of directions taken
+
+  -- Iterate through each room in the list, except for the last one
+  for i = 1, #roomList - 1 do
+    local currentRoom = roomList[i]
+    local nextRoom = roomList[i + 1]
+
+    -- Ensure currentRoomData is valid and corresponds to currentRoom
+    if not currentRoomData or currentRoomData.roomRNumber ~= currentRoom then
+      cecho( "\nError: Current room data is not synchronized." )
+      return
+    end
+    -- Find the exit that leads to the next room
+    local exitFound = false
+    for _, exit in ipairs( currentRoomData.exits ) do
+      if exit.exitDest == nextRoom then
+        -- Move in the direction of the exit
+        moveExit( exit.exitDirection )
+        table.insert( directionsTaken, exit.exitDirection ) -- Record the direction taken
+        exitFound = true
+        break                                               -- Exit found, no need to continue checking
+      end
+    end
+    -- If no exit was found to the next room, report an error
+    if not exitFound then
+      cecho( "\nError: No exit found leading to room " .. nextRoom )
+      return
+    end
+    -- Optional: add a delay or some condition before moving to the next room
+    -- tempTimer(1, function() end) -- Example delay of 1 second
+  end
+  return directionsTaken -- Return the list of directions taken
+end
+
 clearScreen()
 startExploration( 1121 )
+--findAllBorders()

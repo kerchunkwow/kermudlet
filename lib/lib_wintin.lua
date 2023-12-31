@@ -69,9 +69,47 @@ function parseWintinAction( actionString )
   return trim( pattern ), trim( command ), trim( priority )
 end
 
-local testActions = {}
+-- Function to convert a list of directions into a WINTIN-style command string
+function createWintin( directionList )
+  local function shortDirection( direction )
+    local shortMap = {
+      north = "n",
+      south = "s",
+      east = "e",
+      west = "w",
+      up = "u",
+      down = "d"
+    }
+    return shortMap[direction] or direction
+  end
+
+  if not directionList or #directionList == 0 then
+    return ""
+  end
+  local wintinCommand = ""
+  local currentDirection = shortDirection( directionList[1] )
+  local count = 0
+
+  for i, direction in ipairs( directionList ) do
+    local shortDir = shortDirection( direction )
+    if shortDir == currentDirection then
+      count = count + 1
+    else
+      -- Append the previous direction and its count to the command string
+      wintinCommand = wintinCommand .. (count > 1 and "#" .. count .. " " or "") .. currentDirection .. ";"
+      -- Reset for the new direction
+      currentDirection = shortDir
+      count = 1
+    end
+  end
+  -- Append the last direction and its count
+  wintinCommand = wintinCommand .. (count > 1 and "#" .. count .. " " or "") .. currentDirection
+
+  return wintinCommand
+end
 
 function importWintinActions()
+  local testActions = {}
   -- Make an empty group to hold the imported triggers
   permRegexTrigger( "Imported", "", {"^#"}, "" )
 

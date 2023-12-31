@@ -114,10 +114,8 @@ function loadWorldData()
     row = cursor:fetch( row, "a" )
   end
   cursor:close()
-
   conn:close()
   env:close()
-
   return areas
 end
 

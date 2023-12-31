@@ -3,8 +3,6 @@ Functions to display the current Room & Exits as though we were playing the MUD.
 This "virtual exploration" is used to help us map the MUD.
 --]]
 
-
-
 -- The "main" display function to print the current room as if we just moved into it or looked at it
 -- in the game; prints the room name, description, and exits.
 function displayRoom()
@@ -78,10 +76,10 @@ function inspectExit( direction )
   end
   for _, exit in ipairs( currentRoomData.exits ) do
     if exit.exitDirection == fullDirection then
-      local ec = MAP_COLOR["exitDir"]
-      local es = MAP_COLOR["exitStr"]
-      local esp = MAP_COLOR["exitSpec"]
-      local nc = MAP_COLOR["number"]
+      local ec      = MAP_COLOR["exitDir"]
+      local es      = MAP_COLOR["exitStr"]
+      local esp     = MAP_COLOR["exitSpec"]
+      local nc      = MAP_COLOR["number"]
 
       local exitStr = f "The {ec}{fullDirection}<reset> exit: "
       if exit.exitKeyword and #exit.exitKeyword > 0 then
@@ -123,5 +121,6 @@ function mapInfo( message )
   local mtr = f "{MAP_COLOR['mapui']}{rightPad}+]<reset>"  -- Marker tag right
 
   -- Combine the message with marker tags and print it
-  cecho( f "\n{mtl}{message}{mtr}" )
+  --cecho( f "\n{mtl}{message}{mtr}" )
+  cecho( f "\n{message}" )
 end

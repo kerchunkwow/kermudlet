@@ -613,3 +613,107 @@ function loadAreaData( areaRNumber )
   -- Cache the newly loaded area
   areaDataCache[currentAreaNumber] = areaData
 end
+
+function displayAllBorders()
+  for _, area in pairs( worldData ) do
+    findAreaBorderRooms( area.areaRNumber )
+  end
+end
+
+function findAreaBorderRooms( areaRNumber )
+  local ac = MAP_COLOR["area"]
+  local nc = MAP_COLOR["number"]
+  local luasql = require "luasql.sqlite3"
+  local env = luasql.sqlite3()
+  local conn = env:connect( 'C:/Dev/mud/gizmo/data/gizwrld.db' )
+
+  local function closeResources()
+    if cursor then cursor:close() end
+    if conn then conn:close() end
+    if env then env:close() end
+  end
+
+  -- Retrieve min and max room numbers and the name for the area
+  local cursor = conn:execute( "SELECT areaMinRoomRNumber, areaMaxRoomRNumber, areaName FROM Area WHERE areaRNumber = " ..
+    areaRNumber )
+  local areaInfo = cursor:fetch( {}, "a" )
+  if not areaInfo then
+    echo( "Area not found.\n" )
+    closeResources()
+    return
+  end
+  local minRoomRNumber = areaInfo.areaMinRoomRNumber
+  local maxRoomRNumber = areaInfo.areaMaxRoomRNumber
+  local areaName = areaInfo.areaName
+  cursor:close() -- Close the first cursor
+
+  -- Query for exits that lead to the specified area but are in different areas
+  cursor = conn:execute( [[
+    SELECT DISTINCT Room.roomRNumber, Room.roomName, Room.areaRNumber, Area.areaName
+    FROM Exit
+    JOIN Room ON Exit.roomRNumber = Room.roomRNumber
+    JOIN Area ON Room.areaRNumber = Area.areaRNumber
+    WHERE Exit.exitDest BETWEEN ]] .. minRoomRNumber .. [[ AND ]] .. maxRoomRNumber .. [[
+    AND (Room.roomRNumber < ]] .. minRoomRNumber .. [[ OR Room.roomRNumber > ]] .. maxRoomRNumber .. [[)
+  ]] )
+
+  local row = cursor:fetch( {}, "a" )
+  if not row then
+    mapInfo( f "\nNo rooms bordering {ac}{areaName}<reset> [{nc}{areaRNumber}<reset>]" )
+    closeResources()
+    return
+  end
+  mapInfo( f "\nRooms bordering {ac}{areaName}<reset> [{nc}{areaRNumber}<reset>]" )
+  while row do
+    if row.areaRNumber ~= areaRNumber then
+      mapInfo( f "- <olive_drab>{row.roomName}<reset> ({nc}{row.roomRNumber}<reset>) in {ac}{row.areaName}<reset> [{nc}{row.areaRNumber}<reset>]" )
+    end
+    row = cursor:fetch( {}, "a" )
+  end
+  -- Clean up
+  closeResources()
+end
+
+function findShortestPath( startRoom, targetRoom )
+  if startRoom == targetRoom then return {startRoom} end
+  -- Initialize queues for a breadth-first-search of rooms
+  local visitedRooms = {}            -- Tracks visited rooms
+  local pathQueue    = {{startRoom}} -- Initialize queue for BFS with the starting room
+
+  -- As long as paths are queued, "pop" one and follow it until we've visisted its last room
+  while #pathQueue > 0 do
+    local path = table.remove( pathQueue, 1 )
+    local lastRoom = path[#path]
+
+    -- Don't visit visited rooms
+    if not visitedRooms[lastRoom] then
+      visitedRooms[lastRoom] = true
+
+      -- For all Areas and Rooms
+      for _, areaData in pairs( worldData ) do
+        local roomData = areaData.rooms[lastRoom]
+        if roomData then
+          -- Iterate through exits of the current room
+          for _, exit in pairs( roomData.exits ) do
+            local nextRoom = exit.exitDest
+
+            -- Target spotted; return this path
+            if nextRoom == targetRoom then
+              local shortestPath = {unpack( path )}
+              table.insert( shortestPath, nextRoom )
+              return shortestPath
+            end
+            -- Add the next room to the path if it hasn't been visited
+            if not visitedRooms[nextRoom] then
+              local newPath = {unpack( path )}
+              table.insert( newPath, nextRoom )
+              pathQueue[#pathQueue + 1] = newPath
+            end
+          end
+        end
+      end
+    end
+  end
+  -- Failed to find a path
+  return nil
+end
