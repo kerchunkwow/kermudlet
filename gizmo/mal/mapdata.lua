@@ -284,21 +284,24 @@ function findSpecialExits()
   local conn = env:connect( 'C:/Dev/mud/gizmo/data/gizwrld.db' )
 
   if not conn then
-    gizErr( "Error connecting to the database." )
+    gizErr( "Error connecting to gizwrld.db" )
     return
   end
   local query = "SELECT * FROM Exit WHERE exitFlags != -1"
   local cursor, error = conn:execute( query )
 
   if not cursor then
-    print( "Error executing query:", error )
+    gizErr( f "Error executing query: {error}" )
     conn:close()
     env:close()
     return
   end
   local row = cursor:fetch( {}, "a" )
+  cecho( "\nid,dir,dst,str,flags,key,room" )
   while row do
-    print( "Exit ID:", row.exitID, "Direction:", row.exitDirection, "Destination:", row.exitDest )
+    local id, dir, dst, str, flags, key, room = row.exitID, row.exitDirection, row.exitDest, row.exitKeyword,
+        row.exitFlags, row.exitKey, row.roomRNumber
+    cecho( f "\n{room},{dir},{word},{key}" )
     row = cursor:fetch( row, "a" )
   end
   cursor:close()

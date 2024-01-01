@@ -135,6 +135,7 @@ combat_conditions  = {
 -- Items to ignore when checking to see whether something has been added to the database;
 -- this is going to get way too long and needs another solution eventually.
 ignored_items      = {
+  ["a pair of dace"]                   = true,
   ["the trust flag"]                   = true,
   ["a bread"]                          = true,
   ["a waterskin"]                      = true,
