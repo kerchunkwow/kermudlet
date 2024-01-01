@@ -23,10 +23,9 @@ local profileName = getProfileName()
 
 if profileName == "IMM" then -- Gizmo IMM
   rootDirectory = rootDirectory .. "gizmo/mal/"
-  runLuaFile( f "{rootDirectory}mal.lua" )
-  runLuaFile( f "{rootDirectory}mapdb.lua" )
-  runLuaFile( f "{rootDirectory}mapquery.lua" )
-  runLuaFile( f "{rootDirectory}mapdisplay.lua" )
+  runLuaFile( f "{rootDirectory}unique_rooms.lua" )
+  runLuaFile( f "{rootDirectory}mapdata.lua" )
+  runLuaFile( f "{rootDirectory}mapsim.lua" )
   runLuaFile( f "{rootDirectory}mapgen.lua" )
 elseif profileName == "DD" then -- Death's Domain
   rootDirectory = rootDirectory .. "dd/"

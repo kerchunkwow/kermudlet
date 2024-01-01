@@ -717,3 +717,152 @@ function findShortestPath( startRoom, targetRoom )
   -- Failed to find a path
   return nil
 end
+
+function updateUniqueRooms()
+  -- Iterate over uniqueRooms
+  for roomName, _ in pairs( uniqueRooms ) do
+    -- Look for the room in worldData
+    for _, areaData in pairs( worldData ) do
+      for roomRNumber, roomData in pairs( areaData.rooms ) do
+        if roomData.roomName == roomName then
+          -- Update the value in uniqueRooms with the roomRNumber
+          uniqueRooms[roomName] = roomRNumber
+          break -- Exit the inner loop once the room is found
+        end
+      end
+    end
+  end
+end
+
+walkedPath = {1121}
+
+-- Function to walk the current room
+function walkRoom()
+  -- Add the current room to the walkedRooms table
+  if currentRoomData and currentRoomData.roomRNumber then
+    table.insert( walkedPath, currentRoomData.roomRNumber )
+  end
+end
+
+-- Function to validate the walked path against the shortest path
+function validateShortestPath()
+  local shortPath = findShortestPath( 1121, currentRoomData.roomRNumber )
+
+  -- Check if both paths are available
+  if not shortPath or not walkedPath then
+    gizErr( "Bad paths in validateShortestPath()." )
+    return
+  end
+  -- Compare the length of both paths
+  if #walkedPath ~= #shortPath then
+    gizErr( "Paths differ in length." )
+    return
+  end
+  -- Compare each room in both paths
+  for i = 1, #walkedPath do
+    if walkedPath[i] ~= shortPath[i] then
+      gizErr( f "Paths differ at position {i}" )
+      return
+    end
+  end
+  -- If paths are the same
+  local nc = MAP_COLOR["number"]
+  cecho( f "\n<yellow_green>Matched<reset> with Length {nc}{#walkedPath}<reset>" )
+end
+
+roomCoords = nil
+roomCount  = nil
+
+
+function createRoom( room, areaID, areaName )
+  -- Create the room
+  local roomRNumber = room["roomRNumber"]
+  addRoom( roomRNumber )
+
+  -- Assign the room to the area
+  setRoomArea( roomRNumber, areaName )
+
+  -- Set the room name
+  setRoomName( roomRNumber, room["roomName"] )
+
+  -- Store the extra room data
+  setRoomUserData( roomRNumber, "roomVNumber", tostring( room["roomVNumber"] ) )
+  setRoomUserData( roomRNumber, "roomType", tostring( room["roomType"] ) )
+  setRoomUserData( roomRNumber, "roomSpec", tostring( room["roomSpec"] ) )
+  setRoomUserData( roomRNumber, "roomFlags", tostring( room["roomFlags"] ) )
+  setRoomUserData( roomRNumber, "roomDescription", room["roomDescription"] )
+  setRoomUserData( roomRNumber, "roomExtraKeyword", room["roomExtraKeyword"] )
+  roomCount = roomCount + 1
+end
+
+function createArea( areaNumber )
+  cecho( "\n<dodger_blue>Creating area with number: " .. areaNumber .. "<reset>" )
+  -- Load the area data from the specific JSON file
+  local file = io.open( 'C:/Dev/mud/mudlet/gizmo/mal/areadata/' .. areaNumber .. '.json', 'r' )
+  if not file then
+    echo( "\nNo area found with Area Number " .. areaNumber )
+    return
+  end
+  local area_data = file:read( "*all" )
+  file:close()
+
+  local area = json.decode( area_data )
+
+  -- Create the area
+  local areaID = addAreaName( area["areaName"] )
+  if not areaID then
+    echo( "\nFailed to create area with name " .. area["areaName"] )
+    return
+  end
+  -- Store the real area ID
+  setAreaUserData( areaID, "areaRNumber", tostring( area["areaRNumber"] ) )
+  cecho( "\n<olive_drab>Successfully created area with name " ..
+    area["areaName"] .. " and ID " .. area["areaRNumber"] .. ".<reset>" )
+end
+
+function displayAreaPaths()
+  for areaNum, path in pairs( areaPaths ) do
+    local readablePath = {}
+    for _, area in ipairs( path ) do
+      -- Assuming you have a way to get the name of an area by its number
+      local areaName = worldData[area] and worldData[area].areaName or "Unknown Area"
+      table.insert( readablePath, string.format( "%s (%d)", areaName, area ) )
+    end
+    local pathString = table.concat( readablePath, " -> " )
+    mapInfo( string.format( "Path to %s: %s", worldData[areaNum].areaName, pathString ) )
+  end
+end
+
+function findAreaPaths()
+  local startArea = 21 -- Starting area number
+  local visited = {}   -- Tracks visited areas
+  areaPaths = {}       -- Stores paths to each area
+
+  -- Initialize the BFS queue with the starting area
+  local queue = {startArea}
+  visited[startArea] = true
+  areaPaths[startArea] = {startArea}
+
+  while #queue > 0 do
+    local currentArea = table.remove( queue, 1 ) -- Dequeue the first element
+
+    -- Check border rooms for adjacent areas
+    if borderRooms[currentArea] then
+      for _, borderRoom in ipairs( borderRooms[currentArea] ) do
+        local adjacentArea = borderRoom.borderAreaRNumber
+
+        -- If the adjacent area is not visited, enqueue it and update the path
+        if not visited[adjacentArea] then
+          visited[adjacentArea] = true
+          queue[#queue + 1] = adjacentArea
+
+          -- Update the path to the adjacent area
+          areaPaths[adjacentArea] = {unpack( areaPaths[currentArea] )}
+          table.insert( areaPaths[adjacentArea], adjacentArea )
+        end
+      end
+    end
+  end
+  displayAreaPaths( areaPaths )
+  return areaPaths
+end

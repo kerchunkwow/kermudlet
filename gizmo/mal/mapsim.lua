@@ -1,7 +1,19 @@
---[[mapdisplay.lua
-Functions to display the current Room & Exits as though we were playing the MUD.
-This "virtual exploration" is used to help us map the MUD.
+--[[ mapsim.lua
+
+Module to create a "virtual" offline version of the MUD by interacting with the worldData
+table and outputting data related to Areas, Rooms, and Exits.
+
 --]]
+
+-- For now, initialize our location as Market Square [1121]
+function startExploration()
+  -- Set the starting Room to Market Square and initilize coordinates
+  mX, mY, mZ = 0, 0, 0
+  roomCoordinates[21] = {}
+  roomCoordinates[21][1121] = {mX, mY, mZ}
+  setCurrentRoom( 1121 )
+  displayRoom()
+end
 
 -- The "main" display function to print the current room as if we just moved into it or looked at it
 -- in the game; prints the room name, description, and exits.
@@ -100,6 +112,52 @@ function inspectExit( direction )
     end
   end
   cecho( f "\n{MAP_COLOR['roomDesc']}You see no exit in that direction.<reset>" )
+end
+
+-- Attempt a "virtual move"; on success report on area transitions and update virtual coordinates.
+function moveExit( direction, showSteps )
+  showSteps = showSteps or false
+  -- Guard against variations in the Exit data by searching for the Exit in question
+  for _, exit in pairs( currentRoomData.exits ) do
+    if exit.exitDirection == direction then
+      local dst = exit.exitDest
+      for _, area in pairs( worldData ) do
+        if area.rooms[dst] then
+          -- Report transition if the destination room is outside the current Area
+          if currentRoomData.areaRNumber ~= area.areaRNumber then
+            local leavingAreaName = worldData[currentRoomData.areaRNumber].areaName
+            local enteringAreaName = area.areaName
+            local ac = MAP_COLOR["area"]
+            mapInfo( f "Left {ac}{leavingAreaName}<reset>; Entered {ac}{enteringAreaName}" )
+          end
+          -- Update coordinates for the new Room (and possibly Area)
+          updateCoordinates( direction, dst, area.areaRNumber )
+          setCurrentRoom( dst )
+          displayRoom()
+          return true
+        end
+      end
+    end
+  end
+  cecho( "\n<dim_grey>Alas, you cannot go that way.<reset>" )
+  return false
+end
+
+-- Simulate a 'scroll of recall'; magical item in game that returns the player to the starting room
+function virtualRecall()
+  local funnyMessages = {
+    "you won from a scratch-off lottery ticket.",
+    "you found stuck to the bottom of your shoe.",
+    "wait no that was a Starbucks gift card.",
+    "what're you chicken or sumthin'?",
+    "and suddenly remember where you left your keys shit wrong recall.",
+  }
+
+  local funnyMessage = funnyMessages[math.random( #funnyMessages )]
+
+  cecho( f "\n\n<orchid>You recite a <deep_pink>scroll of recall<orchid>.<reset>\n" )
+  tempTimer( 0.05, function () setCurrentRoom( 1121 ) end )
+  tempTimer( 0.15, function () displayRoom() end )
 end
 
 -- Print an unnecessarily beautiful info message related to map updates & information
