@@ -1,3 +1,12 @@
+-- Walk to an area (if it's in the list of area speedwalks)
+function goArea( areaName )
+  if not areaDirs[areaName] then
+    gizErr( f '{areaName} not in areaDirs' )
+  else
+    doWintin( areaDirs[areaName].dirs )
+  end
+end
+
 areaDirs = {
   ['maritime']       = {area = [[The Maritime Museum]], dstRoom = [[The Entrance]], dirs = [[#14 w;s;#7 w;s;#2 w;s;d;w]], needKeys = false},
   ['dragoncaves']    = {area = [[The Dragon Caves]], dstRoom = [[A Path Through the Valley]], dirs = [[#12 w;#2 s;w;s;e;#2 s;#4 w]], needKeys = false},

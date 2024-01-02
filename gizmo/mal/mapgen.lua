@@ -24,7 +24,8 @@ MAP_COLOR       = {
   -- Area, Room, Exit Data
   ["area"]      = "<deep_pink>",
   ["number"]    = "<dark_orange>",
-  ["roomName"]  = "<royal_blue>",
+  ["roomName"]  = "<light_steel_blue>",
+  ["roomNameU"] = "<royal_blue>",
   ["roomDesc"]  = "<ansi_light_black>",
   ["exitDir"]   = "<cyan>",
   ["exitStr"]   = "<dark_slate_grey>",
@@ -132,6 +133,10 @@ function updateCoordinates( direction, roomRNumber, areaRNumber )
     -- Use previously assigned coordinates
     mX, mY, mZ = unpack( areaCoordinates[roomRNumber] )
   end
+end
+
+function createEmptyAreas()
+  for _, areaData in pairs( worldData ) do
 end
 
 clearScreen()

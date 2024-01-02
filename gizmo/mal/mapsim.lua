@@ -18,7 +18,12 @@ end
 -- The "main" display function to print the current room as if we just moved into it or looked at it
 -- in the game; prints the room name, description, and exits.
 function displayRoom()
-  local rn = MAP_COLOR["roomName"]
+  local roomName = currentRoomData.roomName
+  if isUnique( roomName ) then
+    rn = MAP_COLOR['roomNameU']
+  else
+    rn = MAP_COLOR['roomName']
+  end
   local rd = MAP_COLOR["roomDesc"]
   local nc = MAP_COLOR["number"]
   local tc = MAP_COLOR[currentRoomData.roomType] or MAP_COLOR["mapui"]
@@ -254,55 +259,4 @@ function traverseRooms( roomList )
     end
   end
   return directionsTaken -- Return the list of directions and 'open' commands
-end
-
-function writeAreaPaths()
-  local startRoom = 1121 -- Starting room
-  local paths = {}       -- Store the paths for each area
-
-  -- Iterate through each area in the worldData array
-  for _, areaData in ipairs( worldData ) do
-    if areaData and areaData.areaMinRoomRNumber then
-      local dstRoom = areaData.areaMinRoomRNumber
-      local pathToDst = findShortestPath( startRoom, dstRoom )
-
-      if pathToDst then
-        local lastPath = traverseRooms( pathToDst )
-        local winTinCmd = createWintin( lastPath )
-        local areaName = areaData.areaName
-        local dstRoomName = "" -- Placeholder for destination room name
-        local needKey = winTinCmd:find( "unlock" ) ~= nil
-
-        -- Find the destination room name
-        for _, roomData in pairs( areaData.rooms ) do
-          if roomData.roomRNumber == dstRoom then
-            dstRoomName = roomData.roomName
-            break
-          end
-        end
-        -- Format the path string
-        local areaKey = areaName:gsub( "[%s%-,'()/]", "" ):lower()
-        local pathString = string.format( "  ['%s'] = { area = [[%s]], dstRoom = [[%s]], dirs = [[%s]], needKeys = %s }",
-          areaKey, areaName, dstRoomName, winTinCmd, tostring( needKey ) )
-        table.insert( paths, pathString )
-      else
-        print( "No path found from " .. startRoom .. " to " .. dstRoom )
-      end
-    else
-      print( "Missing areaMinRoomRNumber for area " .. (areaData.areaName or "Unknown") )
-    end
-  end
-  -- Combine all path strings
-  local allPathsString = "areaDirs = {\n" .. table.concat( paths, ",\n" ) .. "\n}"
-
-  -- Write allPathString to a file
-  local filePath = "C:\\Dev\\mud\\mudlet\\gizmo\\mal\\areaDirs.lua"
-  local file = io.open( filePath, "w" )
-  if file then
-    file:write( allPathsString )
-    file:close()
-    print( "Paths saved to " .. filePath )
-  else
-    print( "Error: Unable to open file for writing." )
-  end
 end
