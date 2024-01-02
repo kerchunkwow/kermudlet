@@ -185,8 +185,8 @@ end
 -- Prepare the swap by removing the current gear set and getting the next set from storage
 function prepSwap()
   for i = 1, #currentGear do
-    expandAlias( f 'nan remove {currentGear[i]}' )
-    expandAlias( f 'col get {nextGear[i]} stocking' )
+    expandAlias( f 'nan remove {currentGear[i]}', false )
+    expandAlias( f 'col get {nextGear[i]} stocking', false )
   end
 end
 
@@ -198,8 +198,8 @@ function doSwap()
   -- Count "Ok." which indicates an item was given to the receiver; make sure we get one for every item before proceeding
   tempRegexTrigger( [[Ok\.$]], [[finishSwap()]], #nextGear )
   for i = 1, #nextGear do
-    expandAlias( f 'col give {nextGear[i]} Nandor' )
-    expandAlias( f 'nan give {currentGear[i]} Colin' )
+    expandAlias( f 'col give {nextGear[i]} Nandor', false )
+    expandAlias( f 'nan give {currentGear[i]} Colin', false )
   end
 end
 
@@ -212,8 +212,8 @@ function finishSwap()
   for i = 1, #nextGear do
     -- But use wield/hold for the last two
     if i == #nextGear - 1 then wearCommand = "wield" elseif i == #nextGear then wearCommand = "hold" end
-    expandAlias( f 'col put {currentGear[i]} stocking' )
-    expandAlias( f 'nan {wearCommand} {nextGear[i]}' )
+    expandAlias( f 'col put {currentGear[i]} stocking', false )
+    expandAlias( f 'nan {wearCommand} {nextGear[i]}', false )
   end
   -- Clean up globals we don't need anymore
   currentGear, nextGear, doReady, finishReady = nil, nil, nil, nil

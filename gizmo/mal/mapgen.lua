@@ -79,6 +79,7 @@ function setCurrentRoom( currentRoom )
     if area.rooms[currentRoom] then
       currentRoomData = area.rooms[currentRoom]
       currentRoomData.areaRNumber = areaRNumber
+      currentRoomData.areaName = area.areaName
       return true
     end
   end

@@ -17,7 +17,7 @@ Table Structure:
 
   Room Table:
   roomName TEXT; The name of the Room in the MUD
-  roomVNumberd INTEGER; The VNumber of the Room; an alternative identifier
+  roomVNumber INTEGER; The VNumber of the Room; an alternative identifier
   roomRNumber INTEGER; The RNumber of the Room; the primary unique identifier
   roomType TEXT; The "Terrain" or "Sector" type of the Room; will be used for color selection
   roomSpec BOOLEAN; Boolean value identifying Rooms with "special procedures" which will affect players in the Room
@@ -84,47 +84,6 @@ function findShortestPath( srcRoom, dstRoom )
   end
   -- Couldn't find a path to the destination
   return nil
-end
-
--- Function to traverse a list of rooms and return the sequence of directions taken
-function traverseRooms( roomList )
-  -- Ensure the room list is provided and valid
-  if not roomList or #roomList == 0 then
-    cecho( "\nError: Invalid room list provided." )
-    return
-  end
-  local directionsTaken = {} -- Store the sequence of directions taken
-
-  -- Iterate through each room in the list, except for the last one
-  for i = 1, #roomList - 1 do
-    local currentRoom = roomList[i]
-    local nextRoom = roomList[i + 1]
-
-    -- Ensure currentRoomData is valid and corresponds to currentRoom
-    if not currentRoomData or currentRoomData.roomRNumber ~= currentRoom then
-      cecho( "\nError: Current room data is not synchronized." )
-      return
-    end
-    -- Find the exit that leads to the next room
-    local exitFound = false
-    for _, exit in ipairs( currentRoomData.exits ) do
-      if exit.exitDest == nextRoom then
-        -- Move in the direction of the exit
-        moveExit( exit.exitDirection )
-        table.insert( directionsTaken, exit.exitDirection ) -- Record the direction taken
-        exitFound = true
-        break                                               -- Exit found, no need to continue checking
-      end
-    end
-    -- If no exit was found to the next room, report an error
-    if not exitFound then
-      cecho( "\nError: No exit found leading to room " .. nextRoom )
-      return
-    end
-    -- Optional: add a delay or some condition before moving to the next room
-    -- tempTimer(1, function() end) -- Example delay of 1 second
-  end
-  return directionsTaken -- Return the list of directions taken
 end
 
 -- From the gizwrld database, load the Area, Room, and Exit data into a Lua table
@@ -307,4 +266,28 @@ function findSpecialExits()
   cursor:close()
   conn:close()
   env:close()
+end
+
+function validateAreaDirs()
+  local invalidAreas = {}
+
+  for key, areaData in pairs( areaDirs ) do
+    doWintin( areaData.dirs )
+
+    local areaName = currentRoomData.areaName
+
+    if currentRoomData.roomName ~= areaData.dstRoom or areaName ~= areaData.area then
+      gizErr( f "Error validating {currentRoom}" )
+      table.insert( invalidAreas, key )
+    end
+    virtualRecall()
+  end
+  if #invalidAreas > 0 then
+    cecho( "\n<dark_orange>Invalid<reset> Areas Dirs:" )
+    for _, areaKey in ipairs( invalidAreas ) do
+      cecho( f "\n{areaKey}" )
+    end
+  else
+    cecho( f "\n<yellow_green>All areas verified successfully." )
+  end
 end

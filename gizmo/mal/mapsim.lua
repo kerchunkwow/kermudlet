@@ -33,7 +33,7 @@ function displayRoom()
     roomCoordinates[currentRoomData.roomRNumber] = {mX, mY, mZ}
   end
   cecho( f "\n\n{rn}{currentRoomData.roomName}<reset> [{tc}{currentRoomData.roomType}<reset>] ({nc}{currentRoomData.roomRNumber}<reset>) ({uc}{mX}<reset>, {uc}{mY}<reset>, {uc}{mZ}<reset>)" )
-  cecho( f "\n{rd}{currentRoomData.roomDescription}<reset>" )
+  --cecho( f "\n{rd}{currentRoomData.roomDescription}<reset>" )
   displayExits()
 end
 
@@ -139,6 +139,11 @@ function moveExit( direction, showSteps )
       end
     end
   end
+  if not sound_delayed then
+    sound_delayed = true
+    tempTimer( 5, [[sound_delayed = nil]] )
+    playSoundFile( {name = "bloop.wav"} )
+  end
   cecho( "\n<dim_grey>Alas, you cannot go that way.<reset>" )
   return false
 end
@@ -156,8 +161,10 @@ function virtualRecall()
   local funnyMessage = funnyMessages[math.random( #funnyMessages )]
 
   cecho( f "\n\n<orchid>You recite a <deep_pink>scroll of recall<orchid>.<reset>\n" )
-  tempTimer( 0.05, function () setCurrentRoom( 1121 ) end )
-  tempTimer( 0.15, function () displayRoom() end )
+  --tempTimer( 0.05, function () setCurrentRoom( 1121 ) end )
+  --tempTimer( 0.15, function () displayRoom() end )
+  setCurrentRoom( 1121 )
+  displayRoom()
 end
 
 -- Print an unnecessarily beautiful info message related to map updates & information
@@ -181,4 +188,121 @@ function mapInfo( message )
   -- Combine the message with marker tags and print it
   --cecho( f "\n{mtl}{message}{mtr}" )
   cecho( f "\n{message}" )
+end
+
+-- Given a list of room numbers, traverse them virtually while looking for doors in our path; add
+-- open commands as needed and produce a WINTIN-compatible command list including opens and moves.
+function traverseRooms( roomList )
+  -- Check if the room list is valid
+  if not roomList or #roomList == 0 then
+    cecho( "\nError: Invalid room list provided." )
+    return {}
+  end
+  local directionsTaken = {} -- This will store all the directions and 'open' commands
+
+  -- Iterate through each room in the path
+  for i = 1, #roomList - 1 do
+    local currentRoom = roomList[i]  -- Current room in the iteration
+    local nextRoom = roomList[i + 1] -- The next room in the path
+
+    local found = false              -- Flag to check if a valid exit is found for the next room
+
+    -- Search for the current room in the worldData
+    for areaRNumber, areaData in pairs( worldData ) do
+      if areaData.rooms[currentRoom] then
+        local roomData = areaData.rooms[currentRoom]
+
+        -- Iterate through exits of the current room
+        for _, exit in pairs( roomData.exits ) do
+          -- Check if the exit leads to the next room
+          if exit.exitDest == nextRoom then
+            found = true
+
+            -- Check if the exit is a door and add 'open' command to directions
+            -- This is for offline/virtual movement, so the command isn't executed
+            if exit.exitFlags ~= -1 and exit.exitKeyword and exit.exitKeyword ~= "" then
+              local doorString = ""
+              local keyword = exit.exitKeyword:match( "%w+" )
+              local keynum = exit.exitKey
+              -- A door with a key number but no keyword to unlock might be a problem in the data
+              if keynum > 0 and (not keyword or keyword == "") then
+                gizErr( "Key with no keyword found in room " .. currentRoom )
+              end
+              -- If the door has a key number, unlock it before opening
+              if keyword and keynum > 0 then
+                doorString = "unlock " .. keyword .. ";open " .. keyword
+              elseif keyword and (not keynum or keynum < 0) then
+                doorString = "open " .. keyword
+              end
+              table.insert( directionsTaken, doorString )
+            end
+            -- Use moveExit to update the virtual location in the map
+            moveExit( exit.exitDirection )
+            table.insert( directionsTaken, exit.exitDirection )
+            break -- Exit found, no need to continue checking other exits
+          end
+        end
+        if found then
+          break -- Exit found, no need to continue checking other areas
+        end
+      end
+    end
+    -- If no valid exit is found, report an error
+    if not found then
+      cecho( "\nError: Path broken at room " .. currentRoom .. " to " .. nextRoom )
+      return {}
+    end
+  end
+  return directionsTaken -- Return the list of directions and 'open' commands
+end
+
+function writeAreaPaths()
+  local startRoom = 1121 -- Starting room
+  local paths = {}       -- Store the paths for each area
+
+  -- Iterate through each area in the worldData array
+  for _, areaData in ipairs( worldData ) do
+    if areaData and areaData.areaMinRoomRNumber then
+      local dstRoom = areaData.areaMinRoomRNumber
+      local pathToDst = findShortestPath( startRoom, dstRoom )
+
+      if pathToDst then
+        local lastPath = traverseRooms( pathToDst )
+        local winTinCmd = createWintin( lastPath )
+        local areaName = areaData.areaName
+        local dstRoomName = "" -- Placeholder for destination room name
+        local needKey = winTinCmd:find( "unlock" ) ~= nil
+
+        -- Find the destination room name
+        for _, roomData in pairs( areaData.rooms ) do
+          if roomData.roomRNumber == dstRoom then
+            dstRoomName = roomData.roomName
+            break
+          end
+        end
+        -- Format the path string
+        local areaKey = areaName:gsub( "[%s%-,'()/]", "" ):lower()
+        local pathString = string.format( "  ['%s'] = { area = [[%s]], dstRoom = [[%s]], dirs = [[%s]], needKeys = %s }",
+          areaKey, areaName, dstRoomName, winTinCmd, tostring( needKey ) )
+        table.insert( paths, pathString )
+      else
+        print( "No path found from " .. startRoom .. " to " .. dstRoom )
+      end
+    else
+      print( "Missing areaMinRoomRNumber for area " .. (areaData.areaName or "Unknown") )
+    end
+  end
+  -- Combine all path strings
+  local allPathsString = "areaDirs = {\n" .. table.concat( paths, ",\n" ) .. "\n}"
+
+  -- Write allPathString to a file
+  local filePath = "C:\\Dev\\mud\\mudlet\\gizmo\\mal\\areaDirs.lua"
+  local file = io.open( filePath, "w" )
+  if file then
+    file:write( allPathsString )
+    file:close()
+    print( "Paths saved to " .. filePath )
+  else
+    print( "Error: Unable to open file for writing." )
+  end
 end

@@ -19,11 +19,17 @@ function expandWintin( wintinString )
   return commands
 end
 
+commandPacer = 0.25
 -- Use expandWintin to execute WINTIN-style command lists
 function doWintin( wintinString )
   local commands = expandWintin( wintinString )
   for _, command in ipairs( commands ) do
-    send( command, false )
+    --send( command, false )
+    if #command == 1 then
+      expandAlias( command )
+    elseif #command > 1 then
+      cecho( f "\n{MAP_COLOR['cmd']}{command}" )
+    end
   end
 end
 
@@ -87,24 +93,37 @@ function createWintin( directionList )
     return ""
   end
   local wintinCommand = ""
-  local currentDirection = shortDirection( directionList[1] )
+  local currentDirection = nil
   local count = 0
 
-  for i, direction in ipairs( directionList ) do
-    local shortDir = shortDirection( direction )
-    if shortDir == currentDirection then
-      count = count + 1
-    else
+  for _, direction in ipairs( directionList ) do
+    -- Check if the direction is a command (non-direction string)
+    if direction:match( "^open [%w]+" ) then
       -- Append the previous direction and its count to the command string
-      wintinCommand = wintinCommand .. (count > 1 and "#" .. count .. " " or "") .. currentDirection .. ";"
-      -- Reset for the new direction
-      currentDirection = shortDir
-      count = 1
+      if currentDirection then
+        wintinCommand = wintinCommand .. (count > 1 and "#" .. count .. " " or "") .. currentDirection .. ";"
+      end
+      wintinCommand = wintinCommand .. direction .. ";"
+      currentDirection = nil
+      count = 0
+    else
+      local shortDir = shortDirection( direction )
+      if shortDir == currentDirection then
+        count = count + 1
+      else
+        -- Append the previous direction and its count to the command string
+        if currentDirection then
+          wintinCommand = wintinCommand .. (count > 1 and "#" .. count .. " " or "") .. currentDirection .. ";"
+        end
+        currentDirection = shortDir
+        count = 1
+      end
     end
   end
   -- Append the last direction and its count
-  wintinCommand = wintinCommand .. (count > 1 and "#" .. count .. " " or "") .. currentDirection
-
+  if currentDirection then
+    wintinCommand = wintinCommand .. (count > 1 and "#" .. count .. " " or "") .. currentDirection
+  end
   return wintinCommand
 end
 

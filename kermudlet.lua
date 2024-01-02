@@ -24,6 +24,7 @@ local profileName = getProfileName()
 if profileName == "IMM" then -- Gizmo IMM
   rootDirectory = rootDirectory .. "gizmo/mal/"
   runLuaFile( f "{rootDirectory}unique_rooms.lua" )
+  runLuaFile( f "{rootDirectory}area_dirs.lua" )
   runLuaFile( f "{rootDirectory}mapdata.lua" )
   runLuaFile( f "{rootDirectory}mapsim.lua" )
   runLuaFile( f "{rootDirectory}mapgen.lua" )

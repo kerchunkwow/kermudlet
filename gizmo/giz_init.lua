@@ -4,7 +4,7 @@ session = getProfileTabNumber()
 
 -- Common to all sessions
 local commonScripts = {
-  "game/speedwalks.lua",
+  "game/area_dirs.lua",
   "game/trigger.lua",
   "config/events.lua",
   "config/config_common.lua",
