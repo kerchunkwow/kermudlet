@@ -5,8 +5,6 @@ table and outputting data related to Areas, Rooms, and Exits.
 
 --]]
 
-
-
 -- The "main" display function to print the current room as if we just moved into it or looked at it
 -- in the game; prints the room name, description, and exits.
 function displayRoom()

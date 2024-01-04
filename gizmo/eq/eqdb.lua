@@ -1,5 +1,3 @@
-cecho( f '\n\t<dark_violet>eqdb.lua<reset>: stuff for connecting to/updating the eq database' )
-
 function trimName( name )
   -- Trim the "flags" from the end of an item name (along with any excess whitespace)
 

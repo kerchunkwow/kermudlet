@@ -1,5 +1,3 @@
-cecho( f '\n\t<dark_violet>trigger.lua<reset>: functions to support triggers; probably refactor to a react lib' )
-
 function triggerAutoMira()
   if session ~= 1 then return end
   if pcStatus[1]["currentMana"] < 100 then return end
@@ -72,6 +70,10 @@ end
 
 function triggerCaptureRoom( room )
   if session == 1 then
+    local mapRoom = uniqueRooms[trim( tostring( room ) )]
+    if mapRoom then
+      centerview( mapRoom )
+    end
     pcStatusRoom( 1, room )
   else
     raiseGlobalEvent( "event_pcStatus_room", session, room )

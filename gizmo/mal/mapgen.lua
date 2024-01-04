@@ -31,8 +31,12 @@ function updatePlayerLocation( roomRNumber, direction )
     mX, mY, mZ = getRoomCoordinates( currentRoomNumber )
   else
     if currentRoomData.areaRNumber ~= lastAreaNumber then
-      lX, lY, lZ = getNextCoordinates( direction )
-      mX, mY, mZ = 0, 0, 0
+      local ac = MAP_COLOR["area"]
+      local nc = MAP_COLOR["number"]
+      cecho( f "\nEntering {ac}{currentRoomData.areaRNumber}<reset>:{ac}{currentRoomData.areaName}<reset> from {ac}{lastAreaNumber}<reset>:{ac}{lastAreaName}<reset>." )
+      --lX, lY, lZ = getNextCoordinates( direction )
+      --mX, mY, mZ = 0, 0, 0
+      mX, mY, mZ = getNextCoordinates( direction ) -- Experiment
     else
       mX, mY, mZ = getNextCoordinates( direction )
     end
@@ -80,20 +84,6 @@ function createExits()
   end
 end
 
-function createExits2()
-  -- Create exit from the last room to the current room
-  if lastRoomNumber > 0 and lastDir then
-    setExit( lastRoomNumber, currentRoomNumber, lastDir )
-  end
-  -- Check if there's an exit from the current room back to the last room
-  for _, exit in ipairs( currentRoomData.exits ) do
-    if exit.exitDest == lastRoomNumber then
-      setExit( currentRoomNumber, lastRoomNumber, REVERSE[lastDir] )
-      break -- Exit found, no need to check further
-    end
-  end
-end
-
 -- Get new coordinates based on the existing global coordinates and the recent direction of travel
 function getNextCoordinates( direction )
   local nextX, nextY, nextZ = mX, mY, mZ
@@ -122,6 +112,7 @@ function createRoom()
   -- Assign the room to its Area with coordinates
   setRoomArea( currentRoomNumber, currentRoomData.areaName )
   setRoomCoordinates( currentRoomNumber, mX, mY, mZ )
+  --setRoomUserData( currentRoomNumber, "areaName", currentRoomData.areaName )
   setRoomUserData( currentRoomNumber, "roomVNumber", currentRoomData.roomVNumber )
   setRoomUserData( currentRoomNumber, "roomType", currentRoomData.roomType )
   setRoomUserData( currentRoomNumber, "roomSpec", currentRoomData.roomSpec )

@@ -1,5 +1,3 @@
-cecho( f '\n\t<yellow_green>lib_string.lua<reset>: functions to translate & emulate WINTIN-style commands' )
-
 -- Expand #WINTIN-style command strings
 -- e.g., "#3 n;#2 u" = { "n", "n", "n", "u", "u" }
 function expandWintin( wintinString )
@@ -28,7 +26,8 @@ function doWintin( wintinString )
     if #command == 1 then
       expandAlias( command )
     elseif #command > 1 then
-      cecho( f "\n{MAP_COLOR['cmd']}{command}" )
+      send( 'command', false )
+      --cecho( f "\n{MAP_COLOR['cmd']}{command}" )
     end
   end
 end
