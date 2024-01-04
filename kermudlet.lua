@@ -14,9 +14,9 @@ if not timer then
 end
 runLuaFile( f "{rootDirectory}lib/lib.lua" )
 
-matches = nil
-multimatches = nil
-line = nil
+matches           = nil
+multimatches      = nil
+line              = nil
 
 -- Fork depending on which game we're playing
 local profileName = getProfileName()
@@ -25,6 +25,7 @@ if profileName == "IMM" then -- Gizmo IMM
   rootDirectory = rootDirectory .. "gizmo/mal/"
   runLuaFile( f "{rootDirectory}data/unique_rooms.lua" )
   runLuaFile( f "{rootDirectory}data/area_speedwalks.lua" )
+  runLuaFile( f "{rootDirectory}mapdef.lua" )
   runLuaFile( f "{rootDirectory}mapdata.lua" )
   runLuaFile( f "{rootDirectory}mapsim.lua" )
   runLuaFile( f "{rootDirectory}mapgen.lua" )

@@ -34,57 +34,10 @@ Table Structure:
   exitKey INTEGER; For Exits that require keys to lock/unlock, this is the in-game ID for the key
   exitDescription TEXT; A short description of the Exit such as 'A gravel path leading west.'
   roomRNumber INTEGER; Foreign key to the Room in which this Exit belongs
+
 --]]
 
--- Use a breadth-first-search (BFS) to find the shortest path between two rooms
-function findShortestPath( srcRoom, dstRoom )
-  if srcRoom == dstRoom then return {srcRoom} end
-  -- Table for visisted rooms to avoid revisiting
-  local visitedRooms = {}
 
-  -- The search queue, seeded with the srcRoom
-  local pathQueue    = {{srcRoom}}
-
-  -- As long as there are paths in the queue, "pop" one off and explore it fully
-  while #pathQueue > 0 do
-    local path = table.remove( pathQueue, 1 )
-    local lastRoom = path[#path]
-
-    -- Only visit unvisited rooms (this path)
-    if not visitedRooms[lastRoom] then
-      -- Mark the room visited
-      visitedRooms[lastRoom] = true
-
-      -- Look up the room in the worldData table
-      for _, areaData in pairs( worldData ) do
-        local roomData = areaData.rooms[lastRoom]
-
-        -- For the love of St. Christopher (patron saint of bachelors and travel), don't add DTs to paths
-        if roomData and not roomData.roomFlags:find( "DEATH" ) then
-          -- Examine each exit from the room
-          for _, exit in pairs( roomData.exits ) do
-            local nextRoom = exit.exitDest
-
-            -- If one of the exits is dstRoom; constrcut and return the path
-            if nextRoom == dstRoom then
-              local shortestPath = {unpack( path )}
-              table.insert( shortestPath, nextRoom )
-              return shortestPath
-            end
-            -- Otherwise, extend the path and queue
-            if not visitedRooms[nextRoom] then
-              local newPath = {unpack( path )}
-              table.insert( newPath, nextRoom )
-              pathQueue[#pathQueue + 1] = newPath
-            end
-          end
-        end
-      end
-    end
-  end
-  -- Couldn't find a path to the destination
-  return nil
-end
 
 -- From the gizwrld database, load the Area, Room, and Exit data into a Lua table
 function loadWorldData()
@@ -163,8 +116,93 @@ function loadWorldData()
     end
     row = cursor:fetch( row, "a" )
   end
+  -- Create a lookup table that maps roomRNumber(s) to areaRNumber(s)
+  for areaID, area in pairs( areas ) do
+    for roomID, _ in pairs( area.rooms ) do
+      roomToAreaMap[roomID] = areaID
+    end
+  end
   cursor:close()
   conn:close()
   env:close()
   return areas
+end
+
+-- Get the Area data for a given areaRNumber
+function getAreaData( areaRNumber )
+  return worldData[areaRNumber]
+end
+
+-- Get the Room data for a given roomRNumber
+function getRoomData( roomRNumber )
+  local areaRNumber = roomToAreaMap[roomRNumber]
+  if areaRNumber and worldData[areaRNumber] then
+    return worldData[areaRNumber].rooms[roomRNumber]
+  end
+end
+
+-- Get Exits from room with the given roomRNumber
+function getExitData( roomRNumber )
+  local roomData = getRoomData( roomRNumber )
+  return roomData and roomData.exits
+end
+
+function getAreaByRoom( roomRNumber )
+  local areaRNumber = roomToAreaMap[roomRNumber]
+  return getAreaData( areaRNumber )
+end
+
+function getAllRoomsByArea( areaRNumber )
+  local areaData = getAreaData( areaRNumber )
+  return areaData and areaData.rooms or {}
+end
+
+-- Use a breadth-first-search (BFS) to find the shortest path between two rooms
+function findShortestPath( srcRoom, dstRoom )
+  if srcRoom == dstRoom then return {srcRoom} end
+  -- Table for visisted rooms to avoid revisiting
+  local visitedRooms = {}
+
+  -- The search queue, seeded with the srcRoom
+  local pathQueue    = {{srcRoom}}
+
+  -- As long as there are paths in the queue, "pop" one off and explore it fully
+  while #pathQueue > 0 do
+    local path = table.remove( pathQueue, 1 )
+    local lastRoom = path[#path]
+
+    -- Only visit unvisited rooms (this path)
+    if not visitedRooms[lastRoom] then
+      -- Mark the room visited
+      visitedRooms[lastRoom] = true
+
+      -- Look up the room in the worldData table
+      for _, areaData in pairs( worldData ) do
+        local roomData = areaData.rooms[lastRoom]
+
+        -- For the love of St. Christopher (patron saint of bachelors and travel), don't add DTs to paths
+        if roomData and not roomData.roomFlags:find( "DEATH" ) then
+          -- Examine each exit from the room
+          for _, exit in pairs( roomData.exits ) do
+            local nextRoom = exit.exitDest
+
+            -- If one of the exits is dstRoom; constrcut and return the path
+            if nextRoom == dstRoom then
+              local shortestPath = {unpack( path )}
+              table.insert( shortestPath, nextRoom )
+              return shortestPath
+            end
+            -- Otherwise, extend the path and queue
+            if not visitedRooms[nextRoom] then
+              local newPath = {unpack( path )}
+              table.insert( newPath, nextRoom )
+              pathQueue[#pathQueue + 1] = newPath
+            end
+          end
+        end
+      end
+    end
+  end
+  -- Couldn't find a path to the destination
+  return nil
 end

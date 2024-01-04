@@ -94,5 +94,6 @@ areaDirs = {
   ['dkingdom1']      = {area = [[Dark Kingdom I]], dstRoom = [[A Dry Riverbed]], dirs = [[#14 w;s;#7 w;s;#2 w;s;d;#4 s;#4 w;#2 s;d;w;s;w]], needKeys = false},
   ['dkingdom2']      = {area = [[Dark Kingdom II]], dstRoom = [[A Ruined Tower]], dirs = [[#14 w;s;#7 w;s;#2 w;s;d;#4 s;#4 w;#2 s;d;#2 e;n;w;n;w;n;e;n;#4 e;#2 n;w]], needKeys = false},
   ['fvalley']        = {area = [[Forgotten Valley]], dstRoom = [[A Narrow Gulley]], dirs = [[#7 e;#2 s;e;#10 n;e;n;#3 e;n;#2 e]], needKeys = false},
-  ['lunar']          = {area = [[The Dwarven Lunar Mines I]], dstRoom = [[A Small, Clandestine Chamber]], dirs = [[#7 e;d;#3 n;e;unlock door;open door;e;#2 d;n]], needKeys = true}
+  ['lunar']          = {area = [[The Dwarven Lunar Mines I]], dstRoom = [[A Small, Clandestine Chamber]], dirs = [[#7 e;d;#3 n;e;unlock door;open door;e;#2 d;n]], needKeys = true},
+  ['yetis']          = {area = [[UtterFrost Cavern]], dstRoom = [[The Icy Lair of The Yeti]], dirs = [[#7 e;#6 n;#2 u;#3 n;u;w;#5 n;w;#9 n;#3 u;#2 e;open secret;s;close secret]], needKeys = false}
 }

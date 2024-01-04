@@ -5,15 +5,7 @@ table and outputting data related to Areas, Rooms, and Exits.
 
 --]]
 
--- For now, initialize our location as Market Square [1121]
-function startExploration()
-  -- Set the starting Room to Market Square and initilize coordinates
-  mX, mY, mZ = 0, 0, 0
-  roomCoordinates[21] = {}
-  roomCoordinates[21][1121] = {mX, mY, mZ}
-  setCurrentRoom( 1121 )
-  displayRoom()
-end
+
 
 -- The "main" display function to print the current room as if we just moved into it or looked at it
 -- in the game; prints the room name, description, and exits.
@@ -28,16 +20,9 @@ function displayRoom()
   local nc = MAP_COLOR["number"]
   local tc = MAP_COLOR[currentRoomData.roomType] or MAP_COLOR["mapui"]
   local uc = MAP_COLOR["mapui"]
+  local cX, cY, cZ = getRoomCoordinates( currentRoomData.roomRNumber )
 
-  -- Check if the room has been visited before and coordinates are assigned
-  if roomCoordinates[currentRoomData.roomRNumber] then
-    -- Use existing coordinates
-    mX, mY, mZ = unpack( roomCoordinates[currentRoomData.roomRNumber] )
-  else
-    -- Assign new coordinates (assuming mX, mY, mZ have been updated by moveExit or other means)
-    roomCoordinates[currentRoomData.roomRNumber] = {mX, mY, mZ}
-  end
-  cecho( f "\n\n{rn}{currentRoomData.roomName}<reset> [{tc}{currentRoomData.roomType}<reset>] ({nc}{currentRoomData.roomRNumber}<reset>) ({uc}{mX}<reset>, {uc}{mY}<reset>, {uc}{mZ}<reset>)" )
+  cecho( f "\n\n{rn}{currentRoomData.roomName}<reset> [{tc}{currentRoomData.roomType}<reset>] ({nc}{currentRoomData.roomRNumber}<reset>) ({uc}{cX}<reset>, {uc}{cY}<reset>, {uc}{cZ}<reset>)" )
   --cecho( f "\n{rd}{currentRoomData.roomDescription}<reset>" )
   displayExits()
 end
@@ -120,30 +105,17 @@ function inspectExit( direction )
 end
 
 -- Attempt a "virtual move"; on success report on area transitions and update virtual coordinates.
-function moveExit( direction, showSteps )
-  showSteps = showSteps or false
+function moveExit( direction )
   -- Guard against variations in the Exit data by searching for the Exit in question
   for _, exit in pairs( currentRoomData.exits ) do
     if exit.exitDirection == direction then
-      local dst = exit.exitDest
-      for _, area in pairs( worldData ) do
-        if area.rooms[dst] then
-          -- Report transition if the destination room is outside the current Area
-          if currentRoomData.areaRNumber ~= area.areaRNumber then
-            local leavingAreaName = worldData[currentRoomData.areaRNumber].areaName
-            local enteringAreaName = area.areaName
-            local ac = MAP_COLOR["area"]
-            mapInfo( f "Left {ac}{leavingAreaName}<reset>; Entered {ac}{enteringAreaName}" )
-          end
-          -- Update coordinates for the new Room (and possibly Area)
-          updateCoordinates( direction, dst, area.areaRNumber )
-          setCurrentRoom( dst )
-          displayRoom()
-          return true
-        end
-      end
+      -- Update coordinates for the new Room (and possibly Area)
+      updatePlayerLocation( exit.exitDest, direction )
+      displayRoom()
+      return true
     end
   end
+  -- Move failed, report error & play bloop
   if not sound_delayed then
     sound_delayed = true
     tempTimer( 5, [[sound_delayed = nil]] )
@@ -168,7 +140,7 @@ function virtualRecall()
   cecho( f "\n\n<orchid>You recite a <deep_pink>scroll of recall<orchid>.<reset>\n" )
   --tempTimer( 0.05, function () setCurrentRoom( 1121 ) end )
   --tempTimer( 0.15, function () displayRoom() end )
-  setCurrentRoom( 1121 )
+  updatePlayerLocation( 1121 )
   displayRoom()
 end
 
