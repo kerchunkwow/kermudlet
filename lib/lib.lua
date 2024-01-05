@@ -49,6 +49,24 @@ function runLuaFiles( filePaths )
   end
 end
 
+-- Function to check if a value is in a list or table
+function contains( table, value, usePairs )
+  if usePairs then
+    for _, v in pairs( table ) do
+      if v == value then
+        return true
+      end
+    end
+  else
+    for _, v in ipairs( table ) do
+      if v == value then
+        return true
+      end
+    end
+  end
+  return false
+end
+
 -- Load all the sub-libraries
 runLuaFile( f '{rootDirectory}lib/lib_gui.lua' )
 -- runLuaFile( f '{rootDirectory}lib/lib_moblist.lua' )

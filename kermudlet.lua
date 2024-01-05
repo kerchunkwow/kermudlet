@@ -17,18 +17,19 @@ runLuaFile( f "{rootDirectory}lib/lib.lua" )
 matches           = nil
 multimatches      = nil
 line              = nil
+command           = nil
 
 -- Fork depending on which game we're playing
 local profileName = getProfileName()
 
 if profileName == "IMM" then -- Gizmo IMM
-  rootDirectory = rootDirectory .. "gizmo/mal/"
-  runLuaFile( f "{rootDirectory}data/unique_rooms.lua" )
-  runLuaFile( f "{rootDirectory}data/area_speedwalks.lua" )
-  runLuaFile( f "{rootDirectory}mapdef.lua" )
-  runLuaFile( f "{rootDirectory}mapdata.lua" )
-  runLuaFile( f "{rootDirectory}mapsim.lua" )
-  runLuaFile( f "{rootDirectory}mapgen.lua" )
+  rootDirectory = rootDirectory .. "gizmo/"
+  runLuaFile( f "{rootDirectory}map/map_def.lua" )
+  runLuaFile( f "{rootDirectory}map/map_data.lua" )
+  runLuaFile( f "{rootDirectory}map/map_dirs.lua" )
+  runLuaFile( f "{rootDirectory}map/map_unique.lua" )
+  runLuaFile( f "{rootDirectory}map/map_sim.lua" )
+  runLuaFile( f "{rootDirectory}map/map_gen.lua" )
 elseif profileName == "DD" then -- Death's Domain
   rootDirectory = rootDirectory .. "dd/"
   runLuaFile( f "{rootDirectory}dd_init.lua" )

@@ -15,48 +15,33 @@ worldData = loadWorldData()
 function updatePlayerLocation( roomRNumber, direction )
   -- Store data about where we "came from" to get here
   if direction then
-    lastDir        = direction
-    lastRoomNumber = currentRoomNumber
-    lastAreaNumber = currentRoomData.areaRNumber
-    lastAreaName   = currentRoomData.areaName
+    lastDir = direction
   end
-  -- Update current room data
-  currentRoomNumber           = roomRNumber
-  currentRoomData             = getRoomData( currentRoomNumber )
-  currentRoomData.areaRNumber = roomToAreaMap[currentRoomNumber]
-  currentRoomData.areaName    = worldData[currentRoomData.areaRNumber].areaName
-
+  -- Update the current Room (this function updates Area as needed)
+  setCurrentRoom( roomRNumber )
+  -- If the room exists already, set coordinates, otherwise calculate new ones based on the direction of travel
   if roomExists( currentRoomNumber ) then
-    lX, lY, lZ = getNextCoordinates( direction )
     mX, mY, mZ = getRoomCoordinates( currentRoomNumber )
   else
-    if currentRoomData.areaRNumber ~= lastAreaNumber then
-      local ac = MAP_COLOR["area"]
-      local nc = MAP_COLOR["number"]
-      cecho( f "\nEntering {ac}{currentRoomData.areaRNumber}<reset>:{ac}{currentRoomData.areaName}<reset> from {ac}{lastAreaNumber}<reset>:{ac}{lastAreaName}<reset>." )
-      --lX, lY, lZ = getNextCoordinates( direction )
-      --mX, mY, mZ = 0, 0, 0
-      mX, mY, mZ = getNextCoordinates( direction ) -- Experiment
-    else
-      mX, mY, mZ = getNextCoordinates( direction )
-    end
+    mX, mY, mZ = getNextCoordinates( direction )
     createRoom()
   end
-  createExits()
+  updateExits()
   centerview( currentRoomNumber )
 end
 
 -- Create all of the exits from the current room either as stubs (if the destination room doesn't exist),
 -- or as actual exits when it does
-function createExits()
+function updateExits()
   -- Create all Exits, Exit Stubs, and/or Doors from the Current Room to adjacent Rooms
   for _, exit in ipairs( currentRoomData.exits ) do
     local exitDirection = exit.exitDirection
     local exitDest = exit.exitDest
     local exitKeyword = exit.exitKeyword
     local exitFlags = exit.exitFlags
-    local exitKey = exit.exitKey
+    local exitKey = tonumber( exit.exitKey )
     local exitDescription = exit.exitDescription
+
 
     -- If the destination room is already mapped, remove any existing exit stub and create a real exit
     if roomExists( exitDest ) then
@@ -64,9 +49,9 @@ function createExits()
       setExit( currentRoomNumber, exitDest, exitDirection )
 
       -- Check if the destination room we just linked has a stub to the currentRoom to "link back"
-      local reverseDir = exitMap[REVERSE[exitDirection]]
+      local reverseDir = EXIT_MAP[REVERSE[exitDirection]]
       local destStubs = getExitStubs1( exitDest )
-      if isIn( reverseDir, destStubs ) then
+      if contains( destStubs, reverseDir, false ) then
         setExitStub( exitDest, reverseDir, false )
         setExit( exitDest, currentRoomNumber, reverseDir )
       end
@@ -74,12 +59,13 @@ function createExits()
       -- If the destination room is not mapped, create an exit stub
       setExitStub( currentRoomNumber, exitDirection, true )
     end
-    -- If the exit has any flags, assume it's a door
     if exitFlags and exitFlags ~= -1 then
-      -- If the door has a key, it's locked (3)
-      local status = (exitKey and exitKey > 0) and 3 or 2
-      local keyword = exit.exitKeyword:match( "%w+" )
-      setDoor( currentRoomNumber, exitDirection, status )
+      local doorStatus = (exitKey and exitKey > 0) and 3 or 2
+      local shortExit = exitDirection:match( '%w' )
+      setDoor( currentRoomNumber, shortExit, doorStatus )
+      if exitKey and exitKey > 0 then
+        setRoomUserData( currentRoomNumber, f "key_{shortExit}", exitKey )
+      end
     end
   end
 end
@@ -87,6 +73,7 @@ end
 -- Get new coordinates based on the existing global coordinates and the recent direction of travel
 function getNextCoordinates( direction )
   local nextX, nextY, nextZ = mX, mY, mZ
+  -- Increment by 2 to provide a buffer on the Map for moving rooms around (don't buffer in the Z dimension)
   if direction == "north" then
     nextY = nextY + 2
   elseif direction == "south" then
@@ -96,9 +83,9 @@ function getNextCoordinates( direction )
   elseif direction == "west" then
     nextX = nextX - 2
   elseif direction == "up" then
-    nextZ = nextZ + 2
+    nextZ = nextZ + 1
   elseif direction == "down" then
-    nextZ = nextZ - 2
+    nextZ = nextZ - 1
   end
   return nextX, nextY, nextZ
 end
@@ -110,9 +97,8 @@ function createRoom()
   addRoom( currentRoomNumber )
   setRoomName( currentRoomNumber, currentRoomData.roomName )
   -- Assign the room to its Area with coordinates
-  setRoomArea( currentRoomNumber, currentRoomData.areaName )
+  setRoomArea( currentRoomNumber, currentAreaName )
   setRoomCoordinates( currentRoomNumber, mX, mY, mZ )
-  --setRoomUserData( currentRoomNumber, "areaName", currentRoomData.areaName )
   setRoomUserData( currentRoomNumber, "roomVNumber", currentRoomData.roomVNumber )
   setRoomUserData( currentRoomNumber, "roomType", currentRoomData.roomType )
   setRoomUserData( currentRoomNumber, "roomSpec", currentRoomData.roomSpec )
@@ -173,7 +159,7 @@ end
 function defineCustomEnvColors()
   customColorsDefined = true
   setCustomEnvColor( COLOR_DEATH, 255, 69, 0, 255 )
-  setCustomEnvColor( COLOR_CLUB, 255, 215, 0, 255 )
+  setCustomEnvColor( COLOR_CLUB, 72, 61, 139, 255 )
   setCustomEnvColor( COLOR_INSIDE, 160, 82, 45, 255 )
   setCustomEnvColor( COLOR_FOREST, 107, 142, 35, 255 )
   setCustomEnvColor( COLOR_MOUNTAINS, 188, 143, 143, 255 )
@@ -183,50 +169,117 @@ function defineCustomEnvColors()
   setCustomEnvColor( COLOR_HILLS, 85, 105, 45, 255 )
   setCustomEnvColor( COLOR_DEEPWATER, 25, 25, 110, 255 )
   setCustomEnvColor( COLOR_OVERLAP, 250, 0, 250, 255 )
+  setCustomEnvColor( COLOR_SHOP, 90, 90, 90, 255 )
 end
 
 -- For now, initialize our location as Market Square [1121]
 function startExploration()
-  --deleteMap()
   clearScreen()
-  --createEmptyAreas()
   openMapWidget()
   -- Set the starting Room to Market Square and initilize coordinates
-  mX, mY, mZ                  = 0, 0, 0
-  -- Update current room data
-  currentRoomNumber           = 1121
-  currentRoomData             = getRoomData( currentRoomNumber )
-  currentRoomData.areaRNumber = roomToAreaMap[currentRoomNumber]
-  currentRoomData.areaName    = worldData[currentRoomData.areaRNumber].areaName
-  if not roomExists( 1121 ) then createRoom() end
-  updatePlayerLocation( currentRoomNumber )
+  mX, mY, mZ = 0, 0, 0
+  updatePlayerLocation( 1121 )
   displayRoom()
 end
 
--- Function to check if a value is in a list
-function isIn( value, list )
-  for _, v in ipairs( list ) do
-    if v == value then
-      return true
+-- Add a label string to the Map customized by topic
+function addLabel()
+  local labelArea = currentAreaNumber
+  if labelArea == 30 or labelArea == 24 or labelArea == 22 then
+    labelArea = 21
+  end
+  local lblDir = matches[2]
+  local dX = 0
+  local dY = 0
+  -- Try and pre-position labels for less mouse dragging
+  if lblDir then
+    if lblDir == 'n' then
+      dY = 1.8
+      dX = -0.5
+    elseif lblDir == 's' then
+      dY = -1.8
+      dX = -0.5
+    elseif lblDir == 'e' then
+      dX = 1.8
+      dY = 0.5
+    elseif lblDir == 'w' then
+      dX = -1.8
+      dY = 0.5
     end
   end
-  return false
-end
-
-function addLabel()
-  local lblType = tostring( matches[2] )
-  local lblString = tostring( matches[3] )
+  local lblType = tostring( matches[3] )
+  local lblString = tostring( matches[4] )
   local lr = 0
   local lg = 0
   local lb = 0
+  local fs = 10
+  -- Customize font size and color based on different label types
   if lblType == "area" then
+    fs = 10
     lr, lg, lb = 255, 20, 147
   elseif lblType == "room" then
+    fs = 8
     lr, lg, lb = 255, 140, 0
+  elseif lblType == "note" then
+    fs = 8
+    lr, lg, lb = 255, 215, 0
+  elseif lblType == "dir" then
+    fs = 8
+    lr, lg, lb = 64, 224, 208
+  elseif lblType == "key" then
+    fs = 8
+    lr, lg, lb = 127, 255, 0
+  elseif lblType == "warn" then
+    fs = 10
+    lr, lg, lb = 255, 69, 0
   else
     return
   end
-  print( lblType, lblString )
-  createMapLabel( currentRoomData.areaRNumber, lblString, mX, mY, mZ, lr, lg, lb, 0, 0, 0, 30, 10, true, false,
+  createMapLabel( labelArea, lblString, mX + dX, mY + dY, mZ, lr, lg, lb, 0, 0, 0, 0, fs, true, true,
     "Bitstream Vera Sans Mono", 255, 0 )
+end
+
+function setCurrentArea( id )
+  -- If we're leaving an Area, store information and report on the transition
+  if currentAreaNumber > 0 then
+    lastAreaNumber = currentAreaNumber
+    lastAreaName   = currentAreaName
+    mapInfo( f "Left: {areaTag()}" )
+  end
+  currentAreaData   = worldData[id]
+  currentAreaNumber = tonumber( currentAreaData.areaRNumber )
+  currentAreaName   = tostring( currentAreaData.areaName )
+  mapInfo( f "Entered {areaTag()}" )
+end
+
+function setCurrentRoom( id )
+  -- If this is the first Area or the id is outside the current Area, update Area before Room
+  if currentAreaNumber < 0 or (not worldData[currentAreaNumber].rooms[id]) then
+    setCurrentArea( roomToAreaMap[id] )
+  end
+  -- Save our lastRoomNumber for back-linking
+  if currentRoomNumber > 0 then
+    lastRoomNumber = currentRoomNumber
+  end
+  currentRoomData   = currentAreaData.rooms[id]
+  currentRoomNumber = currentRoomData.roomRNumber
+  currentRoomName   = currentRoomData.roomName
+end
+
+function setRoomStyleAlias()
+  local roomStyle = matches[2]
+  if roomStyle == "mana" then
+    setRoomEnv( currentRoomNumber, COLOR_CLUB )
+    setRoomChar( currentRoomNumber, "M" )
+    setRoomCharColor( currentRoomNumber, 0, 191, 255, 255 )
+  elseif roomStyle == "shop" then
+    setRoomEnv( currentRoomNumber, COLOR_SHOP )
+    setRoomChar( currentRoomNumber, "$" )
+    setRoomCharColor( currentRoomNumber, 200, 170, 25, 255 )
+  end
+end
+
+-- Print a message w/ a tag denoting it as coming from our Mapper script
+function mapInfo( message )
+  cecho( f "\n  [<peru>M<reset>] {message}" )
 end

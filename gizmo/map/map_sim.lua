@@ -31,9 +31,8 @@ function displayExits()
   local exitString = ""
   local isFirstExit = true
 
-  local currentArea = worldData[currentRoomData.areaRNumber]
-  local minRNumber = currentArea.areaMinRoomRNumber
-  local maxRNumber = currentArea.areaMaxRoomRNumber
+  local minRNumber = currentAreaData.areaMinRoomRNumber
+  local maxRNumber = currentAreaData.areaMaxRoomRNumber
 
   for _, exit in pairs( exitData ) do
     local dir = exit.exitDirection
@@ -45,7 +44,7 @@ function displayExits()
     if to < minRNumber or to > maxRNumber then
       nc = MAP_COLOR["area"]
     else
-      local destRoom = currentArea.rooms[to]
+      local destRoom = currentAreaData.rooms[to]
       if destRoom and destRoom.roomFlags:find( "DEATH" ) then
         nc = MAP_COLOR["death"]
       elseif (exit.exitFlags and exit.exitFlags ~= -1) or (exit.exitKey and exit.exitKey ~= -1) then
@@ -140,29 +139,6 @@ function virtualRecall()
   --tempTimer( 0.15, function () displayRoom() end )
   updatePlayerLocation( 1121 )
   displayRoom()
-end
-
--- Print an unnecessarily beautiful info message related to map updates & information
-function mapInfo( message )
-  -- Calculate the length of the visible characters in the message
-  local visibleLength = #message:gsub( "<[^>]+>", "" ) -- Remove color tags for length calculation
-
-  -- Calculate the total padding required to center-align the message
-  local totalPadLength = math.max( 70 - visibleLength - 4, 0 ) -- Subtract 4 for the brackets and plus signs in markers
-
-  -- Split the padding between left and right, adjusting for odd lengths
-  local leftPadLength = math.floor( totalPadLength / 2 )
-  local rightPadLength = math.ceil( totalPadLength / 2 )
-
-  local leftPad = string.rep( " ", leftPadLength )
-  local rightPad = string.rep( " ", rightPadLength )
-
-  local mtl = f "{MAP_COLOR['mapui']}  [+{leftPad}<reset>" -- Marker tag left
-  local mtr = f "{MAP_COLOR['mapui']}{rightPad}+]<reset>"  -- Marker tag right
-
-  -- Combine the message with marker tags and print it
-  --cecho( f "\n{mtl}{message}{mtr}" )
-  cecho( f "\n{message}" )
 end
 
 -- Given a list of room numbers, traverse them virtually while looking for doors in our path; add

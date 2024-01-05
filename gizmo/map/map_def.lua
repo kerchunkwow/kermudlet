@@ -15,6 +15,8 @@ COLOR_FIELD         = 370
 COLOR_HILLS         = 380
 COLOR_DEEPWATER     = 390
 COLOR_OVERLAP       = 400
+COLOR_LANDMARK      = 410
+COLOR_SHOP          = 420
 
 customColorsDefined = false
 
@@ -50,20 +52,7 @@ DIRECTIONS          = {
   ["u"]     = 5,
   ["d"]     = 6
 }
-exitMap             = {
-  n = 1,
-  north = 1,
-  e = 4,
-  east = 4,
-  w = 5,
-  west = 5,
-  s = 6,
-  south = 6,
-  u = 9,
-  up = 9,
-  d = 10,
-  down = 10
-}
+
 -- Table to get the reverse of a direction; useful for bi-directional linking
 REVERSE             = {
   north = "south",
@@ -71,8 +60,34 @@ REVERSE             = {
   east  = "west",
   west  = "east",
   up    = "down",
-  down  = "up"
+  down  = "up",
+  n     = "south",
+  s     = "north",
+  e     = "west",
+  w     = "east",
+  u     = "down",
+  d     = "up"
 }
+
+-- Map exit directions to internal IDs used by the Mudlet Mapper API
+EXIT_MAP            = {
+  north = 1,
+  south = 6,
+  east  = 4,
+  west  = 5,
+  up    = 9,
+  down  = 10,
+  n     = 1,
+  s     = 6,
+  e     = 4,
+  w     = 5,
+  u     = 9,
+  d     = 10,
+}
+
+currentAreaData     = {}
+currentAreaNumber   = {}
+currentAreaName     = ""
 
 currentRoomData     = {}
 currentRoomNumber   = -1

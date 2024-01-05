@@ -107,16 +107,6 @@ function isRegex( str )
   return false
 end
 
--- Test for string membership in a list of strings
-function isIn( list, item )
-  for _, value in ipairs( list ) do
-    if value == item then
-      return true
-    end
-  end
-  return false
-end
-
 --[[
 GitHub Copilot, ChatGPT notes:
 Collaborate on Lua 5.1 scripts for Mudlet in VSCode. Use f-strings, camelCase, UPPER_CASE constants.

@@ -68,8 +68,10 @@ function triggerRouteChat()
   end
 end
 
+-- A room name has been captured; synchronize the map and update the status table
 function triggerCaptureRoom( room )
   if session == 1 then
+    -- Synchronize the map using the table of unique room names
     local mapRoom = uniqueRooms[trim( tostring( room ) )]
     if mapRoom then
       centerview( mapRoom )

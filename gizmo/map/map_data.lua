@@ -34,7 +34,6 @@ Table Structure:
   exitKey INTEGER; For Exits that require keys to lock/unlock, this is the in-game ID for the key
   exitDescription TEXT; A short description of the Exit such as 'A gravel path leading west.'
   roomRNumber INTEGER; Foreign key to the Room in which this Exit belongs
-
 --]]
 
 
@@ -205,4 +204,42 @@ function findShortestPath( srcRoom, dstRoom )
   end
   -- Couldn't find a path to the destination
   return nil
+end
+
+function roomsReport()
+  local mappedRooms = getAreaRooms( currentAreaNumber )
+  local roomsMapped = #mappedRooms + 1
+  local roomsTotal = worldData[currentAreaNumber].areaRoomCount
+  local roomsLeft = roomsTotal - roomsMapped
+  local ac = MAP_COLOR["area"]
+  local nc = MAP_COLOR["number"]
+  local rc = MAP_COLOR["roomName"]
+  mapInfo( f 'Found <yellow_green>{roomsMapped}<reset> of <dark_orange>{roomsTotal}<reset> rooms in {areaTag()}<reset>.' )
+
+  -- Check if there are 10 or fewer rooms left to map
+  if roomsLeft == 0 then
+    mapInfo( "<yellow_green>Area Complete!<reset>" )
+  elseif roomsLeft > 0 and roomsLeft <= 10 then
+    mapInfo( "\n<orange>Unmapped<reset>:\n" )
+    for roomRNumber, roomData in pairs( worldData[currentRoomData.areaRNumber].rooms ) do
+      if not contains( roomRNumber, mappedRooms, true ) then
+        local roomName = roomData.roomName
+        local exitsInfo = ""
+
+        -- Iterate through exits using pairs
+        for _, exit in pairs( roomData.exits ) do
+          exitsInfo = exitsInfo .. exit.exitDirection .. f " to {nc}" .. exit.exitDest .. "<reset>; "
+        end
+        cecho( f '[+   Room: {rc}{roomName}<reset> (ID: {nc}{roomRNumber}<reset>)\n    Exits: {exitsInfo}\n' )
+      end
+    end
+  end
+end
+
+function areaTag()
+  return f "<deep_pink>{currentAreaName}<reset> [<violet_red>{currentAreaNumber}<reset>]"
+end
+
+function roomTag()
+  return f "<light_steel_blue>currentRoomName<reset> [<royal_blue>currentRoomNumber<reset>]"
 end
