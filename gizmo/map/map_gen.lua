@@ -182,61 +182,82 @@ function startExploration()
   displayRoom()
 end
 
+-- Group related areas into a contiguous group for labeling purposes
+function getLabelArea()
+  if currentAreaNumber == 21 or currentAreaNumber == 30 or currentAreaNumber == 24 or currentAreaNumber == 22 then
+    return 21
+  else
+    return tonumber( currentAreaNumber )
+  end
+end
+
+-- Give new labels a relative starting point to speed up placement
+function getLabelPosition( direction )
+  if direction == 'n' then
+    return -0.5, 1
+  elseif direction == 's' then
+    return -0.5, -1
+  elseif direction == 'e' then
+    return 0.5, 1
+  elseif direction == 'w' then
+    return -1, 0.5
+  end
+end
+
+-- Customize label style based on type categories
+function getLabelStyle( labelType )
+  if labelType == "area" then
+    return 255, 20, 147, 10
+  elseif labelType == "room" then
+    return 255, 140, 0, 8
+  elseif labelType == "note" then
+    return 255, 215, 0, 8
+  elseif labelType == "dir" then
+    return 64, 224, 208, 8
+  elseif labelType == "key" then
+    return 127, 255, 0, 8
+  elseif labelType == "warn" then
+    return 255, 69, 0, 10
+  end
+  return 255, 0, 255, 30
+end
+
 -- Add a label string to the Map customized by topic
 function addLabel()
-  local labelArea = currentAreaNumber
-  if labelArea == 30 or labelArea == 24 or labelArea == 22 then
-    labelArea = 21
-  end
-  local lblDir = matches[2]
+  local labelDirection = matches[2]
+  local labelType = tostring( matches[3] )
   local dX = 0
   local dY = 0
-  -- Try and pre-position labels for less mouse dragging
-  if lblDir then
-    if lblDir == 'n' then
-      dY = 1.8
-      dX = -0.5
-    elseif lblDir == 's' then
-      dY = -1.8
-      dX = -0.5
-    elseif lblDir == 'e' then
-      dX = 1.8
-      dY = 0.5
-    elseif lblDir == 'w' then
-      dX = -1.8
-      dY = 0.5
-    end
+  dX, dY = getLabelPosition( labelDirection )
+
+  labelText = tostring( matches[4] )
+  labelArea = getLabelArea()
+  labelX = mX + dX
+  labelY = mY + dY
+
+  -- Get a custom font size and color based on the label (e.g., note, area)
+  labelR, labelG, labelB, labelSize = getLabelStyle( labelType )
+
+  labelID = createMapLabel( labelArea, labelText, labelX, labelY, mZ, labelR, labelG, labelB, 0, 0, 0, 0, labelSize, true,
+    true, "Bitstream Vera Sans Mono", 255, 0 )
+
+  enableKey( "Labeling" )
+end
+
+-- Nudge a label around on the map until satisfied; uses Mudlet aliases
+function adjustLabel( direction )
+  deleteMapLabel( labelArea, labelID )
+  if direction == "left" then
+    labelX = labelX - 0.05
+  elseif direction == "right" then
+    labelX = labelX + 0.05
+  elseif direction == "up" then
+    labelY = labelY + 0.05
+  elseif direction == "down" then
+    labelY = labelY - 0.05
   end
-  local lblType = tostring( matches[3] )
-  local lblString = tostring( matches[4] )
-  local lr = 0
-  local lg = 0
-  local lb = 0
-  local fs = 10
-  -- Customize font size and color based on different label types
-  if lblType == "area" then
-    fs = 10
-    lr, lg, lb = 255, 20, 147
-  elseif lblType == "room" then
-    fs = 8
-    lr, lg, lb = 255, 140, 0
-  elseif lblType == "note" then
-    fs = 8
-    lr, lg, lb = 255, 215, 0
-  elseif lblType == "dir" then
-    fs = 8
-    lr, lg, lb = 64, 224, 208
-  elseif lblType == "key" then
-    fs = 8
-    lr, lg, lb = 127, 255, 0
-  elseif lblType == "warn" then
-    fs = 10
-    lr, lg, lb = 255, 69, 0
-  else
-    return
-  end
-  createMapLabel( labelArea, lblString, mX + dX, mY + dY, mZ, lr, lg, lb, 0, 0, 0, 0, fs, true, true,
-    "Bitstream Vera Sans Mono", 255, 0 )
+  labelID = createMapLabel( labelArea, labelText, labelX, labelY, mZ, labelR, labelG, labelB, 0, 0, 0, 0, labelSize, true,
+    true, "Bitstream Vera Sans Mono", 255, 0 )
 end
 
 function setCurrentArea( id )

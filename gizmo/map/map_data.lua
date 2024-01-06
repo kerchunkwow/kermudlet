@@ -221,8 +221,8 @@ function roomsReport()
     mapInfo( "<yellow_green>Area Complete!<reset>" )
   elseif roomsLeft > 0 and roomsLeft <= 10 then
     mapInfo( "\n<orange>Unmapped<reset>:\n" )
-    for roomRNumber, roomData in pairs( worldData[currentRoomData.areaRNumber].rooms ) do
-      if not contains( roomRNumber, mappedRooms, true ) then
+    for roomRNumber, roomData in pairs( worldData[currentAreaNumber].rooms ) do
+      if not contains( mappedRooms, roomRNumber, true ) then
         local roomName = roomData.roomName
         local exitsInfo = ""
 
