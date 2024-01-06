@@ -118,6 +118,7 @@ function setRoomStyle()
   if currentRoomData.roomFlags and string.find( currentRoomData.roomFlags, "DEATH" ) then
     setRoomEnv( id, COLOR_DEATH )
     setRoomChar( id, "DT" )
+    lockRoom( id, true ) -- Lock this room so it won't ever be used for speedwalking
   elseif currentRoomData.roomFlags and string.find( currentRoomData.roomFlags, "CLUB" ) then
     setRoomEnv( id, COLOR_CLUB )
     setRoomChar( id, "M" )
@@ -225,19 +226,18 @@ end
 -- Add a label string to the Map customized by topic
 function addLabel()
   local labelDirection = matches[2]
-  local labelType = tostring( matches[3] )
+  local labelType = matches[3]
   local dX = 0
   local dY = 0
+  -- Adjust the label position based on initial direction parameter for less after-placement adjustment
   dX, dY = getLabelPosition( labelDirection )
 
-  labelText = tostring( matches[4] )
+  -- Hang on to the rest in globals so we can nudge with WASD; confirm with 'F' and cancel with 'C'
+  labelText = matches[4]
   labelArea = getLabelArea()
   labelX = mX + dX
   labelY = mY + dY
-
-  -- Get a custom font size and color based on the label (e.g., note, area)
   labelR, labelG, labelB, labelSize = getLabelStyle( labelType )
-
   labelID = createMapLabel( labelArea, labelText, labelX, labelY, mZ, labelR, labelG, labelB, 0, 0, 0, 0, labelSize, true,
     true, "Bitstream Vera Sans Mono", 255, 0 )
 

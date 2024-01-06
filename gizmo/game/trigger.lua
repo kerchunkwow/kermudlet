@@ -74,7 +74,7 @@ function triggerCaptureRoom( room )
     -- Synchronize the map using the table of unique room names
     local mapRoom = uniqueRooms[trim( tostring( room ) )]
     if mapRoom then
-      centerview( mapRoom )
+      updatePlayerLocation( mapRoom )
     end
     pcStatusRoom( 1, room )
   else

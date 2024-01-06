@@ -14,8 +14,9 @@ local commonScripts = {
 
 -- Specific to the main session
 local mainScripts = {
-  "mal/data/area_speedwalks.lua",
-  "mal/data/unique_rooms.lua",
+  "map/map_unique.lua",
+  "map/map_dirs.lua",
+  "map/map_fol.lua",
   "config/config_main.lua",
   "gui/create_gui.lua",
   "gui/gui.lua",
