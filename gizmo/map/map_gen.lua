@@ -42,7 +42,8 @@ function updateExits()
     local exitKey = tonumber( exit.exitKey )
     local exitDescription = exit.exitDescription
 
-
+    -- Ignore exits that "repeat" i.e., lead to the same room
+    if exitDest == currentRoomNumber then return end
     -- If the destination room is already mapped, remove any existing exit stub and create a real exit
     if roomExists( exitDest ) then
       setExitStub( currentRoomNumber, exitDirection, false )
@@ -115,7 +116,7 @@ function setRoomStyle()
   end
   local id = currentRoomNumber
   -- Check if 'DEATH' is present in roomFlags
-  if currentRoomData.roomFlags and string.find( currentRoomData.roomFlags, "DEATH" ) then
+  if (currentRoomData.roomFlags and string.find( currentRoomData.roomFlags, "DEATH" )) then
     setRoomEnv( id, COLOR_DEATH )
     setRoomChar( id, "DT" )
     lockRoom( id, true ) -- Lock this room so it won't ever be used for speedwalking

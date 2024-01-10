@@ -40,8 +40,10 @@ function displayExits()
     local ec = MAP_COLOR["exitDir"]
     local nc
 
-    -- Determine the color based on exit properties
-    if to < minRNumber or to > maxRNumber then
+    -- Determine the color based on exit prope8rties
+    if to == currentRoomNumber then
+      nc = "<dim_grey>"
+    elseif to < minRNumber or to > maxRNumber then
       nc = MAP_COLOR["area"]
     else
       local destRoom = currentAreaData.rooms[to]

@@ -234,6 +234,13 @@ function roomsReport()
       end
     end
   end
+  local worldRooms = getRooms()
+  local worldRoomsCount = 0
+
+  for _ in pairs( worldRooms ) do
+    worldRoomsCount = worldRoomsCount + 1
+  end
+  mapInfo( f '<olive_drab>World<reset> total: {nc}{worldRoomsCount}<reset>' )
 end
 
 function areaTag()
@@ -242,4 +249,20 @@ end
 
 function roomTag()
   return f "<light_steel_blue>currentRoomName<reset> [<royal_blue>currentRoomNumber<reset>]"
+end
+
+-- Function to find all neighboring rooms with exits leading to a specific roomRNumber
+function findNeighbors( targetRoomRNumber )
+  local neighbors = {}
+  local minR, maxR = currentAreaData.areaMinRoomRNumber, currentAreaData.areaMaxRoomRNumber
+  for r = minR, maxR do
+    local roomData = currentAreaData.rooms[r]
+    local exitData = roomData.exits
+    for _, exit in pairs( exitData ) do
+      if exit.exitDest == targetRoomRNumber then
+        table.insert( neighbors, r )
+      end
+    end
+  end
+  display( neighbors )
 end
