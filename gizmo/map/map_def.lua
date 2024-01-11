@@ -98,6 +98,7 @@ worldData           = {}
 -- Coordinates to track the "physical" location of the room relative to the starting point of the Area so Mudlet can draw it
 mX, mY, mZ          = 0, 0, 0
 
+firstAreaRoomNumber = -1
 lastRoomNumber      = -1
 lastAreaNumber      = -1
 lastAreaName        = ""

@@ -186,7 +186,7 @@ end
 
 -- Group related areas into a contiguous group for labeling purposes
 function getLabelArea()
-  if currentAreaNumber == 21 or currentAreaNumber == 30 or currentAreaNumber == 24 or currentAreaNumber == 22 then
+  if currentAreaNumber == 21 or currentAreaNumber == 30 or currentAreaNumber == 24 or currentAreaNumber == 22 or currentAreaData == 110 then
     return 21
   else
     return tonumber( currentAreaNumber )
@@ -221,7 +221,7 @@ function getLabelStyle( labelType )
   elseif labelType == "warn" then
     return 255, 69, 0, 10
   end
-  return 255, 0, 255, 30
+  return nil, nil, nil, nil
 end
 
 -- Add a label string to the Map customized by topic
@@ -235,10 +235,13 @@ function addLabel()
 
   -- Hang on to the rest in globals so we can nudge with WASD; confirm with 'F' and cancel with 'C'
   labelText = matches[4]
+  labelText = labelText:gsub( "\\\\n", "\n    " )
+  -- GPT: Please provide a snippet to insert here which will replace any ocurrences of "\n" within labelText with a Lua 5.1 compatible newline character
   labelArea = getLabelArea()
   labelX = mX + dX
   labelY = mY + dY
   labelR, labelG, labelB, labelSize = getLabelStyle( labelType )
+  if not labelSize then return end -- Return if type invalid
   labelID = createMapLabel( labelArea, labelText, labelX, labelY, mZ, labelR, labelG, labelB, 0, 0, 0, 0, labelSize, true,
     true, "Bitstream Vera Sans Mono", 255, 0 )
 
@@ -262,6 +265,8 @@ function adjustLabel( direction )
 end
 
 function setCurrentArea( id )
+  -- Store the room number of the "entrance" so we can easily reset to the start of an area when mapping
+  firstAreaRoomNumber = id
   -- If we're leaving an Area, store information and report on the transition
   if currentAreaNumber > 0 then
     lastAreaNumber = currentAreaNumber
@@ -272,6 +277,7 @@ function setCurrentArea( id )
   currentAreaNumber = tonumber( currentAreaData.areaRNumber )
   currentAreaName   = tostring( currentAreaData.areaName )
   mapInfo( f "Entered {areaTag()}" )
+  setMapZoom( 29 )
 end
 
 function setCurrentRoom( id )

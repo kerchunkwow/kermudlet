@@ -10,7 +10,7 @@ Table Structure:
   areaFirstRoomName TEXT; The name of the first Room in the Area; usually the Room with areaMinRoomRNumber
   areaMinRoomRNumber INTEGER; The lowest value of roomRNumber for Rooms in the Area
   areaMaxRoomRNumber INTEGER; The highest value of roomRNumber for Rooms in the Area
-  areaMinVNumber INTEGER; The logest value of roomVNumber for Rooms in the Area; usually the same room as areaMinRoomRNumber
+  areaMinVNumber INTEGER; The lowest value of roomVNumber for Rooms in the Area; usually the same room as areaMinRoomRNumber
   areaMaxVNumberActual INTEGER; The highest value for Rooms that actually exist in the Area
   areaMaxVNumberAllowed INTEGER; The highest value that a Room could theoretically have in the Area
   areaRoomCount INTEGER; How many Rooms are in the Area
