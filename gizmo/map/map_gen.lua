@@ -9,7 +9,8 @@ This Lua table is structured hierarchically with Areas containing Rooms, and Roo
 
 --]]
 
-worldData = loadWorldData()
+worldData = worldData or loadWorldData()
+culledExits = culledExits or {}
 
 -- Set & update the player's location, updating coordinates & creating rooms as necessary
 function updatePlayerLocation( roomRNumber, direction )
@@ -30,42 +31,48 @@ function updatePlayerLocation( roomRNumber, direction )
   centerview( currentRoomNumber )
 end
 
--- Create all of the exits from the current room either as stubs (if the destination room doesn't exist),
--- or as actual exits when it does
+-- Create all Exits, Exit Stubs, and/or Doors from the Current Room to adjacent Rooms
 function updateExits()
-  -- Create all Exits, Exit Stubs, and/or Doors from the Current Room to adjacent Rooms
+  culledExits[currentRoomNumber] = culledExits[currentRoomNumber] or {}
   for _, exit in ipairs( currentRoomData.exits ) do
     local exitDirection = exit.exitDirection
-    local exitDest = exit.exitDest
-    local exitKeyword = exit.exitKeyword
-    local exitFlags = exit.exitFlags
-    local exitKey = tonumber( exit.exitKey )
-    local exitDescription = exit.exitDescription
+    if not culledExits[currentRoomNumber][exitDirection] then
+      local exitDest = tonumber( exit.exitDest )
+      local exitKeyword = exit.exitKeyword
+      local exitFlags = exit.exitFlags
+      local exitKey = tonumber( exit.exitKey )
+      local exitDescription = exit.exitDescription
 
-    -- Ignore exits that "repeat" i.e., lead to the same room
-    if exitDest == currentRoomNumber then return end
-    -- If the destination room is already mapped, remove any existing exit stub and create a real exit
-    if roomExists( exitDest ) then
-      setExitStub( currentRoomNumber, exitDirection, false )
-      setExit( currentRoomNumber, exitDest, exitDirection )
+      -- Skip any exits that lead to the room we're already in
+      if exitDest ~= currentRoomNumber then
+        -- If the destination room is already mapped, remove any existing exit stub and create a "real" exit in that direction
+        if roomExists( exitDest ) then
+          setExitStub( currentRoomNumber, exitDirection, false )
+          setExit( currentRoomNumber, exitDest, exitDirection )
 
-      -- Check if the destination room we just linked has a stub to the currentRoom to "link back"
-      local reverseDir = EXIT_MAP[REVERSE[exitDirection]]
-      local destStubs = getExitStubs1( exitDest )
-      if contains( destStubs, reverseDir, false ) then
-        setExitStub( exitDest, reverseDir, false )
-        setExit( exitDest, currentRoomNumber, reverseDir )
-      end
-    else
-      -- If the destination room is not mapped, create an exit stub
-      setExitStub( currentRoomNumber, exitDirection, true )
-    end
-    if exitFlags and exitFlags ~= -1 then
-      local doorStatus = (exitKey and exitKey > 0) and 3 or 2
-      local shortExit = exitDirection:match( '%w' )
-      setDoor( currentRoomNumber, shortExit, doorStatus )
-      if exitKey and exitKey > 0 then
-        setRoomUserData( currentRoomNumber, f "key_{shortExit}", exitKey )
+          -- If the destination room we just linked links back to the current room, create the corresponding reverse exit
+          local reverseDir = EXIT_MAP[REVERSE[exitDirection]]
+          local destStubs = getExitStubs1( exitDest )
+          if contains( destStubs, reverseDir, false ) then
+            setExitStub( exitDest, reverseDir, false )
+            setExit( exitDest, currentRoomNumber, reverseDir )
+          end
+          -- With all exits presumably created, call optimizeExits to remove superfluous or redundant exits
+          -- (e.g., if room A has e/w exits to room B but room B only has an e exit to room A, we'll eliminate the w exit from A)
+          optimizeExits( currentRoomNumber )
+        else
+          -- If the destination room hasn't been mapped yet, create a stub for later
+          setExitStub( currentRoomNumber, exitDirection, true )
+        end
+        -- The presence of exitFlags indicates a door; a non-zero key value indicates locked status
+        if exitFlags and exitFlags ~= -1 then
+          local doorStatus = (exitKey and exitKey > 0) and 3 or 2
+          local shortExit = exitDirection:match( '%w' )
+          setDoor( currentRoomNumber, shortExit, doorStatus )
+          if exitKey and exitKey > 0 then
+            setRoomUserData( currentRoomNumber, f "key_{shortExit}", exitKey )
+          end
+        end
       end
     end
   end
@@ -310,4 +317,63 @@ end
 -- Print a message w/ a tag denoting it as coming from our Mapper script
 function mapInfo( message )
   cecho( f "\n  [<peru>M<reset>] {message}" )
+end
+
+function optimizeExits( roomID )
+  culledExits[roomID] = culledExits[roomID] or {}
+  local nc = MAP_COLOR["number"]
+  local roomExits = getRoomExits( roomID )
+  local exitCounts = {}
+
+  -- Count the number of exits leading to each destination
+  for dir, destID in pairs( roomExits ) do
+    if not exitCounts[destID] then
+      exitCounts[destID] = {}
+    end
+    table.insert( exitCounts[destID], dir )
+  end
+  for destID, exits in pairs( exitCounts ) do
+    -- Proceed only if there are multiple exits leading to the same destination
+    if #exits > 1 then
+      mapInfo( f "Optimizing repeat exits from {nc}{roomID}<reset> to {nc}{destID}<reset>" )
+
+      -- Determine the reverse exit in the destination room
+      local destExits = getRoomExits( destID )
+      local reverseExit = nil
+      for destDir, backDestID in pairs( destExits ) do
+        if backDestID == roomID then
+          reverseExit = destDir
+          break
+        end
+      end
+      -- Find the corresponding exit to keep
+      local exitToKeep = nil
+      if reverseExit then
+        for _, exitDir in pairs( exits ) do
+          if REVERSE[exitDir] == reverseExit then
+            exitToKeep = exitDir
+            break
+          end
+        end
+      end
+      -- If no corresponding exit, keep the first one in order n, s, e, w, u, d
+      if not exitToKeep then
+        local dirOrder = {"north", "south", "east", "west", "up", "down"}
+        for _, dir in ipairs( dirOrder ) do
+          if contains( exits, dir, true ) then
+            exitToKeep = dir
+            break
+          end
+        end
+      end
+      -- Remove all exits except the one to keep
+      for _, exitDir in pairs( exits ) do
+        if exitDir ~= exitToKeep then
+          mapInfo( f( "Removing <cyan>{exitDir}<reset> exit between {nc}{roomID}<reset> and {nc}{destID}<reset>" ) )
+          setExit( roomID, -1, exitDir )
+          culledExits[roomID][exitDir] = true
+        end
+      end
+    end
+  end
 end

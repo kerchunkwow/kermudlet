@@ -9,6 +9,9 @@ table and outputting data related to Areas, Rooms, and Exits.
 -- in the game; prints the room name, description, and exits.
 function displayRoom()
   local roomName = currentRoomData.roomName
+  if currentRoomData.roomSpec > 0 then
+    roomName = roomName .. " (" .. currentRoomData.roomSpec .. ")"
+  end
   if isUnique( roomName ) then
     rn = MAP_COLOR['roomNameU']
   else
@@ -22,6 +25,9 @@ function displayRoom()
 
   cecho( f "\n\n{rn}{currentRoomData.roomName}<reset> [{tc}{currentRoomData.roomType}<reset>] ({nc}{currentRoomData.roomRNumber}<reset>) ({uc}{cX}<reset>, {uc}{cY}<reset>, {uc}{cZ}<reset>)" )
   --cecho( f "\n{rd}{currentRoomData.roomDescription}<reset>" )
+  if currentRoomData.roomSpec > 0 then
+    cecho( f "\nThis room has an active <medium_orchid>special procedure<reset>." )
+  end
   displayExits()
 end
 

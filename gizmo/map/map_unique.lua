@@ -2,7 +2,7 @@ function isUnique( roomName )
   return uniqueRooms[roomName]
 end
 
-uniqueRooms = {
+uniqueRooms = uniqueRooms or {
   ["4th house"]                                                             = 2002,
   ["A Back Room in the Surveyor's Shop"]                                    = 1576,
   ["A Barn"]                                                                = 351,

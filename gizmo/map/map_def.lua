@@ -22,7 +22,7 @@ customColorsDefined = false
 
 -- When outputting data related to map generation, use these colors to highlight specific fields wich cecho()
 -- e.g., cecho( MAPGEN_COLORS["areaName"] .. area["areaName"] .. "<reset>" )
-MAP_COLOR           = {
+MAP_COLOR           = MAP_COLOR or {
   -- Area, Room, Exit Data
   ["area"]      = "<deep_pink>",
   ["number"]    = "<dark_orange>",
@@ -38,7 +38,7 @@ MAP_COLOR           = {
 }
 
 -- Valid directions for exits and travel; MUD does not support diagonal travel
-DIRECTIONS          = {
+DIRECTIONS          = DIRECTIONS or {
   ["north"] = 1,
   ["south"] = 2,
   ["east"]  = 3,
@@ -54,7 +54,7 @@ DIRECTIONS          = {
 }
 
 -- Table to get the reverse of a direction; useful for bi-directional linking
-REVERSE             = {
+REVERSE             = REVERSE or {
   north = "south",
   south = "north",
   east  = "west",
@@ -70,7 +70,7 @@ REVERSE             = {
 }
 
 -- Map exit directions to internal IDs used by the Mudlet Mapper API
-EXIT_MAP            = {
+EXIT_MAP            = EXIT_MAP or {
   north = 1,
   south = 6,
   east  = 4,
@@ -94,6 +94,7 @@ currentRoomNumber   = -1
 currentAreaNumber   = -1
 roomToAreaMap       = {}
 worldData           = {}
+culledExits         = culledExits or {}
 
 -- Coordinates to track the "physical" location of the room relative to the starting point of the Area so Mudlet can draw it
 mX, mY, mZ          = 0, 0, 0

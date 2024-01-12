@@ -254,6 +254,7 @@ end
 -- Function to find all neighboring rooms with exits leading to a specific roomRNumber
 function findNeighbors( targetRoomRNumber )
   local neighbors = {}
+  local nc = MAP_COLOR["number"]
   local minR, maxR = currentAreaData.areaMinRoomRNumber, currentAreaData.areaMaxRoomRNumber
   for r = minR, maxR do
     local roomData = currentAreaData.rooms[r]
@@ -264,5 +265,6 @@ function findNeighbors( targetRoomRNumber )
       end
     end
   end
+  mapInfo( f ' Neighbors for {nc}{targetRoomRNumber}<reset>:\n' )
   display( neighbors )
 end

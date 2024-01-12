@@ -59,4 +59,4 @@ def remove_room_from_database(room_rnumber):
 
 # Usage
 backup_database()
-remove_room_from_database(3037)
+remove_room_from_database(6914)
