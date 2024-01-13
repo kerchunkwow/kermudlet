@@ -9,8 +9,7 @@ This Lua table is structured hierarchically with Areas containing Rooms, and Roo
 
 --]]
 
-worldData = worldData or loadWorldData()
-culledExits = culledExits or {}
+worldData = loadWorldData()
 
 -- Set & update the player's location, updating coordinates & creating rooms as necessary
 function updatePlayerLocation( roomRNumber, direction )
@@ -33,10 +32,9 @@ end
 
 -- Create all Exits, Exit Stubs, and/or Doors from the Current Room to adjacent Rooms
 function updateExits()
-  culledExits[currentRoomNumber] = culledExits[currentRoomNumber] or {}
   for _, exit in ipairs( currentRoomData.exits ) do
     local exitDirection = exit.exitDirection
-    if not culledExits[currentRoomNumber][exitDirection] then
+    if (not culledExits[currentRoomNumber]) or (not culledExits[currentRoomNumber][exitDirection]) then
       local exitDest = tonumber( exit.exitDest )
       local exitKeyword = exit.exitKeyword
       local exitFlags = exit.exitFlags
@@ -98,21 +96,41 @@ function getNextCoordinates( direction )
   return nextX, nextY, nextZ
 end
 
--- Create a new room in the Mudlet
-function createRoom()
+-- Create a new room in the Mudlet; by default operates on the "current" room being the one you just arrived in;
+-- passing dir and id will create a room offset from the current room (which no associated user data)
+function createRoom( dir, id )
   if not customColorsDefined then defineCustomEnvColors() end
-  -- Create a new room in the Mudlet mapper
-  addRoom( currentRoomNumber )
-  setRoomName( currentRoomNumber, currentRoomData.roomName )
-  -- Assign the room to its Area with coordinates
-  setRoomArea( currentRoomNumber, currentAreaName )
-  setRoomCoordinates( currentRoomNumber, mX, mY, mZ )
-  setRoomUserData( currentRoomNumber, "roomVNumber", currentRoomData.roomVNumber )
-  setRoomUserData( currentRoomNumber, "roomType", currentRoomData.roomType )
-  setRoomUserData( currentRoomNumber, "roomSpec", currentRoomData.roomSpec )
-  setRoomUserData( currentRoomNumber, "roomFlags", currentRoomData.roomFlags )
-  setRoomUserData( currentRoomNumber, "roomDescription", currentRoomData.roomDescription )
-  setRoomUserData( currentRoomNumber, "roomExtraKeyword", currentRoomData.roomExtraKeyword )
+  local newRoomNumber = id or currentRoomNumber
+  local nX, nY, nZ = mX, mY, mZ
+  if dir == "east" then
+    nX = nX + 1
+  elseif dir == "west" then
+    nX = nX - 1
+  elseif dir == "north" then
+    nY = nY + 1
+  elseif dir == "south" then
+    nY = nY - 1
+  elseif dir == "up" then
+    nZ = nZ + 1
+  elseif dir == "down" then
+    nZ = nZ - 1
+  end
+  -- Create a new room in the Mudlet mapper in the Area we're currently mapping
+  addRoom( newRoomNumber )
+  setRoomArea( newRoomNumber, currentAreaName )
+  setRoomCoordinates( currentRoomNumber, nX, nY, nZ )
+
+  if not dir and not id then
+    setRoomName( newRoomNumber, currentRoomData.roomName )
+    setRoomUserData( newRoomNumber, "roomVNumber", currentRoomData.roomVNumber )
+    setRoomUserData( newRoomNumber, "roomType", currentRoomData.roomType )
+    setRoomUserData( newRoomNumber, "roomSpec", currentRoomData.roomSpec )
+    setRoomUserData( newRoomNumber, "roomFlags", currentRoomData.roomFlags )
+    setRoomUserData( newRoomNumber, "roomDescription", currentRoomData.roomDescription )
+    setRoomUserData( newRoomNumber, "roomExtraKeyword", currentRoomData.roomExtraKeyword )
+  else
+    setRoomName( newRoomNumber, tostring( id ) )
+  end
   setRoomStyle()
 end
 
@@ -167,6 +185,9 @@ end
 
 function defineCustomEnvColors()
   customColorsDefined = true
+
+
+
   setCustomEnvColor( COLOR_DEATH, 255, 69, 0, 255 )
   setCustomEnvColor( COLOR_CLUB, 72, 61, 139, 255 )
   setCustomEnvColor( COLOR_INSIDE, 160, 82, 45, 255 )
@@ -241,9 +262,15 @@ function addLabel()
   dX, dY = getLabelPosition( labelDirection )
 
   -- Hang on to the rest in globals so we can nudge with WASD; confirm with 'F' and cancel with 'C'
-  labelText = matches[4]
-  labelText = labelText:gsub( "\\\\n", "\n    " )
-  -- GPT: Please provide a snippet to insert here which will replace any ocurrences of "\n" within labelText with a Lua 5.1 compatible newline character
+  if labelType == "room" then
+    labelText = currentRoomName
+  elseif labelType == "key" and lastKey > 0 then
+    labelText = tostring( lastKey )
+    lastKey = -1
+  else
+    labelText = matches[4]
+    labelText = labelText:gsub( "\\\\n", "\n    " )
+  end
   labelArea = getLabelArea()
   labelX = mX + dX
   labelY = mY + dY
@@ -320,7 +347,6 @@ function mapInfo( message )
 end
 
 function optimizeExits( roomID )
-  culledExits[roomID] = culledExits[roomID] or {}
   local nc = MAP_COLOR["number"]
   local roomExits = getRoomExits( roomID )
   local exitCounts = {}
@@ -336,8 +362,9 @@ function optimizeExits( roomID )
     -- Proceed only if there are multiple exits leading to the same destination
     if #exits > 1 then
       mapInfo( f "Optimizing repeat exits from {nc}{roomID}<reset> to {nc}{destID}<reset>" )
+      culledExits[roomID] = culledExits[roomID] or {}
 
-      -- Determine the reverse exit in the destination room
+      -- If the destination room has a "reverse" of the exit, keep that one
       local destExits = getRoomExits( destID )
       local reverseExit = nil
       for destDir, backDestID in pairs( destExits ) do
@@ -374,6 +401,14 @@ function optimizeExits( roomID )
           culledExits[roomID][exitDir] = true
         end
       end
+    end
+  end
+end
+
+function cleanCulledExitsTable()
+  for roomID, exits in pairs( culledExits ) do
+    if next( exits ) == nil then -- Check if the exits table is empty
+      culledExits[roomID] = nil  -- Remove the entry if it is empty
     end
   end
 end

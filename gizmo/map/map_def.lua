@@ -104,3 +104,4 @@ lastRoomNumber      = -1
 lastAreaNumber      = -1
 lastAreaName        = ""
 lastDir             = ""
+lastKey             = -1

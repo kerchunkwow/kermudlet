@@ -268,3 +268,43 @@ function findNeighbors( targetRoomRNumber )
   mapInfo( f ' Neighbors for {nc}{targetRoomRNumber}<reset>:\n' )
   display( neighbors )
 end
+
+function setMinimumRoomNumber( id )
+  local luasql = require "luasql.sqlite3"
+  local env = luasql.sqlite3()
+  local conn = env:connect( 'C:/Dev/mud/gizmo/data/gizwrld.db' )
+  local nc = MAP_COLOR["number"]
+  local ac = MAP_COLOR["area"]
+  if not conn then
+    gizErr( 'Error connecting to gizwrld.db.' )
+    return
+  end
+  -- Fetch the current minimum room number for the area
+  local cursor, err = conn:execute( f( "SELECT areaMinRoomRNumber FROM Area WHERE areaRNumber = {currentAreaNumber}" ) )
+  if not cursor then
+    gizErr( f( "Error fetching data: {err}" ) )
+    return
+  end
+  local row = cursor:fetch( {}, "a" )
+  if not row then
+    gizErr( "Area not found." )
+    return
+  end
+  local currentMinRoomNumber = tonumber( row.areaMinRoomRNumber )
+  if currentMinRoomNumber == id then
+    cecho( f "\nFirst room for {ac}{currentAreaNumber}<reset> already {nc}{id}<reset>" )
+  else
+    -- Update the minimum room number
+    local update_stmt = f( "UPDATE Area SET areaMinRoomRNumber = {id} WHERE areaRNumber = {currentAreaNumber}" )
+    local res, upd_err = conn:execute( update_stmt )
+    if not res then
+      gizErr( f( "Error updating data: {upd_err}" ) )
+      return
+    end
+    cecho( f "\nUpdated first room for {ac}{currentAreaNumber}<reset> from {nc}{currentMinRoomNumber}<reset> to {nc}{id}<reset>" )
+  end
+  -- Clean up
+  if cursor then cursor:close() end
+  conn:close()
+  env:close()
+end

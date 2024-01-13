@@ -47,9 +47,11 @@ function displayExits()
     local nc
 
     -- Determine the color based on exit prope8rties
-    if to == currentRoomNumber then
+    if to == currentRoomNumber or (culledExits[currentRoomNumber] and culledExits[currentRoomNumber][dir]) then
+      -- "Dim" the exit if it leads to the same room or has been culled (because several exits lead to the same destination)
       nc = "<dim_grey>"
     elseif to < minRNumber or to > maxRNumber then
+      -- The room leads to a different area
       nc = MAP_COLOR["area"]
     else
       local destRoom = currentAreaData.rooms[to]
@@ -98,6 +100,9 @@ function inspectExit( direction )
         exitStr = exitStr ..
             (exit.exitFlags and exit.exitFlags ~= -1 and f "\n  flags: {esp}{exit.exitFlags}<reset>" or "") ..
             (exit.exitKey and exit.exitKey ~= -1 and f "\n  key: {nc}{exit.exitKey}<reset>" or "")
+        if exit.exitKey and exit.exitKey > 0 then
+          lastKey = exit.exitKey
+        end
       end
       if exit.exitDescription and #exit.exitDescription > 0 then
         exitStr = exitStr .. f "\n  description: {es}{exit.exitDescription}<reset>"
