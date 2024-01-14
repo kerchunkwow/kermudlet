@@ -308,3 +308,101 @@ function setMinimumRoomNumber( id )
   conn:close()
   env:close()
 end
+
+function getPathAlias()
+  -- Clear the pathing globals
+  speedWalkDir = nil
+  speedWalkPath = nil
+
+  local nc = MAP_COLOR["number"]
+  local rc = MAP_COLOR["roomNameU"]
+  local dirs = nil
+  local dstRoomName = nil
+  local dstRoomNumber = tonumber( matches[2] )
+  if currentRoomNumber == dstRoomNumber then
+    cecho( f "\nYou're already in {rc}{currentRoomName}<reset>." )
+  elseif not roomExists( dstRoomNumber ) then
+    cecho( f "\nRoom {nc}{dstRoomNumber}<reset> doesn't exist yet." )
+  else
+    getPath( currentRoomNumber, dstRoomNumber )
+    if speedWalkDir then
+      dstRoomName = getRoomName( dstRoomNumber )
+      dirs = createWintin( speedWalkDir )
+      cecho( f "\n\nPath from {rc}{currentRoomName}<reset> [{nc}{currentRoomNumber}<reset>] to {rc}{dstRoomName}<reset> [{nc}{dstRoomNumber}<reset>]:" )
+      cecho( f "\n<green_yellow>{dirs}<reset>" )
+      walkPath = dirs
+    end
+  end
+end
+
+-- From the current room, search for neighboring rooms in this Area;
+-- Good neighbors are those that have a corresponding return/reverse exit back to our current room; reposition those rooms near us
+-- Bad neighbors have no return/reverse exit; cull those exits (remove them from the map and store them in the culledExits table)
+function findNearestNeighbors()
+  local currentExits = getRoomExits( currentRoomNumber )
+  local rc = MAP_COLOR["number"]
+
+  for dir, roomNumber in pairs( currentExits ) do
+    if roomExists( roomNumber ) and roomNumber ~= currentRoomNumber then
+      local reverseDir = REVERSE[dir]
+      local neighborExits = getRoomExits( roomNumber )
+
+      if neighborExits and neighborExits[reverseDir] == currentRoomNumber then
+        -- Good neighbor: reposition
+        repositionRoom( roomNumber, dir )
+        local path = createWintin( {dir} )
+        --cecho( f( "\n<cyan>{path}<reset> to room {rc}{roomNumber}<reset>" ) )
+      elseif neighborExits and (not neighborExits[reverseDir] or neighborExits[reverseDir] ~= currentRoomNumber) then
+        cecho( f "\nRoom {rc}{roomNumber}<reset> is bad neighbor to our <cyan>{dir}<reset>, <firebrick>culling<reset> it" )
+        cullExit( dir )
+      end
+    end
+  end
+end
+
+-- Move a room to a location relative to our current location (mX, mY, mZ)
+function repositionRoom( id, relativeDirection )
+  if not id or not relativeDirection then return end
+  local rc = MAP_COLOR["number"]
+  local mc = "<medium_orchid>"
+  local rX, rY, rZ = mX, mY, mZ
+  if relativeDirection == "north" then
+    rY = rY + 1
+  elseif relativeDirection == "south" then
+    rY = rY - 1
+  elseif relativeDirection == "east" then
+    rX = rX + 1
+  elseif relativeDirection == "west" then
+    rX = rX - 1
+  elseif relativeDirection == "up" then
+    rZ = rZ + 1
+  elseif relativeDirection == "down" then
+    rZ = rZ - 1
+  end
+  cecho( f "\nRoom {rc}{id}<reset> is good neighbor to our <cyan>{relativeDirection}<reset>, moving to {mc}{rX}<reset>, {mc}{rY}<reset>, {mc}{rZ}<reset>" )
+  setRoomCoordinates( id, rX, rY, rZ )
+  updateMap()
+end
+
+function auditAreaCoordinates()
+  local nc = MAP_COLOR["number"]
+  local areaCoordinates = {}
+  local minRoom = worldData[currentAreaNumber].areaMinRoomRNumber
+  local maxRoom = worldData[currentAreaNumber].areaMaxRoomRNumber
+
+  for r = minRoom, maxRoom do
+    if roomExists( r ) then
+      local roomX, roomY, roomZ = getRoomCoordinates( r )
+      local coordKey = roomX .. ":" .. roomY .. ":" .. roomZ
+
+      if areaCoordinates[coordKey] then
+        -- Found overlapping rooms
+        cecho( f(
+        "\nRooms {nc}{areaCoordinates[coordKey]}<reset> and {nc}{r}<reset> overlap at coordinates ({roomX}, {roomY}, {roomZ})." ) )
+      else
+        -- Store the coordinate key with its room number
+        areaCoordinates[coordKey] = r
+      end
+    end
+  end
+end

@@ -26,8 +26,8 @@ function doWintin( wintinString )
     if #command == 1 then
       expandAlias( command )
     elseif #command > 1 then
-      send( 'command', false )
-      --cecho( f "\n{MAP_COLOR['cmd']}{command}" )
+      --send( 'command', false )
+      cecho( f "\n{MAP_COLOR['cmd']}{command}" )
     end
   end
 end

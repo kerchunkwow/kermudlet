@@ -69,6 +69,14 @@ REVERSE             = REVERSE or {
   d     = "up"
 }
 
+LONG_DIRS           = LONG_DIRS or {
+  n = "north",
+  s = "south",
+  e = "east",
+  w = "west",
+  u = "up",
+  d = "down"
+}
 -- Map exit directions to internal IDs used by the Mudlet Mapper API
 EXIT_MAP            = EXIT_MAP or {
   north = 1,
@@ -94,7 +102,8 @@ currentRoomNumber   = -1
 currentAreaNumber   = -1
 roomToAreaMap       = {}
 worldData           = {}
-culledExits         = culledExits or {}
+culledExits         = {}
+table.load( 'C:/Dev/mud/mudlet/gizmo/data/culledExits.lua', culledExits )
 
 -- Coordinates to track the "physical" location of the room relative to the starting point of the Area so Mudlet can draw it
 mX, mY, mZ          = 0, 0, 0

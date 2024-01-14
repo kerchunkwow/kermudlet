@@ -219,3 +219,7 @@ function traverseRooms( roomList )
   end
   return directionsTaken -- Return the list of directions and 'open' commands
 end
+
+function doSpeedWalk( arg )
+  print( arg )
+end

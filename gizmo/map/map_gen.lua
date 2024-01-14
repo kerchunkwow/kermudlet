@@ -57,7 +57,7 @@ function updateExits()
           end
           -- With all exits presumably created, call optimizeExits to remove superfluous or redundant exits
           -- (e.g., if room A has e/w exits to room B but room B only has an e exit to room A, we'll eliminate the w exit from A)
-          optimizeExits( currentRoomNumber )
+          --optimizeExits( currentRoomNumber )
         else
           -- If the destination room hasn't been mapped yet, create a stub for later
           setExitStub( currentRoomNumber, exitDirection, true )
@@ -224,13 +224,13 @@ end
 -- Give new labels a relative starting point to speed up placement
 function getLabelPosition( direction )
   if direction == 'n' then
-    return -0.5, 1
+    return -0.5, 0.5
   elseif direction == 's' then
-    return -0.5, -1
+    return -0.5, -0.5
   elseif direction == 'e' then
-    return 0.5, 1
+    return 0.5, 0.5
   elseif direction == 'w' then
-    return -1, 0.5
+    return -0.5, 0.5
   end
 end
 
@@ -239,7 +239,7 @@ function getLabelStyle( labelType )
   if labelType == "area" then
     return 255, 20, 147, 10
   elseif labelType == "room" then
-    return 255, 140, 0, 8
+    return 65, 105, 225, 8
   elseif labelType == "note" then
     return 255, 215, 0, 8
   elseif labelType == "dir" then
@@ -269,7 +269,7 @@ function addLabel()
     lastKey = -1
   else
     labelText = matches[4]
-    labelText = labelText:gsub( "\\\\n", "\n    " )
+    labelText = labelText:gsub( "\\\\n", "\n" )
   end
   labelArea = getLabelArea()
   labelX = mX + dX
@@ -399,16 +399,25 @@ function optimizeExits( roomID )
           mapInfo( f( "Removing <cyan>{exitDir}<reset> exit between {nc}{roomID}<reset> and {nc}{destID}<reset>" ) )
           setExit( roomID, -1, exitDir )
           culledExits[roomID][exitDir] = true
+          table.save( 'C:/Dev/mud/mudlet/gizmo/data/culledExits.lua', culledExits )
         end
       end
     end
   end
 end
 
-function cleanCulledExitsTable()
-  for roomID, exits in pairs( culledExits ) do
-    if next( exits ) == nil then -- Check if the exits table is empty
-      culledExits[roomID] = nil  -- Remove the entry if it is empty
-    end
+-- "Cull" or remove an exit from the map in the current room (useful for suppressing redundant exits, loops, etc.)
+function cullExit( dir )
+  -- Reject calls with invalid directions
+  if not dir or (#dir == 1 and not LONG_DIRS[dir]) then return end
+  -- If the direction is a single character, expand it
+  if #dir == 1 and LONG_DIRS[dir] then
+    dir = LONG_DIRS[dir]
   end
+  cecho( f "\nCulling {dir} exit from {currentRoomNumber}" )
+  culledExits[currentRoomNumber] = culledExits[currentRoomNumber] or {}
+  setExit( currentRoomNumber, -1, dir )
+  culledExits[currentRoomNumber][dir] = true
+  table.save( 'C:/Dev/mud/mudlet/gizmo/data/culledExits.lua', culledExits )
+  updateMap()
 end
