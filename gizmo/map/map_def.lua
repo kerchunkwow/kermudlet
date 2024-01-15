@@ -4,41 +4,8 @@ Globals & constants for Mapping & the Mudlet Mapper
 
 --]]
 
-COLOR_DEATH         = 300
-COLOR_CLUB          = 310
-COLOR_INSIDE        = 320
-COLOR_FOREST        = 330
-COLOR_MOUNTAINS     = 340
-COLOR_CITY          = 350
-COLOR_WATER         = 360
-COLOR_FIELD         = 370
-COLOR_HILLS         = 380
-COLOR_DEEPWATER     = 390
-COLOR_OVERLAP       = 400
-COLOR_LANDMARK      = 410
-COLOR_SHOP          = 420
-
-customColorsDefined = false
-
--- When outputting data related to map generation, use these colors to highlight specific fields wich cecho()
--- e.g., cecho( MAPGEN_COLORS["areaName"] .. area["areaName"] .. "<reset>" )
-MAP_COLOR           = MAP_COLOR or {
-  -- Area, Room, Exit Data
-  ["area"]      = "<deep_pink>",
-  ["number"]    = "<dark_orange>",
-  ["roomName"]  = "<light_steel_blue>",
-  ["roomNameU"] = "<royal_blue>",
-  ["roomDesc"]  = "<ansi_light_black>",
-  ["exitDir"]   = "<cyan>",
-  ["exitStr"]   = "<dark_slate_grey>",
-  ["exitSpec"]  = "<gold>",
-  ["death"]     = "<ansi_red>",
-  ["mapui"]     = "<medium_orchid>",
-  ["cmd"]       = "<light_steel_blue>",
-}
-
 -- Valid directions for exits and travel; MUD does not support diagonal travel
-DIRECTIONS          = DIRECTIONS or {
+DIRECTIONS        = DIRECTIONS or {
   ["north"] = 1,
   ["south"] = 2,
   ["east"]  = 3,
@@ -54,7 +21,7 @@ DIRECTIONS          = DIRECTIONS or {
 }
 
 -- Table to get the reverse of a direction; useful for bi-directional linking
-REVERSE             = REVERSE or {
+REVERSE           = REVERSE or {
   north = "south",
   south = "north",
   east  = "west",
@@ -69,7 +36,7 @@ REVERSE             = REVERSE or {
   d     = "up"
 }
 
-LONG_DIRS           = LONG_DIRS or {
+LONG_DIRS         = LONG_DIRS or {
   n = "north",
   s = "south",
   e = "east",
@@ -77,8 +44,16 @@ LONG_DIRS           = LONG_DIRS or {
   u = "up",
   d = "down"
 }
+SHORT_DIRS        = SHORT_DIRS or {
+  north = "n",
+  south = "s",
+  east  = "e",
+  west  = "w",
+  up    = "u",
+  down  = "d"
+}
 -- Map exit directions to internal IDs used by the Mudlet Mapper API
-EXIT_MAP            = EXIT_MAP or {
+EXIT_MAP          = EXIT_MAP or {
   north = 1,
   south = 6,
   east  = 4,
@@ -93,16 +68,16 @@ EXIT_MAP            = EXIT_MAP or {
   d     = 10,
 }
 
-currentAreaData     = {}
-currentAreaNumber   = {}
-currentAreaName     = ""
+currentAreaData   = {}
+currentAreaNumber = {}
+currentAreaName   = ""
 
-currentRoomData     = {}
-currentRoomNumber   = -1
-currentAreaNumber   = -1
-roomToAreaMap       = {}
-worldData           = {}
-culledExits         = {}
+currentRoomData   = {}
+currentRoomNumber = -1
+currentAreaNumber = -1
+roomToAreaMap     = {}
+worldData         = {}
+culledExits       = {}
 table.load( 'C:/Dev/mud/mudlet/gizmo/data/culledExits.lua', culledExits )
 
 -- Coordinates to track the "physical" location of the room relative to the starting point of the Area so Mudlet can draw it

@@ -67,6 +67,17 @@ function contains( table, value, usePairs )
   return false
 end
 
+-- Ensure a value remains within a fixed range
+function clamp( value, min, max )
+  return math.max( min, math.min( max, value ) )
+end
+
+-- Round n to the nearest s
+function round( n, s )
+  s = s or 0.05
+  return math.floor( n / s + 0.5 ) * s
+end
+
 -- Load all the sub-libraries
 runLuaFile( f '{rootDirectory}lib/lib_gui.lua' )
 -- runLuaFile( f '{rootDirectory}lib/lib_moblist.lua' )

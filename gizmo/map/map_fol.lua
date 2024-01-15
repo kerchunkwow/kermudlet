@@ -106,4 +106,37 @@ function updatePlayerLocation( roomRNumber )
   centerview( currentRoomNumber )
 end
 
+-- Basically just getPathAlias but automatically follow the route.
+function gotoAlias()
+  getPathAlias()
+  doWintin( walkPath )
+end
+
+-- Use built-in Mudlet path finding to get a path to the specified room.
+function getPathAlias()
+  -- Clear the pathing globals
+  speedWalkDir = nil
+  speedWalkPath = nil
+
+  local nc = MAP_COLOR["number"]
+  local rc = MAP_COLOR["roomNameU"]
+  local dirs = nil
+  local dstRoomName = nil
+  local dstRoomNumber = tonumber( matches[2] )
+  if currentRoomNumber == dstRoomNumber then
+    cecho( f "\nYou're already in {rc}{currentRoomName}<reset>." )
+  elseif not roomExists( dstRoomNumber ) then
+    cecho( f "\nRoom {nc}{dstRoomNumber}<reset> doesn't exist yet." )
+  else
+    getPath( currentRoomNumber, dstRoomNumber )
+    if speedWalkDir then
+      dstRoomName = getRoomName( dstRoomNumber )
+      dirs = createWintin( speedWalkDir )
+      cecho( f "\n\nPath from {rc}{currentRoomName}<reset> [{nc}{currentRoomNumber}<reset>] to {rc}{dstRoomName}<reset> [{nc}{dstRoomNumber}<reset>]:" )
+      cecho( f "\n<green_yellow>{dirs}<reset>" )
+      walkPath = dirs
+    end
+  end
+end
+
 worldData = loadFollowData()

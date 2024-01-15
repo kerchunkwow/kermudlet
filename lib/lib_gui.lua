@@ -93,6 +93,22 @@ function gizErr( msg )
   cecho( f "\n{ec('Error','err')}: {msg}" )
 end
 
+-- Given a color (r, g, b), return a new color scaled to be d% lighter or darker
+function getModifiedColor( r, g, b, d )
+  -- Ensure d is clamped between -100 and 100
+  d = clamp( d, -100, 100 )
+
+  -- Calculate the scaling factor (ranging from 0 to 2)
+  local scale = 1 + (d / 100)
+
+  -- Adjust the color components and round to the nearest integer
+  local newR = math.floor( clamp( r * scale, 0, 255 ) + 0.5 )
+  local newG = math.floor( clamp( g * scale, 0, 255 ) + 0.5 )
+  local newB = math.floor( clamp( b * scale, 0, 255 ) + 0.5 )
+
+  return newR, newG, newB
+end
+
 --[[
 GitHub Copilot, ChatGPT notes:
 Collaborate on Lua 5.1 scripts for Mudlet in VSCode. Use f-strings, camelCase, UPPER_CASE constants.

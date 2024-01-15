@@ -134,40 +134,6 @@ function createRoom( dir, id )
   setRoomStyle()
 end
 
--- Set the color of the current Room on the map based on terrain type or attributes
-function setRoomStyle()
-  if not customColorsDefined then
-    defineCustomEnvColors()
-  end
-  local id = currentRoomNumber
-  -- Check if 'DEATH' is present in roomFlags
-  if (currentRoomData.roomFlags and string.find( currentRoomData.roomFlags, "DEATH" )) then
-    setRoomEnv( id, COLOR_DEATH )
-    setRoomChar( id, "DT" )
-    lockRoom( id, true ) -- Lock this room so it won't ever be used for speedwalking
-  elseif currentRoomData.roomFlags and string.find( currentRoomData.roomFlags, "CLUB" ) then
-    setRoomEnv( id, COLOR_CLUB )
-    setRoomChar( id, "M" )
-    return
-  else
-    -- Check roomType and set color accordingly
-    local roomTypeToColor = {
-      ["Inside"]    = COLOR_INSIDE,
-      ["Forest"]    = COLOR_FOREST,
-      ["Mountains"] = COLOR_MOUNTAINS,
-      ["City"]      = COLOR_CITY,
-      ["Water"]     = COLOR_WATER,
-      ["Field"]     = COLOR_FIELD,
-      ["Hills"]     = COLOR_HILLS,
-      ["Deepwater"] = COLOR_DEEPWATER
-    }
-
-    local color = roomTypeToColor[currentRoomData.roomType]
-    setRoomEnv( id, color )
-  end
-  updateMap()
-end
-
 function createEmptyAreas()
   for _, areaData in pairs( worldData ) do
     local areaName, areaID = areaData.areaName, areaData.areaRNumber
@@ -181,25 +147,6 @@ function createEmptyAreas()
       setAreaName( areaID, areaName )
     end
   end
-end
-
-function defineCustomEnvColors()
-  customColorsDefined = true
-
-
-
-  setCustomEnvColor( COLOR_DEATH, 255, 69, 0, 255 )
-  setCustomEnvColor( COLOR_CLUB, 72, 61, 139, 255 )
-  setCustomEnvColor( COLOR_INSIDE, 160, 82, 45, 255 )
-  setCustomEnvColor( COLOR_FOREST, 107, 142, 35, 255 )
-  setCustomEnvColor( COLOR_MOUNTAINS, 188, 143, 143, 255 )
-  setCustomEnvColor( COLOR_CITY, 140, 140, 110, 255 )
-  setCustomEnvColor( COLOR_WATER, 30, 144, 255, 255 )
-  setCustomEnvColor( COLOR_FIELD, 35, 140, 35, 255 )
-  setCustomEnvColor( COLOR_HILLS, 85, 105, 45, 255 )
-  setCustomEnvColor( COLOR_DEEPWATER, 25, 25, 110, 255 )
-  setCustomEnvColor( COLOR_OVERLAP, 250, 0, 250, 255 )
-  setCustomEnvColor( COLOR_SHOP, 90, 90, 90, 255 )
 end
 
 -- For now, initialize our location as Market Square [1121]
@@ -230,7 +177,7 @@ function getLabelPosition( direction )
   elseif direction == 'e' then
     return 0.5, 0.5
   elseif direction == 'w' then
-    return -0.5, 0.5
+    return -1.5, 0.5
   end
 end
 
@@ -248,6 +195,8 @@ function getLabelStyle( labelType )
     return 127, 255, 0, 8
   elseif labelType == "warn" then
     return 255, 69, 0, 10
+  elseif labelType == "proc" then
+    return 138, 43, 226, 8
   end
   return nil, nil, nil, nil
 end
@@ -263,12 +212,15 @@ function addLabel()
 
   -- Hang on to the rest in globals so we can nudge with WASD; confirm with 'F' and cancel with 'C'
   if labelType == "room" then
-    labelText = currentRoomName
+    labelText = addNewlineToRoomLabels( currentRoomName )
   elseif labelType == "key" and lastKey > 0 then
     labelText = tostring( lastKey )
     lastKey = -1
+  elseif labelType == "proc" then
+    labelText = currentRoomData.roomSpec
   else
     labelText = matches[4]
+    -- Replace '\\n' in our label strings with a "real" newline; probably a better way to do this
     labelText = labelText:gsub( "\\\\n", "\n" )
   end
   labelArea = getLabelArea()
@@ -282,18 +234,39 @@ function addLabel()
   enableKey( "Labeling" )
 end
 
--- Nudge a label around on the map until satisfied; uses Mudlet aliases
-function adjustLabel( direction )
+-- Once we're finished placing a label, clean up the globals we used to keep track of it
+function finishLabel()
+  labelText, labelArea, labelX, labelY = nil, nil, nil, nil
+  labelR, labelG, labelB, labelSize = nil, nil, nil, nil
+  labelID = nil
+  disableKey( "Labeling" )
+end
+
+-- Delete the label we're working on and clean up globals
+function cancelLabel()
+  deleteMapLabel( labelArea, labelID )
+  finishLabel()
+end
+
+-- Bind to keys in "Labeling" category to fine-tune label positions between addLabel() and finishLabel()
+-- e.g., W for adjustLabel( 'left' ), CTRL-W for adjustLabel( 'left', 0.025 ) for finer-tune adjustments
+function adjustLabel( direction, scale )
+  -- Adjust the default scale as needed based on your Map's zoom level, font size, and auto scaling preference
+  scale = scale or 0.05
   deleteMapLabel( labelArea, labelID )
   if direction == "left" then
-    labelX = labelX - 0.05
+    labelX = labelX - scale
   elseif direction == "right" then
-    labelX = labelX + 0.05
+    labelX = labelX + scale
   elseif direction == "up" then
-    labelY = labelY + 0.05
+    labelY = labelY + scale
   elseif direction == "down" then
-    labelY = labelY - 0.05
+    labelY = labelY - scale
   end
+  -- Round coordinates to the nearest scale value
+  labelX = round( labelX, scale )
+  labelY = round( labelY, scale )
+  -- Recreate the label at the new position
   labelID = createMapLabel( labelArea, labelText, labelX, labelY, mZ, labelR, labelG, labelB, 0, 0, 0, 0, labelSize, true,
     true, "Bitstream Vera Sans Mono", 255, 0 )
 end

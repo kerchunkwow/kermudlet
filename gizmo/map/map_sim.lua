@@ -5,28 +5,107 @@ table and outputting data related to Areas, Rooms, and Exits.
 
 --]]
 
+-- Some rooms are currently unmappable (i.e., I couldn't reach them on my IMM.)
+unmappable = {979, 2223, 2276, 8284, 6275}
+
+function worldReport()
+  local nc          = MAP_COLOR["number"]
+  local worldCount  = 0
+  local mappedCount = 0
+  for areaID = 0, 128 do
+    -- Skip Area 107; it's missing from our database
+    if areaID == 107 then areaID = areaID + 1 end
+    local areaData = worldData[areaID]
+    local roomData = areaData.rooms
+    for _, room in pairs( roomData ) do
+      local id = room.roomRNumber
+      worldCount = worldCount + 1
+      if roomExists( id ) then
+        mappedCount = mappedCount + 1
+      else
+        cecho( f "\n{getRoomString(id,2)}" )
+      end
+    end
+  end
+  local unmappedCount = worldCount - mappedCount
+  mapInfo( f '<yellow_green>World<reset> total: {nc}{worldCount}<reset>' )
+  mapInfo( f '<olive_drab>Mapped<reset> total: {nc}{mappedCount}<reset>' )
+  mapInfo( f '<orange_red>Unmapped<reset> total: {nc}{unmappedCount}<reset>' )
+end
+
+-- Like findNewRoom(), but globally; search every Area in the MUD for a Room that has an Exit leading
+-- to a Room that hasn't been mapped yet.
+function findNewLand()
+  local ac = MAP_COLOR["area"]
+  -- getRooms() dumps a global list of mapped Room Names & IDs with no other detail
+  for id, name in pairs( getRooms() ) do
+    -- getRoomArea tells us which Area a Room is in
+    local areaID = getRoomArea( id )
+    -- While worldData was derived from the database and may contain unmapped Areas and Rooms
+    if worldData[areaID] and worldData[areaID].rooms[id] then
+      local roomData = worldData[areaID].rooms[id]
+      local exitData = roomData.exits
+      -- Check the destination of each Exit and report back of there's a Room that doesn't exist
+      -- and hasn't been flagged unmappable.
+      for _, exit in pairs( exitData ) do
+        local dir = exit.exitDirection
+        local to = exit.exitDest
+        if not roomExists( to ) and not contains( unmappable, to ) then
+          -- Uncomment this to immediately walk to the first unmapped Room
+          --expandAlias( f 'goto {rnum}' );return
+          cecho( f "\n<firebrick>{to}<reset> is <cyan>{dir}<reset> from <dark_orange>{id}" )
+        end
+      end
+    end
+  end
+end
+
+-- Search every room in the current Area for one that has an Exit to a room we haven't mapped yet.
+function findNewRoom()
+  -- Get a list of every Room in the area
+  local allRooms = getAreaRooms( currentAreaNumber )
+  -- Which is zero-based for some godforsaken reason...
+  local r = 0
+  while allRooms[r] do
+    local rnum = allRooms[r]
+    -- Verify the Room exists
+    if worldData[currentAreaNumber].rooms[rnum] then
+      -- Then check all of its Exits to see if any lead to an unmapped room
+      local exitData = worldData[currentAreaNumber].rooms[rnum].exits
+      for _, exit in pairs( exitData ) do
+        local dir = exit.exitDirection
+        local to = exit.exitDest
+        if not roomExists( to ) then
+          -- Uncomment this to immediately walk to the first unmapped Room
+          --expandAlias( f 'goto {rnum}' );return
+          cecho( f "\n(<firebrick>{to}<reset>) is <cyan>{dir}<reset> from (<dark_orange>{rnum}<reset>)" )
+          return
+        end
+      end
+    end
+    r = r + 1
+  end
+  -- If we didn't find any unmapped rooms, run a report to verify
+  cecho( "\n<green_yellow>No unmapped rooms found at this time.<reset>" )
+  roomsReport()
+end
+
 -- The "main" display function to print the current room as if we just moved into it or looked at it
 -- in the game; prints the room name, description, and exits.
-function displayRoom()
-  local roomName = currentRoomData.roomName
-  if currentRoomData.roomSpec > 0 then
-    roomName = roomName .. " (" .. currentRoomData.roomSpec .. ")"
-  end
-  if isUnique( roomName ) then
-    rn = MAP_COLOR['roomNameU']
-  else
-    rn = MAP_COLOR['roomName']
-  end
+function displayRoom( brief )
+  brief = brief or true
   local rd = MAP_COLOR["roomDesc"]
-  local nc = MAP_COLOR["number"]
-  local tc = MAP_COLOR[currentRoomData.roomType] or MAP_COLOR["mapui"]
-  local uc = MAP_COLOR["mapui"]
-  local cX, cY, cZ = getRoomCoordinates( currentRoomData.roomRNumber )
-
-  cecho( f "\n\n{rn}{currentRoomData.roomName}<reset> [{tc}{currentRoomData.roomType}<reset>] ({nc}{currentRoomData.roomRNumber}<reset>) ({uc}{cX}<reset>, {uc}{cY}<reset>, {uc}{cZ}<reset>)" )
-  --cecho( f "\n{rd}{currentRoomData.roomDescription}<reset>" )
+  cecho( f "\n\n{getRoomString(currentRoomNumber, 3)}" )
+  if not brief then
+    cecho( f "\n{rd}{currentRoomData.roomDescription}<reset>" )
+  end
   if currentRoomData.roomSpec > 0 then
-    cecho( f "\nThis room has an active <medium_orchid>special procedure<reset>." )
+    local renv = getRoomEnv( currentRoomNumber )
+    if renv ~= COLOR_PROC then
+      setRoomStyle()
+    end
+    --playSoundFile( {name = "msg.wav"} )
+    cecho( f "\n\tThis room has a ~<ansi_light_yellow>special procedure<reset>~.\n" )
   end
   displayExits()
 end
@@ -220,6 +299,84 @@ function traverseRooms( roomList )
   return directionsTaken -- Return the list of directions and 'open' commands
 end
 
-function doSpeedWalk( arg )
-  print( arg )
+function doSpeedWalk()
+  for _, dir in ipairs( speedWalkDir ) do
+    if #dir > 1 then dir = SHORT_DIRS[dir] end
+    expandAlias( dir )
+  end
+end
+
+-- Basically just getPathAlias but automatically follow the route.
+function gotoAlias()
+  getPathAlias()
+  doSpeedWalk()
+end
+
+-- Use built-in Mudlet path finding to get a path to the specified room.
+function getPathAlias()
+  -- Clear the path globals
+  speedWalkDir = nil
+  speedWalkPath = nil
+
+  local dstRoomName = nil
+  local dstRoomNumber = tonumber( matches[2] )
+  local dstRoomString = getRoomString( dstRoomNumber )
+  local dirString = nil
+
+  local nc, rc = MAP_COLOR["number"], MAP_COLOR["roomNameU"]
+
+  if currentRoomNumber == dstRoomNumber then
+    cecho( f "\nYou're already in {rc}{currentRoomName}<reset> [{nc}{dstRoomNumber}<reset>]" )
+  elseif not roomExists( dstRoomNumber ) then
+    cecho( f "\nRoom {nc}{dstRoomNumber}<reset> doesn't exist yet." )
+  else
+    getPath( currentRoomNumber, dstRoomNumber )
+    if speedWalkDir then
+      dstRoomName = getRoomName( dstRoomNumber )
+      dirString = createWintin( speedWalkDir )
+      cecho( f "\n\nPath from {getRoomString(currentRoomNumber)} to {getRoomString(dstRoomNumber)}:" )
+      cecho( f "\n\t<yellow_green>{dirString}<reset>" )
+      walkPath = dirString
+    end
+  end
+end
+
+function getRoomString( id, detail )
+  detail = detail or 1
+  local specTag = ""
+  local roomString = nil
+  local roomData = worldData[roomToAreaMap[id]].rooms[id]
+  local roomName = roomData.roomName
+  local nc = MAP_COLOR["number"]
+  local rc = nil
+
+  if roomData.roomSpec > 0 then
+    specTag = f " ~<ansi_light_yellow>{roomData.roomSpec}<reset>~"
+  end
+  if uniqueRooms[roomName] then
+    rc = MAP_COLOR['roomNameU']
+  else
+    rc = MAP_COLOR['roomName']
+  end
+  -- Detail 1 is name and number
+  if detail == 1 then
+    roomString = f "{rc}{roomName}<reset> ({MAP_COLOR['number']}{id}<reset>){specTag}"
+    return roomString
+  end
+  -- Add room type for detail level 2
+  local roomType = roomData.roomType
+  local tc = MAP_COLOR[roomType]
+  if detail == 2 then
+    roomString = f "{rc}{roomName}<reset> [{tc}{roomType}<reset>] ({nc}{id}<reset>){specTag}"
+    return roomString
+  end
+  -- Add map coordinates at level 3
+  local uc = MAP_COLOR["mapui"]
+  local cX = nil
+  local cY = nil
+  local cZ = nil
+  cX, cY, cZ = getRoomCoordinates( id )
+  local cString = f "{uc}{cX}<reset>, {uc}{cY}<reset>, {uc}{cZ}<reset>"
+  roomString = f "{rc}{roomName}<reset> [{tc}{roomType}<reset>] ({nc}{id}<reset>) ({cString}){specTag}"
+  return roomString
 end

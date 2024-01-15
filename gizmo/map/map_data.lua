@@ -36,8 +36,6 @@ Table Structure:
   roomRNumber INTEGER; Foreign key to the Room in which this Exit belongs
 --]]
 
-
-
 -- From the gizwrld database, load the Area, Room, and Exit data into a Lua table
 function loadWorldData()
   local luasql = require "luasql.sqlite3"
@@ -269,7 +267,7 @@ function findNeighbors( targetRoomRNumber )
   display( neighbors )
 end
 
-function setMinimumRoomNumber( id )
+function setMinimumRoomNumber( areaID, newMinimum )
   local luasql = require "luasql.sqlite3"
   local env = luasql.sqlite3()
   local conn = env:connect( 'C:/Dev/mud/gizmo/data/gizwrld.db' )
@@ -280,59 +278,33 @@ function setMinimumRoomNumber( id )
     return
   end
   -- Fetch the current minimum room number for the area
-  local cursor, err = conn:execute( f( "SELECT areaMinRoomRNumber FROM Area WHERE areaRNumber = {currentAreaNumber}" ) )
+  local cursor, err = conn:execute( f( "SELECT areaMinRoomRNumber FROM Area WHERE areaRNumber = {areaID}" ) )
   if not cursor then
-    gizErr( f( "Error fetching data: {err}" ) )
+    gizErr( f( "Error fetching data for {ac}{areaID}<reset>: {err}" ) )
     return
   end
   local row = cursor:fetch( {}, "a" )
   if not row then
-    gizErr( "Area not found." )
+    gizErr( f "Area {ac}{areaID}<reset> not found." )
     return
   end
   local currentMinRoomNumber = tonumber( row.areaMinRoomRNumber )
-  if currentMinRoomNumber == id then
-    cecho( f "\nFirst room for {ac}{currentAreaNumber}<reset> already {nc}{id}<reset>" )
+  if currentMinRoomNumber == newMinimum then
+    cecho( f "\nFirst room for {ac}{areaID}<reset> already {nc}{newMinimum}<reset>" )
   else
     -- Update the minimum room number
-    local update_stmt = f( "UPDATE Area SET areaMinRoomRNumber = {id} WHERE areaRNumber = {currentAreaNumber}" )
+    local update_stmt = f( "UPDATE Area SET areaMinRoomRNumber = {newMinimum} WHERE areaRNumber = {areaID}" )
     local res, upd_err = conn:execute( update_stmt )
     if not res then
-      gizErr( f( "Error updating data: {upd_err}" ) )
+      gizErr( f( "Error updating data for {ac}{areaID}<reset>: {upd_err}" ) )
       return
     end
-    cecho( f "\nUpdated first room for {ac}{currentAreaNumber}<reset> from {nc}{currentMinRoomNumber}<reset> to {nc}{id}<reset>" )
+    cecho( f "\nUpdated first room for {ac}{areaID}<reset> from {nc}{currentMinRoomNumber}<reset> to {nc}{newMinimum}<reset>" )
   end
   -- Clean up
   if cursor then cursor:close() end
   conn:close()
   env:close()
-end
-
-function getPathAlias()
-  -- Clear the pathing globals
-  speedWalkDir = nil
-  speedWalkPath = nil
-
-  local nc = MAP_COLOR["number"]
-  local rc = MAP_COLOR["roomNameU"]
-  local dirs = nil
-  local dstRoomName = nil
-  local dstRoomNumber = tonumber( matches[2] )
-  if currentRoomNumber == dstRoomNumber then
-    cecho( f "\nYou're already in {rc}{currentRoomName}<reset>." )
-  elseif not roomExists( dstRoomNumber ) then
-    cecho( f "\nRoom {nc}{dstRoomNumber}<reset> doesn't exist yet." )
-  else
-    getPath( currentRoomNumber, dstRoomNumber )
-    if speedWalkDir then
-      dstRoomName = getRoomName( dstRoomNumber )
-      dirs = createWintin( speedWalkDir )
-      cecho( f "\n\nPath from {rc}{currentRoomName}<reset> [{nc}{currentRoomNumber}<reset>] to {rc}{dstRoomName}<reset> [{nc}{dstRoomNumber}<reset>]:" )
-      cecho( f "\n<green_yellow>{dirs}<reset>" )
-      walkPath = dirs
-    end
-  end
 end
 
 -- From the current room, search for neighboring rooms in this Area;
@@ -353,8 +325,8 @@ function findNearestNeighbors()
         local path = createWintin( {dir} )
         --cecho( f( "\n<cyan>{path}<reset> to room {rc}{roomNumber}<reset>" ) )
       elseif neighborExits and (not neighborExits[reverseDir] or neighborExits[reverseDir] ~= currentRoomNumber) then
-        cecho( f "\nRoom {rc}{roomNumber}<reset> is bad neighbor to our <cyan>{dir}<reset>, <firebrick>culling<reset> it" )
-        cullExit( dir )
+        cecho( f "\nRoom {rc}{roomNumber}<reset> is bad neighbor to our <cyan>{dir}<reset>, consider <firebrick>culling<reset> it" )
+        --cullExit( dir )
       end
     end
   end
@@ -398,7 +370,7 @@ function auditAreaCoordinates()
       if areaCoordinates[coordKey] then
         -- Found overlapping rooms
         cecho( f(
-        "\nRooms {nc}{areaCoordinates[coordKey]}<reset> and {nc}{r}<reset> overlap at coordinates ({roomX}, {roomY}, {roomZ})." ) )
+          "\nRooms {nc}{areaCoordinates[coordKey]}<reset> and {nc}{r}<reset> overlap at coordinates ({roomX}, {roomY}, {roomZ})." ) )
       else
         -- Store the coordinate key with its room number
         areaCoordinates[coordKey] = r
