@@ -205,8 +205,14 @@ function findShortestPath( srcRoom, dstRoom )
 end
 
 function roomsReport()
-  local mappedRooms = getAreaRooms( currentAreaNumber )
-  local roomsMapped = #mappedRooms + 1
+  local minRoom = worldData[currentAreaNumber].areaMinRoomRNumber
+  local maxRoom = worldData[currentAreaNumber].areaMaxRoomRNumber
+  local roomsMapped = 0
+  for r = minRoom, maxRoom do
+    if roomExists( r ) then roomsMapped = roomsMapped + 1 end
+  end
+  --local mappedRooms = getAreaRooms( currentAreaNumber )
+  --local roomsMapped = #mappedRooms + 1
   local roomsTotal = worldData[currentAreaNumber].areaRoomCount
   local roomsLeft = roomsTotal - roomsMapped
   local ac = MAP_COLOR["area"]
@@ -220,7 +226,7 @@ function roomsReport()
   elseif roomsLeft > 0 and roomsLeft <= 10 then
     mapInfo( "\n<orange>Unmapped<reset>:\n" )
     for roomRNumber, roomData in pairs( worldData[currentAreaNumber].rooms ) do
-      if not contains( mappedRooms, roomRNumber, true ) then
+      if not contains( roomsMapped, roomRNumber, true ) then
         local roomName = roomData.roomName
         local exitsInfo = ""
 
@@ -377,4 +383,17 @@ function auditAreaCoordinates()
       end
     end
   end
+end
+
+-- A function to determine whether a Room belongs to a given Area
+function isInArea( roomID, areaID )
+  local roomArea = getRoomArea( roomID )
+  -- If the Room exists (i.e., it has been mapped), then use Mudlet as our source of truth
+  if roomArea == areaID or roomArea == getRoomArea( currentRoomNumber ) then
+    return true
+    -- If the Room has not been mapped, see if it is a member of the Area's room table in the worldData table
+  elseif not roomExists( roomID ) and worldData[areaID].rooms[roomID] then
+    return true
+  end
+  return false
 end

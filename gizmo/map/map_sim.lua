@@ -6,13 +6,118 @@ table and outputting data related to Areas, Rooms, and Exits.
 --]]
 
 -- Some rooms are currently unmappable (i.e., I couldn't reach them on my IMM.)
-unmappable = {979, 2223, 2276, 8284, 6275}
+ignoredRooms = {
+  [0] = true,
+  [8284] = true,
+  [6275] = true,
+  [2276] = true,
+  [2223] = true,
+  [1290] = true,
+  [979] = true,
+  [1284] = true, -- Alchemist's Shoppe after an explosion?
+  [1285] = true, -- Temple Avenue outside the Alchemist's Shoppe after an explosion?
+}
+
+function clearCharacters()
+  allRooms = getRooms()
+  for id, name in pairs( allRooms ) do
+    setRoomChar( id, "" )
+  end
+end
+
+function combinePhantom()
+  local phantom1 = worldData[102].rooms
+  local phantom2 = worldData[103].rooms
+  local phantom3 = worldData[108].rooms
+  local movedRooms = 0
+  for _, room in pairs( phantom2 ) do
+    local id = room.roomRNumber
+    if roomExists( id ) and getRoomArea( id ) ~= 102 then
+      setRoomArea( id, 102 )
+      movedRooms = movedRooms + 1
+    end
+  end
+  for _, room in pairs( phantom3 ) do
+    local id = room.roomRNumber
+    if roomExists( id ) and getRoomArea( id ) ~= 102 then
+      setRoomArea( id, 102 )
+      movedRooms = movedRooms + 1
+    end
+  end
+  cecho( f "\n{movedRooms} rooms moved to Phantom Zone." )
+end
+
+function areaHunt()
+  local rooms = getRooms()
+  local areaID = 1
+  for areaID = 1, 128 do
+    if areaID == 107 then areaID = areaID + 1 end
+    local areaData = worldData[areaID]
+    local roomData = areaData.rooms
+    for _, room in pairs( roomData ) do
+      local id = room.roomRNumber
+      if roomExists( id ) then
+        exitData = room.exits
+        for _, exit in pairs( exitData ) do
+          local dir = exit.exitDirection
+          local to = exit.exitDest
+          if not roomExists( to ) and not ignoredRooms[to] then
+            cecho( f "\n<firebrick>{to}<reset> is <cyan>{dir}<reset> from <dark_orange>{id}" )
+          end
+        end
+      end
+    end
+  end
+end
+
+-- Report on Rooms which have been moved in the Mudlet client to an Area other than their original
+-- Area from the database.
+function movedRoomsReport()
+  local ac = MAP_COLOR["area"]
+  for areaID = 1, 128 do
+    -- Skip Area 107; it's missing from our database
+    if areaID == 107 then areaID = areaID + 1 end
+    local areaData = worldData[areaID]
+    local roomData = areaData.rooms
+    for _, room in pairs( roomData ) do
+      local id = room.roomRNumber
+      local mudletArea = getRoomArea( id )
+      local dataArea = roomToAreaMap[id]
+      if mudletArea and dataArea and (mudletArea ~= dataArea) then
+        cecho( f "\n{getRoomString(id,1)} from {ac}{dataArea}<reset> has moved to {ac}{mudletArea}<reset>" )
+      end
+    end
+  end
+end
+
+function areaReport()
+  local nc = MAP_COLOR["number"]
+  local ac = MAP_COLOR["area"]
+  mapInfo( f "Map report for {ac}{currentAreaName}<reset> [{ac}{currentAreaNumber}<reset>]" )
+  local areaData = worldData[currentAreaNumber]
+  local dbCount = areaData.areaRoomCount
+  local mudletCount = 0
+  local roomData = areaData.rooms
+  for _, room in pairs( roomData ) do
+    local id = room.roomRNumber
+    if not roomExists( id ) and not ignoredRooms[id] then
+      mapInfo( f "<firebrick>Missing<reset>: {getRoomString(id,2)}" )
+    else
+      mudletCount = mudletCount + 1
+    end
+  end
+  local unmappedCount = dbCount - mudletCount
+  mapInfo( f '<yellow_green>Database<reset> rooms: {nc}{dbCount}<reset>' )
+  mapInfo( f '<olive_drab>Mudlet<reset> rooms: {nc}{mudletCount}<reset>' )
+end
 
 function worldReport()
   local nc          = MAP_COLOR["number"]
+  local ac          = MAP_COLOR["area"]
   local worldCount  = 0
   local mappedCount = 0
-  for areaID = 0, 128 do
+  local missedCount = 0
+  for areaID = 1, 128 do
     -- Skip Area 107; it's missing from our database
     if areaID == 107 then areaID = areaID + 1 end
     local areaData = worldData[areaID]
@@ -20,10 +125,14 @@ function worldReport()
     for _, room in pairs( roomData ) do
       local id = room.roomRNumber
       worldCount = worldCount + 1
-      if roomExists( id ) then
+      if roomExists( id ) or ignoredRooms[id] then
         mappedCount = mappedCount + 1
       else
-        cecho( f "\n{getRoomString(id,2)}" )
+        local roomArea = roomToAreaMap[id]
+        local roomAreaName = worldData[areaID].areaName
+        cecho( f "\n{getRoomString(id,2)} in {ac}{roomAreaName}<reset>" )
+        missedCount = missedCount + 1
+        if missedCount > 5 then return end
       end
     end
   end
@@ -87,7 +196,6 @@ function findNewRoom()
   end
   -- If we didn't find any unmapped rooms, run a report to verify
   cecho( "\n<green_yellow>No unmapped rooms found at this time.<reset>" )
-  roomsReport()
 end
 
 -- The "main" display function to print the current room as if we just moved into it or looked at it
@@ -129,7 +237,7 @@ function displayExits()
     if to == currentRoomNumber or (culledExits[currentRoomNumber] and culledExits[currentRoomNumber][dir]) then
       -- "Dim" the exit if it leads to the same room or has been culled (because several exits lead to the same destination)
       nc = "<dim_grey>"
-    elseif to < minRNumber or to > maxRNumber then
+    elseif not isInArea( to, currentAreaNumber ) then --to < minRNumber or to > maxRNumber then
       -- The room leads to a different area
       nc = MAP_COLOR["area"]
     else
@@ -195,21 +303,26 @@ end
 
 -- Attempt a "virtual move"; on success report on area transitions and update virtual coordinates.
 function moveExit( direction )
+  local nc = MAP_COLOR["number"]
   -- Guard against variations in the Exit data by searching for the Exit in question
   for _, exit in pairs( currentRoomData.exits ) do
     if exit.exitDirection == direction then
+      if not roomToAreaMap[exit.exitDest] then
+        cecho( f "\n<dim_grey>err: Room {nc}{exit.exitDest}<reset><dim_grey> has no area mapping.<reset>" )
+        return
+      end
       -- Update coordinates for the new Room (and possibly Area)
       updatePlayerLocation( exit.exitDest, direction )
       displayRoom()
       return true
     end
   end
-  -- Move failed, report error & play bloop
-  if not sound_delayed then
-    sound_delayed = true
-    tempTimer( 5, [[sound_delayed = nil]] )
-    playSoundFile( {name = "bloop.wav"} )
-  end
+  -- -- Move failed, report error & play bloop
+  -- if not sound_delayed then
+  --   sound_delayed = true
+  --   tempTimer( 5, [[sound_delayed = nil]] )
+  --   playSoundFile( {name = "bloop.wav"} )
+  -- end
   cecho( "\n<dim_grey>Alas, you cannot go that way.<reset>" )
   return false
 end
@@ -341,6 +454,30 @@ function getPathAlias()
   end
 end
 
+entryRooms = entryRooms or {}
+
+function getMSPath()
+  -- Clear the path globals
+  local dirString = nil
+  speedWalkDir = nil
+  speedWalkPath = nil
+
+  -- Calculate the path to our current room from Market Square
+  getPath( 1121, currentRoomNumber )
+  if speedWalkDir then
+    dirString = createWintin( speedWalkDir )
+    -- Add an entry to the entryRooms table that maps currentAreaNumber to currentRoomNumber and the path to that room from Market Square
+    cecho( f "\nAdding or updating path from MS to {getRoomString(currentRoomNumber,1)}" )
+    entryRooms[currentAreaNumber] = {
+      roomNumber = currentRoomNumber,
+      path = dirString
+    }
+  else
+    cecho( "\nUnable to find a path from Market Square to the current room." )
+  end
+  table.save( 'C:/Dev/mud/mudlet/gizmo/data/entryRooms.lua', entryRooms )
+end
+
 function getRoomString( id, detail )
   detail = detail or 1
   local specTag = ""
@@ -379,4 +516,7 @@ function getRoomString( id, detail )
   local cString = f "{uc}{cX}<reset>, {uc}{cY}<reset>, {uc}{cZ}<reset>"
   roomString = f "{rc}{roomName}<reset> [{tc}{roomType}<reset>] ({nc}{id}<reset>) ({cString}){specTag}"
   return roomString
+end
+
+function showPaths()
 end

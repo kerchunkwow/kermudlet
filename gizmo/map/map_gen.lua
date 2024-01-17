@@ -117,6 +117,10 @@ function createRoom( dir, id )
   end
   -- Create a new room in the Mudlet mapper in the Area we're currently mapping
   addRoom( newRoomNumber )
+  if currentAreaNumber == 115 or currentAreaNumber == 116 then
+    currentAreaNumber = 115
+    currentAreaName = 'Undead Realm'
+  end
   setRoomArea( newRoomNumber, currentAreaName )
   setRoomCoordinates( currentRoomNumber, nX, nY, nZ )
 
@@ -163,6 +167,10 @@ end
 function getLabelArea()
   if currentAreaNumber == 21 or currentAreaNumber == 30 or currentAreaNumber == 24 or currentAreaNumber == 22 or currentAreaData == 110 then
     return 21
+  elseif currentAreaNumber == 89 or currentAreaNumber == 116 or currentAreaNumber == 87 then
+    return 87
+  elseif currentAreaNumber == 108 or currentAreaNumber == 103 or currentAreaNumber == 102 then
+    return 102
   else
     return tonumber( currentAreaNumber )
   end
@@ -177,28 +185,8 @@ function getLabelPosition( direction )
   elseif direction == 'e' then
     return 0.5, 0.5
   elseif direction == 'w' then
-    return -1.5, 0.5
+    return -2.5, 0.5 -- Labels are justified, so move them further left to compensate
   end
-end
-
--- Customize label style based on type categories
-function getLabelStyle( labelType )
-  if labelType == "area" then
-    return 255, 20, 147, 10
-  elseif labelType == "room" then
-    return 65, 105, 225, 8
-  elseif labelType == "note" then
-    return 255, 215, 0, 8
-  elseif labelType == "dir" then
-    return 64, 224, 208, 8
-  elseif labelType == "key" then
-    return 127, 255, 0, 8
-  elseif labelType == "warn" then
-    return 255, 69, 0, 10
-  elseif labelType == "proc" then
-    return 138, 43, 226, 8
-  end
-  return nil, nil, nil, nil
 end
 
 -- Add a label string to the Map customized by topic
@@ -223,7 +211,7 @@ function addLabel()
     -- Replace '\\n' in our label strings with a "real" newline; probably a better way to do this
     labelText = labelText:gsub( "\\\\n", "\n" )
   end
-  labelArea = getLabelArea()
+  labelArea = getRoomArea( currentRoomNumber )
   labelX = mX + dX
   labelY = mY + dY
   labelR, labelG, labelB, labelSize = getLabelStyle( labelType )
@@ -304,13 +292,15 @@ end
 function setRoomStyleAlias()
   local roomStyle = matches[2]
   if roomStyle == "mana" then
+    unHighlightRoom( currentRoomNumber )
     setRoomEnv( currentRoomNumber, COLOR_CLUB )
-    setRoomChar( currentRoomNumber, "M" )
+    setRoomChar( currentRoomNumber, "💤" )
     setRoomCharColor( currentRoomNumber, 0, 191, 255, 255 )
   elseif roomStyle == "shop" then
+    unHighlightRoom( currentRoomNumber )
     setRoomEnv( currentRoomNumber, COLOR_SHOP )
     setRoomChar( currentRoomNumber, "$" )
-    setRoomCharColor( currentRoomNumber, 200, 170, 25, 255 )
+    setRoomCharColor( currentRoomNumber, 140, 130, 15, 255 )
   end
 end
 
