@@ -78,6 +78,20 @@ function round( n, s )
   return math.floor( n / s + 0.5 ) * s
 end
 
+function saveTable( tblStr )
+  local tbl = _G[tblStr]
+  if tbl then
+    table.save( f "{rootDirectory}data/{tblStr}.lua", tbl )
+  else
+    cecho( f "<dark_orange>No such table<reset>: {tblStr}" )
+  end
+end
+
+function loadTable( tblStr )
+  local filePath = f "{rootDirectory}data/{tblStr}.lua"
+  table.load( filePath, _G[tblStr] )
+end
+
 -- Load all the sub-libraries
 runLuaFile( f '{rootDirectory}lib/lib_gui.lua' )
 -- runLuaFile( f '{rootDirectory}lib/lib_moblist.lua' )

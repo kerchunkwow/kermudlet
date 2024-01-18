@@ -31,6 +31,7 @@ if profileName == "IMM" then -- Gizmo IMM
   runLuaFile( f "{rootDirectory}map/map_unique.lua" )
   runLuaFile( f "{rootDirectory}map/map_sim.lua" )
   runLuaFile( f "{rootDirectory}map/map_gen.lua" )
+  runLuaFile( f "{rootDirectory}map/gizmap.lua" )
 elseif profileName == "DD" then -- Death's Domain
   rootDirectory = rootDirectory .. "dd/"
   runLuaFile( f "{rootDirectory}dd_init.lua" )

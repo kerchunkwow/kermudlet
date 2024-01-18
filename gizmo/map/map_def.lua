@@ -4,6 +4,8 @@ Globals & constants for Mapping & the Mudlet Mapper
 
 --]]
 
+mapZoomLevel      = 28
+
 -- Valid directions for exits and travel; MUD does not support diagonal travel
 DIRECTIONS        = DIRECTIONS or {
   ["north"] = 1,
@@ -36,21 +38,34 @@ REVERSE           = REVERSE or {
   d     = "up"
 }
 
-LONG_DIRS         = LONG_DIRS or {
-  n = "north",
-  s = "south",
-  e = "east",
-  w = "west",
-  u = "up",
-  d = "down"
+-- Use tables to map/translate directions into SHORT or LONG versions; include redundant entries to avoid "unmapping"
+LDIR              = {
+  n     = "north",
+  s     = "south",
+  e     = "east",
+  w     = "west",
+  u     = "up",
+  d     = "down",
+  north = "north",
+  south = "south",
+  east  = "east",
+  west  = "west",
+  up    = "up",
+  down  = "down"
 }
-SHORT_DIRS        = SHORT_DIRS or {
+SDIR              = {
   north = "n",
   south = "s",
   east  = "e",
   west  = "w",
   up    = "u",
-  down  = "d"
+  down  = "d",
+  n     = "n",
+  s     = "s",
+  e     = "e",
+  w     = "w",
+  u     = "u",
+  d     = "d"
 }
 -- Map exit directions to internal IDs used by the Mudlet Mapper API
 EXIT_MAP          = EXIT_MAP or {
@@ -78,7 +93,8 @@ currentAreaNumber = -1
 roomToAreaMap     = {}
 worldData         = {}
 culledExits       = {}
-table.load( 'C:/Dev/mud/mudlet/gizmo/data/culledExits.lua', culledExits )
+loadTable( 'culledExits' )
+--loadTable( 'entryRooms' )
 
 -- Coordinates to track the "physical" location of the room relative to the starting point of the Area so Mudlet can draw it
 mX, mY, mZ          = 0, 0, 0

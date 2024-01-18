@@ -272,7 +272,7 @@ function setCurrentArea( id )
   currentAreaNumber = tonumber( currentAreaData.areaRNumber )
   currentAreaName   = tostring( currentAreaData.areaName )
   mapInfo( f "Entered {areaTag()}" )
-  setMapZoom( 29 )
+  setMapZoom( 28 )
 end
 
 function setCurrentRoom( id )
@@ -295,12 +295,20 @@ function setRoomStyleAlias()
     unHighlightRoom( currentRoomNumber )
     setRoomEnv( currentRoomNumber, COLOR_CLUB )
     setRoomChar( currentRoomNumber, "💤" )
-    setRoomCharColor( currentRoomNumber, 0, 191, 255, 255 )
   elseif roomStyle == "shop" then
     unHighlightRoom( currentRoomNumber )
     setRoomEnv( currentRoomNumber, COLOR_SHOP )
-    setRoomChar( currentRoomNumber, "$" )
-    setRoomCharColor( currentRoomNumber, 140, 130, 15, 255 )
+    setRoomChar( currentRoomNumber, "💰" )
+    --setRoomCharColor( currentRoomNumber, 140, 130, 15, 255 )
+  elseif roomStyle == "death" then
+    unHighlightRoom( currentRoomNumber )
+    setRoomEnv( currentRoomNumber, COLOR_DEATH )
+    setRoomChar( currentRoomNumber, "💀 " )
+    lockRoom( currentRoomNumber, true )
+  elseif roomStyle == "proc" then
+    unHighlightRoom( id )
+    setRoomEnv( id, COLOR_PROC )
+    setRoomChar( id, "📁 " )
   end
 end
 
@@ -362,7 +370,7 @@ function optimizeExits( roomID )
           mapInfo( f( "Removing <cyan>{exitDir}<reset> exit between {nc}{roomID}<reset> and {nc}{destID}<reset>" ) )
           setExit( roomID, -1, exitDir )
           culledExits[roomID][exitDir] = true
-          table.save( 'C:/Dev/mud/mudlet/gizmo/data/culledExits.lua', culledExits )
+          saveTable( 'culledExits' )
         end
       end
     end
@@ -372,15 +380,15 @@ end
 -- "Cull" or remove an exit from the map in the current room (useful for suppressing redundant exits, loops, etc.)
 function cullExit( dir )
   -- Reject calls with invalid directions
-  if not dir or (#dir == 1 and not LONG_DIRS[dir]) then return end
+  if not dir or (#dir == 1 and not LDIR[dir]) then return end
   -- If the direction is a single character, expand it
-  if #dir == 1 and LONG_DIRS[dir] then
-    dir = LONG_DIRS[dir]
+  if #dir == 1 and LDIR[dir] then
+    dir = LDIR[dir]
   end
   cecho( f "\nCulling {dir} exit from {currentRoomNumber}" )
   culledExits[currentRoomNumber] = culledExits[currentRoomNumber] or {}
   setExit( currentRoomNumber, -1, dir )
   culledExits[currentRoomNumber][dir] = true
-  table.save( 'C:/Dev/mud/mudlet/gizmo/data/culledExits.lua', culledExits )
+  saveTable( 'culledExits' )
   updateMap()
 end

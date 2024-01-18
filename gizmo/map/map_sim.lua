@@ -358,10 +358,10 @@ function traverseRooms( roomList )
 
   -- Iterate through each room in the path
   for i = 1, #roomList - 1 do
-    local currentRoom = roomList[i]  -- Current room in the iteration
-    local nextRoom = roomList[i + 1] -- The next room in the path
+    local currentRoom = tonumber( roomList[i] )  -- Current room in the iteration
+    local nextRoom = tonumber( roomList[i + 1] ) -- The next room in the path
 
-    local found = false              -- Flag to check if a valid exit is found for the next room
+    local found = false                          -- Flag to check if a valid exit is found for the next room
 
     -- Search for the current room in the worldData
     for areaRNumber, areaData in pairs( worldData ) do
@@ -412,9 +412,35 @@ function traverseRooms( roomList )
   return directionsTaken -- Return the list of directions and 'open' commands
 end
 
+-- Get a full Wintin-compatible path between two rooms including any necessary "open" commands;
+-- This function relies fully on Mudlet Mapper data and does not refer to the worldData table or database
+function getFullPath( srcID, dstID )
+  -- Clear Mudlet's pathing globals
+  speedWalkDir = nil
+  speedWalkPath = nil
+  -- See if Mudlet can find a path between the rooms
+  local rm = srcID
+  if getPath( srcID, dstID ) then
+    for d = 1, #speedWalkDir do
+      local dir = tostring( speedWalkDir[d] )
+      local doors = getDoors( rm )
+      display( doors )
+      if doors[dir] then
+        -- There is a door between rooms along our path, so I need to insert commands into the path
+        -- If doors[dir] == 2 then I need an open command
+        -- If doors[dir] == 1 then I need an unlock command followed by an open command
+        -- The MUD requires that a keyword be used to open doors, please suggest the most computationally efficient
+        -- solution for storing data related to doors, keywords, and locked/unlocked status so this step can be completed
+        -- as quickly as possible when calculating new paths.
+      end
+      rm = tonumber( speedWalkPath[d] )
+    end
+  end
+end
+
 function doSpeedWalk()
   for _, dir in ipairs( speedWalkDir ) do
-    if #dir > 1 then dir = SHORT_DIRS[dir] end
+    if #dir > 1 then dir = SDIR[dir] end
     expandAlias( dir )
   end
 end
@@ -446,9 +472,11 @@ function getPathAlias()
     getPath( currentRoomNumber, dstRoomNumber )
     if speedWalkDir then
       dstRoomName = getRoomName( dstRoomNumber )
-      dirString = createWintin( speedWalkDir )
+      dirStringD = createWintin( speedWalkDir )
+      dirStringP = traverseRooms( speedWalkPath )
       cecho( f "\n\nPath from {getRoomString(currentRoomNumber)} to {getRoomString(dstRoomNumber)}:" )
-      cecho( f "\n\t<yellow_green>{dirString}<reset>" )
+      cecho( f "\n\t<orange>{dirStringD}<reset>" )
+      cecho( f "\n\t<yellow_green>{dirStringP}<reset>" )
       walkPath = dirString
     end
   end
@@ -465,7 +493,7 @@ function getMSPath()
   -- Calculate the path to our current room from Market Square
   getPath( 1121, currentRoomNumber )
   if speedWalkDir then
-    dirString = createWintin( speedWalkDir )
+    dirString = traverseRooms( speedWalkPath )
     -- Add an entry to the entryRooms table that maps currentAreaNumber to currentRoomNumber and the path to that room from Market Square
     cecho( f "\nAdding or updating path from MS to {getRoomString(currentRoomNumber,1)}" )
     entryRooms[currentAreaNumber] = {
@@ -475,7 +503,7 @@ function getMSPath()
   else
     cecho( "\nUnable to find a path from Market Square to the current room." )
   end
-  table.save( 'C:/Dev/mud/mudlet/gizmo/data/entryRooms.lua', entryRooms )
+  saveTable( 'entryRooms' )
 end
 
 function getRoomString( id, detail )

@@ -19,15 +19,15 @@ customColorsDefined = false
 -- e.g., cecho( MAPGEN_COLORS["areaName"] .. area["areaName"] .. "<reset>" )
 MAP_COLOR           = {
   -- Area, Room, Exit Data
-  ["area"]      = "<deep_pink>",
+  ["area"]      = "<maroon>",
   ["number"]    = "<dark_orange>",
   ["roomName"]  = "<sky_blue>",
   ["roomNameU"] = "<royal_blue>",
-  ["roomDesc"]  = "<ansi_light_black>",
+  ["roomDesc"]  = "<olive_drab>",
   ["exitDir"]   = "<cyan>",
   ["exitStr"]   = "<dark_slate_grey>",
   ["exitSpec"]  = "<gold>",
-  ["death"]     = "<ansi_red>",
+  ["death"]     = "<orange_red>",
   ["mapui"]     = "<medium_orchid>",
   ["cmd"]       = "<light_steel_blue>",
   ['Forest']    = "<olive_drab>",
@@ -297,10 +297,34 @@ function viewLabelData()
 end
 
 function showAreaPaths()
+  cecho( f "\nGlobal Area Paths:\n" )
   for areaID, entryData in pairs( entryRooms ) do
-    local areaName = getRoomAreaName( entryData.roomNumber )
     local roomNumber = entryData.roomNumber
+    local areaName = getRoomAreaName( getRoomArea( roomNumber ) )
     local path = entryData.path
-    cecho( f( "\nArea: {areaName} [{areaID}] \n - Entry Room: {roomNumber} \n - Path from Market Square: {path}" ) )
+    cecho( f [[
+<medium_violet_red>{areaName}<reset> <dim_grey>[<reset><maroon>{areaID}<reset><dim_grey>]<reset>
+    <dim_grey>Entrance: {getRoomString(roomNumber,1)}
+    <dim_grey>Dirs: <olive_drab>{path}<reset>
+]] )
+  end
+end
+
+function updateAreaPaths()
+  cecho( f "\nGlobal Area Paths:\n" )
+  for areaID, entryData in pairs( entryRooms ) do
+    local roomNumber = entryData.roomNumber
+    local oldPath = entryData.path
+    local areaName = getRoomAreaName( getRoomArea( roomNumber ) )
+    print( f "Looking for path to: {roomNumber}" )
+    --getPath( 1121, roomNumber )
+    --display( speedWalkPath )
+    local newPath = getFullPath( 1121, tonumber( roomNumber ) )
+    --<dim_grey>New Dirs: <yellow_green>{display(newPath)}<reset>
+    cecho( f [[
+<medium_violet_red>{areaName}<reset> <dim_grey>[<reset><maroon>{areaID}<reset><dim_grey>]<reset>
+    <dim_grey>Entrance: {getRoomString(roomNumber,1)}
+    <dim_grey>Dirs: <olive_drab>{oldPath}<reset>
+]] )
   end
 end

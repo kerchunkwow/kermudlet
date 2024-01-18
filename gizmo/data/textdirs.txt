@@ -1,0 +1,291 @@
+The Maritime Museum [3]
+    Entrance: The Entrance (49)
+    Dirs: #14 w;s;#9 w;#2 s;d;w
+The Dragon Caves [4]
+    Entrance: A Path Through the Valley (138)
+    Dirs: #12 w;#2 s;w;s;e;#2 s;#4 w
+The Spirit Woods [5]
+    Entrance: Entrance to The Spirit Woods (187)
+    Dirs: #8 e;#4 n
+Allemonde [6]
+    Entrance: Opera House (212)
+    Dirs: #3 w;#5 n
+The Shire [7]
+    Entrance: A Dimly Lit Path (309)
+    Dirs: #8 w;n
+The Canticle [8]
+    Entrance: The Moor (449)
+    Dirs: #8 w;#4 n;#3 e;n
+The Garden [10]
+    Entrance: Cobble Stone Path (531)
+    Dirs: #6 w;n
+The Death Tower [11]
+    Entrance: The Entrance of the Death Tower (585)
+    Dirs: #6 e;s
+The Galaxy [13]
+    Entrance: A Long Stair (761)
+    Dirs: #3 n;u
+Zhalur the Golden [14]
+    Entrance: The Docks Along the River (768)
+    Dirs: s;#2 e;#2 s;#2 e;#5 s
+The Warring Roses [15]
+    Entrance: A Sheltered Enclave (832)
+    Dirs: #14 w;s;#10 w;#3 s;#4 w;s;u
+The New Graveyard [16]
+    Entrance: A Path to the Graveyard (891)
+    Dirs: #7 e;#4 n;w
+The Zoo [17]
+    Entrance: Midgaard's Zoo Entrance (927)
+    Dirs: s;#3 w;#5 s
+The Chateau of the Dead [18]
+    Entrance: A Sunlit Path (980)
+    Dirs: #5 w;n
+The Ivory Tower [19]
+    Entrance: Entrance to the Ivory Tower (1027)
+    Dirs: #14 w;s;#9 w;#2 s;d;#5 s;w;#6 s;#2 e;#2 s;#3 e
+The Newt Caves [20]
+    Entrance: Obsidian Hills (1075)
+    Dirs: #7 e;#2 s;e
+The Graveyard Plus [25]
+    Entrance: A Gravel Road on the Graveyard (1298)
+    Dirs: s;#3 w;#4 s;#2 e;s
+Le Chateau d'Angoisse [26]
+    Entrance: Pathway to the Chateau (1372)
+    Dirs: s;#2 e;#2 s;#2 e;#4 s;#10 w;d;n
+The Martial Arts Dojo [27]
+    Entrance: Entrance To The Anything Goes Martial Arts Dojo (1419)
+    Dirs: #2 s
+The Mayor's House [28]
+    Entrance: A Well Tended Path (1442)
+    Dirs: #7 w;n
+The Pixies' Garden [29]
+    Entrance: At a Winding Iron Gate (1477)
+    Dirs: #14 w;s;#9 w;#2 s;d;#5 s;w;#9 s
+The House of Horror [32]
+    Entrance: Outside a Forgotten Garden (1720)
+    Dirs: s;#3 w;#4 s;#2 e;#2 s;w
+The Goblin Kingdom [33]
+    Entrance: A Path to a Dark Cave (1777)
+    Dirs: #14 w;n
+The Evil Palace [34]
+    Entrance: Guard of Spirit (1794)
+    Dirs: #7 e;#4 n;#4 w;#2 n;#4 w;#2 d;s
+The Myree Orchard [35]
+    Entrance: A Clearing (1847)
+    Dirs: #8 e;#3 s;#7 e;s
+The Halfing Village [36]
+    Entrance: A Small Forest (1926)
+    Dirs: #8 e
+The Lost City [37]
+    Entrance: The Pool (1955)
+    Dirs: s;#2 e;#2 s;#3 e
+The Deserted Village [40]
+    Entrance: On a Short Path to a Deserted Village (2083)
+    Dirs: #7 w;s
+The Wasteland [41]
+    Entrance: The Landing (2105)
+    Dirs: #6 e;#2 s;d;w;#11 s;#2 e;n
+Piotrsgrad [42]
+    Entrance: Gravel Road (2185)
+    Dirs: #7 e;#6 n;#2 u;#3 n;u;w;#5 n;w;#6 n
+The Great Pyramid [43]
+    Entrance: The Rope to the Pyramid (2226)
+    Dirs: s;#2 e;#2 s;#2 e;#9 s;e;#4 s;w;#4 s;e;s;#2 e;u
+Ozymar's City [46]
+    Entrance: The Real Entrance to Ozymar's City (2348)
+    Dirs: #14 w;s;#2 w;#2 s;w;s;#3 w;n;#2 w
+The Arachnid Archives [47]
+    Entrance: An Open Plain (2392)
+    Dirs: #14 w;s;#3 w;u;#2 w;n
+The Dwarven Kingdom [49]
+    Entrance: Path to Dwarven Village (2525)
+    Dirs: #7 e;d
+Gurundi Forest [50]
+    Entrance: The Forest Path (2575)
+    Dirs: #5 n;#2 w;#6 n
+The Threggi Pit [51]
+    Entrance: By the Steaming Pit (2678)
+    Dirs: #5 n;#2 w;#12 n;#2 e;n;e;#2 n;#4 e
+The Alien's Den [52]
+    Entrance: Outside the Black Hole (2759)
+    Dirs: #14 w;s;#9 w;#2 s;d;#5 s;w;#6 s;#2 w;#2 s;w;s;#3 e
+Northern Midgaard [53]
+    Entrance: Quifael's Hall (2812)
+    Dirs: s;#3 w;#4 s;#2 e;n;e
+The Evil Outpost [54]
+    Entrance: Seldom Used Trail (2847)
+    Dirs: #7 w;#3 s;#3 e;s;e
+The Midgaard Asylum [55]
+    Entrance: Gate to the Asylum (2854)
+    Dirs: s;#3 w;#4 s;#2 e;#6 n
+Vadir Temple [56]
+    Entrance: High Priest's Chamber (2953)
+    Dirs: s;#3 w;#3 s;#4 e;d;#5 w;n;#2 w;n;e;#2 n;#3 e;#6 s
+The Battlefield [57]
+    Entrance: The Entrance to the Battlefield (3021)
+    Dirs: #7 e;#2 s;e;#2 n
+The Battlefield Village [58]
+    Entrance: The Dark Gates (3109)
+    Dirs: #7 e;#2 s;e;#7 n;#8 e;#2 u;#2 e;#2 d;#4 e;#6 s
+The Pirate Ship [59]
+    Entrance: The Main Deck of Pirate Sloop (3131)
+    Dirs: s;#3 e;s;#4 e;#2 s;#2 e;#2 s
+The Hall of the Lost Gods [60]
+    Entrance: Tunnel near the Tavern of the Universe (3148)
+    Dirs: #3 n;#7 u;n;e
+Redferne's Residence [61]
+    Entrance: On the Huge Chain (3216)
+    Dirs: s;#3 w;#3 s;e;#4 s;e;u
+Cei'Arda [62]
+    Entrance: The Entrance to Cei'Arda (3222)
+    Dirs: #14 w;s;#4 w
+The Ocean [63]
+    Entrance: Entrance to the Ocean (3303)
+    Dirs: s;#3 e;s;#4 e
+The Sea of Love [64]
+    Entrance: Wharf (3343)
+    Dirs: #14 w;s;#9 w;#2 s;d
+The Festival of Antiquity [66]
+    Entrance: The Entrance to the Festival of Antiquity (3478)
+    Dirs: #14 w;s;#10 w
+The Desert and Lake [67]
+    Entrance: Desert (3541)
+    Dirs: #14 w;s;#9 w;#2 s;d;#5 s;w;#6 s;#4 w
+The Quest for the Holy Grail [68]
+    Entrance: The Entrance to The Quest for the Holy Grail. (3613)
+    Dirs: #14 w;s;#10 w;#3 s;#8 w;#4 n;w
+Le Theatre des Vampyres [69]
+    Entrance: Outside The Theatre Des Vampyres (3677)
+    Dirs: s;#3 w;#4 s;#2 e;#3 n;e;n
+The King's Castle [70]
+    Entrance: The King's Road (3738)
+    Dirs: #18 e
+Cloud City [71]
+    Entrance: A Fluffy White Cloud (3792)
+    Dirs: #3 n;#4 u;n
+Loftwick [72]
+    Entrance: Entrance to the Lost City of Loftwick (3872)
+    Dirs: s;#2 e;#2 s;#2 e;#9 s;e;#4 s;w;#4 s;e;#5 s;n;#2 s;e;n;e;n;e;d
+The Elemental Canyon [73]
+    Entrance: A Mountain Path (3961)
+    Dirs: #7 e;#2 s;e;n
+The Wolves Cave [74]
+    Entrance: The River (4021)
+    Dirs: s;#2 e;#2 s;#3 w;#6 s;e
+Morgoth [75]
+    Entrance: Between Two Hills (4050)
+    Dirs: #7 e;#3 n;e
+The Dark Cathedral [76]
+    Entrance: Rutted Path (4100)
+    Dirs: #6 e;n
+The Monk Monastary [77]
+    Entrance: Path through The Forest (4159)
+    Dirs: #11 w;n
+QuickLand [78]
+    Entrance: The Sinister Forest Path (4210)
+    Dirs: #8 w;#2 s;e;s;#2 e
+The Great Desert [79]
+    Entrance: Great Desert (4231)
+    Dirs: s;#2 e;#2 s;#2 e;#9 s;e;#4 s;w;#4 s;e
+Blackpool Swamp [80]
+    Entrance: On the River (4340)
+    Dirs: s;#2 e;#2 s;#3 w;s
+The Golem Kingdom [81]
+    Entrance: A Dark Passage (4377)
+    Dirs: s;#2 e;#2 s;#3 w;#2 s;#2 w;n;#2 w;s;#3 w;s;#2 w
+Chaos Lands [82]
+    Entrance: Deep in a Dark and Deadly Swamp (4429)
+    Dirs: s;#2 e;#2 s;#3 w;#2 s;#2 w;s;#2 w;#5 s;#2 w;#2 n
+Zyca City [83]
+    Entrance: A Beautiful Path (4528)
+    Dirs: #14 w;#5 n
+The UnderWorld [84]
+    Entrance: The Lit Trail (4661)
+    Dirs: s;#3 w;#3 s;#4 e;d
+The Village of Romnia [85]
+    Entrance: The Road (4838)
+    Dirs: #7 e;#3 s
+The Castle of Despair [86]
+    Entrance: The Stezja Road (4892)
+    Dirs: #7 e;#3 s;w;n;#7 w;s;#4 w
+Lorien [88]
+    Entrance: The Oak Forest (5023)
+    Dirs: #7 e;#5 n;e
+Straits of Messia [90]
+    Entrance: Entering the Straits of Messia (5204)
+    Dirs: s;#2 e;#2 s;#3 w;#2 s;#2 w;n;#2 w;s;#3 w;s;#4 w;#2 s;#5 w;#3 n;#2 w;#2 n;w;#2 n;#2 d;#2 n;#2 e;#3 n;w
+The Swamp [91]
+    Entrance: On the Edge of the Huge Dreadful Swamp (5304)
+    Dirs: #10 w;n
+The Swamp and Secret Caves [92]
+    Entrance: Large Tunnel (5437)
+    Dirs: #10 w;n;w;#2 n;w;n;w;n;#2 e;#2 n;w;#2 n;#2 e;s;e;s;e;d;#3 e;n;#2 d
+The Prison of Souls [94]
+    Entrance: A Path Through Barren Woods (5605)
+    Dirs: #8 e;#3 n;#7 e;#3 n;w;#5 n;e;n
+The Roc Aviary [95]
+    Entrance: The Tree Trunk (5686)
+    Dirs: #7 e;#2 s;e;#2 s;e;n
+The Templars Mercador [96]
+    Entrance: Great Desert (5732)
+    Dirs: s;#2 e;#2 s;#2 e;#9 s;e;#4 s;w;#4 s;e;#5 s;n;s;#4 e;#2 n;w;e
+Rainforest of Janus [97]
+    Entrance: A Tepid River (5831)
+    Dirs: s;#2 e;#2 s;#2 e;#9 s;e;#4 s;w;#4 s;e;#5 s;n;s;#4 e;#2 n;w;#2 e;n;e;#3 s;w;n;w;#2 s;#4 e;s;w;n;#2 e;d;#2 n;d;#2 e;d;#3 s;e;d;e
+The Gnoll Fortress [98]
+    Entrance: Entrance to a Dark Cave (5931)
+    Dirs: #7 w;#3 s;#3 e;s;e;#2 s;e;#8 n;d;#4 n;#2 d;s
+The Cave of the Sag'rethi [99]
+    Entrance: A Path in a Darkened Cave (6019)
+    Dirs: #7 w;#3 s;#3 e;s;e;#2 s;e;#8 n;d;#4 n;#2 d;#3 s;w;n;w;#3 s;d
+The Safari [100]
+    Entrance: A Grassy Trail (6085)
+    Dirs: #5 n;#2 w;#4 n;#5 e;n
+Dark Kingdom I [102]
+    Entrance: A Cold Plateau (6214)
+    Dirs: #14 w;s;#9 w;#2 s;d;#4 s;#4 w;#2 s
+Forgotten Valley [104]
+    Entrance: A Narrow Gulley (6410)
+    Dirs: #7 e;#2 s;e;#10 n;e;n;#3 e;n;#2 e
+The Dwarven Lunar Mines I [105]
+    Entrance: A Small, Clandestine Chamber (6507)
+    Dirs: #7 e;d;#3 n;#2 e;#2 d;n
+The Heour [109]
+    Entrance: Bay Isle (6760)
+    Dirs: s;#2 e;#2 s;#3 w;#3 s
+The Wood of Ngai [111]
+    Entrance: An Eldritch Path (6843)
+    Dirs: s;#2 e;#2 s;#3 w;#2 s;#2 w;n;#2 w;s;#3 w;s;#4 w;#2 s;#5 w;#3 n;#2 w;#2 n;w;#2 n;#2 d;#2 n;#2 e;#3 n;s;e;n;e;s
+The Midgaard Museum [112]
+    Entrance: On a Well Made Stone Road (6917)
+    Dirs: s;#3 w;#4 s;#2 e;#4 n
+Castle Mistamere [113]
+    Entrance: The Rolling Hills (6959)
+    Dirs: #7 e;#5 n;w
+The DarkFall [117]
+    Entrance: An Ancient Touen to the DarkFall (7261)
+    Dirs: #6 e;#2 s;#2 d
+The Hospital [118]
+    Entrance: Hospital Entry (7367)
+    Dirs: s;#3 w;#4 s;#2 e;#4 n;u
+The Abyss [119]
+    Entrance: The Mountain Path (7402)
+    Dirs: s;#2 e;#2 s;#3 w;#2 s;#2 w;n;#2 w;s;#3 w;s;#4 w;#2 s;#5 w;#3 n;#2 w;n
+FrostHolme [120]
+    Entrance: On The Side of The Glacier. (7491)
+    Dirs: #7 e;#6 n;#2 u;#3 n;u;w;#5 n;w;#9 n;#3 u;#3 w
+UtterFrost Cavern [121]
+    Entrance: At The Base of The Glacier (7590)
+    Dirs: #7 e;#6 n;#2 u;#3 n;u;w;#5 n;w;#8 n
+Wyvern Wood [122]
+    Entrance: A Light Pine Forest (7681)
+    Dirs: #8 e;#3 n;#7 e;#3 n;w;#11 n
+The Druid Grove of Gyrnath [123]
+    Entrance: A Forest Path (7775)
+    Dirs: #5 n;#2 w;#4 n;e
+The Ekitom Mines [124]
+    Entrance: Tunnel Opening (7859)
+    Dirs: #7 e;#3 n;#2 e;#3 n
+Midgaard Tar Pit [125]
+    Entrance: Beside the Midgaard Museum (7982)
+    Dirs: s;#3 w;#4 s;#2 e;#5 n;#2 e;n
