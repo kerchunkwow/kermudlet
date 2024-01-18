@@ -74,56 +74,39 @@ function parseWintinAction( actionString )
   return trim( pattern ), trim( command ), trim( priority )
 end
 
--- Function to convert a list of directions into a WINTIN-style command string
 function createWintin( directionList )
-  local function shortDirection( direction )
-    local shortMap = {
-      north = "n",
-      south = "s",
-      east = "e",
-      west = "w",
-      up = "u",
-      down = "d"
-    }
-    return shortMap[direction] or direction
-  end
-
   if not directionList or #directionList == 0 then
     return ""
   end
-  local wintinCommand = ""
+  local wintinCommands = {}
   local currentDirection = nil
   local count = 0
 
   for _, direction in ipairs( directionList ) do
-    -- Check if the direction is a command (non-direction string)
-    if direction:match( "^open [%w]+" ) then
-      -- Append the previous direction and its count to the command string
+    if direction:match( "^open [%w]+" ) or direction:match( "^close [%w]+" ) or direction:match( "^unlock [%w]+" ) then
       if currentDirection then
-        wintinCommand = wintinCommand .. (count > 1 and "#" .. count .. " " or "") .. currentDirection .. ";"
+        table.insert( wintinCommands, (count > 1 and "#" .. count .. " " or "") .. currentDirection )
       end
-      wintinCommand = wintinCommand .. direction .. ";"
+      table.insert( wintinCommands, direction )
       currentDirection = nil
       count = 0
     else
-      local shortDir = shortDirection( direction )
-      if shortDir == currentDirection then
+      if direction == 'up' or direction == 'down' then direction = direction:sub( 1, 1 ) end
+      if direction == currentDirection then
         count = count + 1
       else
-        -- Append the previous direction and its count to the command string
         if currentDirection then
-          wintinCommand = wintinCommand .. (count > 1 and "#" .. count .. " " or "") .. currentDirection .. ";"
+          table.insert( wintinCommands, (count > 1 and "#" .. count .. " " or "") .. currentDirection )
         end
-        currentDirection = shortDir
+        currentDirection = direction
         count = 1
       end
     end
   end
-  -- Append the last direction and its count
   if currentDirection then
-    wintinCommand = wintinCommand .. (count > 1 and "#" .. count .. " " or "") .. currentDirection
+    table.insert( wintinCommands, (count > 1 and "#" .. count .. " " or "") .. currentDirection )
   end
-  return wintinCommand
+  return table.concat( wintinCommands, ";" )
 end
 
 function importWintinActions()

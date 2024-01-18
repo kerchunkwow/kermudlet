@@ -1,5 +1,3 @@
-cecho( f '\n\t<yellow_green>lib.lua<reset>: entry to libraries for common/shared functions' )
-
 -- Use {dbc} whenever you're printing an error or important information with cecho()
 dbc = "<orange_red>"
 sureCastTrigger = nil
@@ -76,20 +74,6 @@ end
 function round( n, s )
   s = s or 0.05
   return math.floor( n / s + 0.5 ) * s
-end
-
-function saveTable( tblStr )
-  local tbl = _G[tblStr]
-  if tbl then
-    table.save( f "{rootDirectory}data/{tblStr}.lua", tbl )
-  else
-    cecho( f "<dark_orange>No such table<reset>: {tblStr}" )
-  end
-end
-
-function loadTable( tblStr )
-  local filePath = f "{rootDirectory}data/{tblStr}.lua"
-  table.load( filePath, _G[tblStr] )
 end
 
 -- Load all the sub-libraries

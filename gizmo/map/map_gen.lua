@@ -8,7 +8,6 @@ worldData[areaRNumber] = { area properties, rooms = { [roomRNumber] = { room pro
 This Lua table is structured hierarchically with Areas containing Rooms, and Rooms containing Exits, each populated with respective properties.
 
 --]]
-
 worldData = loadWorldData()
 
 -- Set & update the player's location, updating coordinates & creating rooms as necessary
@@ -136,21 +135,6 @@ function createRoom( dir, id )
     setRoomName( newRoomNumber, tostring( id ) )
   end
   setRoomStyle()
-end
-
-function createEmptyAreas()
-  for _, areaData in pairs( worldData ) do
-    local areaName, areaID = areaData.areaName, areaData.areaRNumber
-    if areaID ~= 0 then
-      addAreaName( areaName )
-    end
-  end
-  for _, areaData in pairs( worldData ) do
-    local areaName, areaID = areaData.areaName, areaData.areaRNumber
-    if areaID ~= 0 then
-      setAreaName( areaID, areaName )
-    end
-  end
 end
 
 -- For now, initialize our location as Market Square [1121]

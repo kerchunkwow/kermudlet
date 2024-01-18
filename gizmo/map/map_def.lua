@@ -4,10 +4,10 @@ Globals & constants for Mapping & the Mudlet Mapper
 
 --]]
 
-mapZoomLevel      = 28
+mapZoomLevel        = 28
 
 -- Valid directions for exits and travel; MUD does not support diagonal travel
-DIRECTIONS        = DIRECTIONS or {
+DIRECTIONS          = DIRECTIONS or {
   ["north"] = 1,
   ["south"] = 2,
   ["east"]  = 3,
@@ -23,7 +23,7 @@ DIRECTIONS        = DIRECTIONS or {
 }
 
 -- Table to get the reverse of a direction; useful for bi-directional linking
-REVERSE           = REVERSE or {
+REVERSE             = REVERSE or {
   north = "south",
   south = "north",
   east  = "west",
@@ -39,7 +39,7 @@ REVERSE           = REVERSE or {
 }
 
 -- Use tables to map/translate directions into SHORT or LONG versions; include redundant entries to avoid "unmapping"
-LDIR              = {
+LDIR                = {
   n     = "north",
   s     = "south",
   e     = "east",
@@ -53,7 +53,7 @@ LDIR              = {
   up    = "up",
   down  = "down"
 }
-SDIR              = {
+SDIR                = {
   north = "n",
   south = "s",
   east  = "e",
@@ -68,7 +68,7 @@ SDIR              = {
   d     = "d"
 }
 -- Map exit directions to internal IDs used by the Mudlet Mapper API
-EXIT_MAP          = EXIT_MAP or {
+EXIT_MAP            = EXIT_MAP or {
   north = 1,
   south = 6,
   east  = 4,
@@ -83,17 +83,17 @@ EXIT_MAP          = EXIT_MAP or {
   d     = 10,
 }
 
-currentAreaData   = {}
-currentAreaNumber = {}
-currentAreaName   = ""
+currentAreaData     = {}
+currentAreaNumber   = {}
+currentAreaName     = ""
 
-currentRoomData   = {}
-currentRoomNumber = -1
-currentAreaNumber = -1
-roomToAreaMap     = {}
-worldData         = {}
-culledExits       = {}
-loadTable( 'culledExits' )
+currentRoomData     = {}
+currentRoomNumber   = -1
+currentAreaNumber   = -1
+roomToAreaMap       = {}
+worldData           = {}
+culledExits         = {}
+--loadTable( 'culledExits' )
 --loadTable( 'entryRooms' )
 
 -- Coordinates to track the "physical" location of the room relative to the starting point of the Area so Mudlet can draw it

@@ -1,3 +1,4 @@
+-- Clean up minimum room numbers corrupted by my dumb ass
 function fixMinimumRoomNumbers()
   local aid = 0
   while worldData[aid] do
@@ -47,8 +48,8 @@ function loadDoorData()
       end
     end
   end
-  cecho( f "\nLoaded {doorCount} doors.\n" )
-  saveTable( "doorData" )
+  cecho( f "\nLoaded <maroon>{doorCount}<reset> doors.\n" )
+  table.save( "C:/Dev/mud/mudlet/gizmo/data/doorData.lua", doorData )
 end
 
 -- Help create the master door data table (one time load)
@@ -63,6 +64,7 @@ function getDoorData( id, dir )
   end
 end
 
+-- Run some checks on the doorData table/file to make sure it's valid
 function validateDoorData()
   --loadTable( "doorData" ) -- Load the doorData table from file
   local errorCount = 0
@@ -103,5 +105,118 @@ function validateDoorData()
     cecho( f "\nSuccessfully verified {verifiedCount} doors." )
   else
     cecho( f "\nCompleted validation with {errorCount} errors found." )
+  end
+end
+
+-- Original function to instantiate an empty world
+function createEmptyAreas()
+  for _, areaData in pairs( worldData ) do
+    local areaName, areaID = areaData.areaName, areaData.areaRNumber
+    if areaID ~= 0 then
+      addAreaName( areaName )
+    end
+  end
+  for _, areaData in pairs( worldData ) do
+    local areaName, areaID = areaData.areaName, areaData.areaRNumber
+    if areaID ~= 0 then
+      setAreaName( areaID, areaName )
+    end
+  end
+end
+
+-- Replaced by getFullPath/getAreaDirs
+function getMSPath()
+  -- Clear the path globals
+  local dirString = nil
+  speedWalkDir = nil
+  speedWalkPath = nil
+
+  -- Calculate the path to our current room from Market Square
+  getPath( 1121, currentRoomNumber )
+  if speedWalkDir then
+    dirString = traverseRooms( speedWalkPath )
+    -- Add an entry to the entryRooms table that maps currentAreaNumber to currentRoomNumber and the path to that room from Market Square
+    cecho( f "\nAdding or updating path from MS to {getRoomString(currentRoomNumber,1)}" )
+    entryRooms[currentAreaNumber] = {
+      roomNumber = currentRoomNumber,
+      path = dirString
+    }
+  else
+    cecho( "\nUnable to find a path from Market Square to the current room." )
+  end
+  saveTable( 'entryRooms' )
+end
+
+-- Original function to populate areaDirs table
+function getAreaDirs()
+  local fullDirs = getFullDirs( 1121, currentRoomNumber )
+  local roomArea = getRoomArea( currentRoomNumber )
+  if fullDirs then
+    areaDirs[roomArea]            = {}
+    -- Store our Wintin-compatible path string along with the raw output from Mudlet's pathing
+    areaDirs[roomArea].dirs       = fullDirs
+    areaDirs[roomArea].rawDirs    = speedWalkDir
+    -- Store the name & number of the destination room (the area entry room)
+    areaDirs[roomArea].roomNumber = currentRoomNumber
+    areaDirs[roomArea].roomName   = getRoomName( currentRoomNumber )
+    -- The cost to walk the path is two times the length
+    areaDirs[roomArea].cost       = (#speedWalkDir * 2)
+    cecho( f "\nAdded <dark_orange>{nextArea}<reset> to the areaDirs table" )
+  end
+end
+
+-- Not as good an attempt to do getAreaDirs()
+function getAreaDirs()
+  for _, roomID in ipairs( areaFirstRooms ) do
+    local pathString = getFullDirs( 1121, roomID ) -- Assuming 1121 is your starting room (e.g., Market Square)
+    if pathString then
+      cecho( f( "\nPath from <dark_orange>1121<reset> to room <dark_orange>{roomID}<reset>:\n\t<olive_drab>{pathString}" ) )
+    else
+      cecho( f( "\nNo path found from <dark_orange>1121<reset> to room <dark_orange>{roomID}<reset>" ) )
+    end
+  end
+end
+
+--Brute force find the room that's closest to our current location that belongs to the given area
+function findArea( id )
+  local allRooms           = getRooms()
+  local shortestDirsLength = 750000 -- Initialize to a very high number
+  local shortestDirs       = nil
+  local nearestRoom        = nil
+
+  for r, n in pairs( allRooms ) do -- Use pairs for iteration
+    local roomID = tonumber( r )
+    if getRoomArea( roomID ) == id then
+      if getPath( 1121, roomID ) then -- Check if path is found
+        local currentPathLength = #speedWalkDir
+        if currentPathLength < shortestDirsLength then
+          shortestDirsLength = currentPathLength
+          nearestRoom        = getRoomString( roomID, 2 )
+          shortestDirs       = getFullDirs( 1121, roomID )
+        end
+      end
+    end
+  end
+  if shortestDirs then
+    doWintin( shortestDirs )
+    return true
+  else
+    cecho( f "\nFailed to find a room in area <dark_orange>{id}<reset>" )
+    return false
+  end
+end
+
+areaMap = {}
+function buildAreaMap()
+  areaMap = {}
+  for areaID in pairs( areaDirs ) do
+    local areaName = getRoomAreaName( areaID )
+    if areaName then
+      -- Cleanse & normalize the names
+      print( areaName )
+      areaName = areaName:gsub( "^The%s+", "" ):gsub( "%s+", "" ):lower()
+      print( areaName )
+      areaMap[areaName] = areaID
+    end
   end
 end

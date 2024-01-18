@@ -319,7 +319,7 @@ function updateAreaPaths()
     print( f "Looking for path to: {roomNumber}" )
     --getPath( 1121, roomNumber )
     --display( speedWalkPath )
-    local newPath = getFullPath( 1121, tonumber( roomNumber ) )
+    local newPath = getFullDirs( 1121, tonumber( roomNumber ) )
     --<dim_grey>New Dirs: <yellow_green>{display(newPath)}<reset>
     cecho( f [[
 <medium_violet_red>{areaName}<reset> <dim_grey>[<reset><maroon>{areaID}<reset><dim_grey>]<reset>
