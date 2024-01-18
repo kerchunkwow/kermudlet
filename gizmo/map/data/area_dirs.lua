@@ -32,7 +32,7 @@ function getDirs( area )
   if areaID and areaDirs[areaID] then
     -- Return the Wintin-compatible dirs string;
     -- Here we could also retrieve the cost to compare to our moves or verify keys
-    return areaDirs[areaID].rawDirs
+    return areaDirs[areaID].dirs
   else
     cecho( f "\n<firebrick>Area {area} not found in areaDirs.<reset>" )
     return nil

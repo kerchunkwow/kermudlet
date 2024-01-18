@@ -369,10 +369,10 @@ function cullExit( dir )
   if #dir == 1 and LDIR[dir] then
     dir = LDIR[dir]
   end
-  cecho( f "\nCulling {dir} exit from {currentRoomNumber}" )
+  cecho( f "\nCulling <cyan>{dir}<reset> exit from <dark_orange>{currentRoomNumber}<reset>" )
   culledExits[currentRoomNumber] = culledExits[currentRoomNumber] or {}
   setExit( currentRoomNumber, -1, dir )
   culledExits[currentRoomNumber][dir] = true
-  saveTable( 'culledExits' )
-  updateMap()
+  --table.save( 'C:/Dev/mud/mudlet/gizmo/data/culledExits.lua', culledExits )
+  --updateMap()
 end

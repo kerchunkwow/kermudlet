@@ -27,8 +27,6 @@ if profileName == "IMM" then -- Gizmo IMM
   runLuaFile( f "{rootDirectory}map/map_def.lua" )
   runLuaFile( f "{rootDirectory}map/map_style.lua" )
   runLuaFile( f "{rootDirectory}map/map_data.lua" )
-  runLuaFile( f "{rootDirectory}map/map_dirs.lua" )
-  runLuaFile( f "{rootDirectory}map/map_unique.lua" )
   runLuaFile( f "{rootDirectory}map/map_sim.lua" )
   runLuaFile( f "{rootDirectory}map/map_gen.lua" )
   runLuaFile( f "{rootDirectory}map/gizmap.lua" )

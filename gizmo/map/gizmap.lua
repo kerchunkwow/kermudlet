@@ -1,5 +1,23 @@
 runLuaFile( f "{rootDirectory}map/data/area_dirs.lua" )
 runLuaFile( f "{rootDirectory}map/data/door_data.lua" )
+runLuaFile( f "{rootDirectory}map/data/unique_rooms.lua" )
+culledExits = {}
+table.load( 'C:/Dev/mud/mudlet/gizmo/data/culledExits.lua', culledExits )
+
+-- For all rooms globally delete any exit which leads to its own origin (and store that exit in culledExits)
+function cullLoopedExits()
+  local allRooms = getRooms()
+  for id, name in pairs( allRooms ) do
+    local exits = getRoomExits( id )
+    for dir, dst in pairs( exits ) do
+      if dst == id then
+        culledExits[id] = culledExits[id] or {}
+        setExit( id, -1, dir )
+        culledExits[id][dir] = true
+      end
+    end
+  end
+end
 
 -- Follow a list of directions; also used by the click-to-walk functionality from the Mapper
 function doSpeedWalk()
