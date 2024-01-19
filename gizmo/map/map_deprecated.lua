@@ -1,3 +1,45 @@
+-- Create a new room in the Mudlet; by default operates on the "current" room being the one you just arrived in;
+-- passing dir and id will create a room offset from the current room (which no associated user data)
+function createRoom( dir, id )
+  if not customColorsDefined then defineCustomEnvColors() end
+  local newRoomNumber = id or currentRoomNumber
+  local nX, nY, nZ = mX, mY, mZ
+  if dir == "east" then
+    nX = nX + 1
+  elseif dir == "west" then
+    nX = nX - 1
+  elseif dir == "north" then
+    nY = nY + 1
+  elseif dir == "south" then
+    nY = nY - 1
+  elseif dir == "up" then
+    nZ = nZ + 1
+  elseif dir == "down" then
+    nZ = nZ - 1
+  end
+  -- Create a new room in the Mudlet mapper in the Area we're currently mapping
+  addRoom( newRoomNumber )
+  if currentAreaNumber == 115 or currentAreaNumber == 116 then
+    currentAreaNumber = 115
+    currentAreaName = 'Undead Realm'
+  end
+  setRoomArea( newRoomNumber, currentAreaName )
+  setRoomCoordinates( currentRoomNumber, nX, nY, nZ )
+
+  if not dir and not id then
+    setRoomName( newRoomNumber, currentRoomData.roomName )
+    setRoomUserData( newRoomNumber, "roomVNumber", currentRoomData.roomVNumber )
+    setRoomUserData( newRoomNumber, "roomType", currentRoomData.roomType )
+    setRoomUserData( newRoomNumber, "roomSpec", currentRoomData.roomSpec )
+    setRoomUserData( newRoomNumber, "roomFlags", currentRoomData.roomFlags )
+    setRoomUserData( newRoomNumber, "roomDescription", currentRoomData.roomDescription )
+    setRoomUserData( newRoomNumber, "roomExtraKeyword", currentRoomData.roomExtraKeyword )
+  else
+    setRoomName( newRoomNumber, tostring( id ) )
+  end
+  setRoomStyle()
+end
+
 -- Clean up minimum room numbers corrupted by my dumb ass
 function fixMinimumRoomNumbers()
   local aid = 0
@@ -676,5 +718,1043 @@ function updateAreaPaths()
     <dim_grey>Entrance: {getRoomString(roomNumber,1)}
     <dim_grey>Dirs: <olive_drab>{oldPath}<reset>
 ]] )
+  end
+end
+
+-- For all rooms globally delete any exit which leads to its own origin (and store that exit in culledExits)
+function cullLoopedExits()
+  local cullCount = 0
+  local allRooms = getRooms()
+  for id, name in pairs( allRooms ) do
+    local exits = getRoomExits( id )
+    for dir, dst in pairs( exits ) do
+      if dst == id then
+        cullCount = cullCount + 1
+        culledExits[id] = culledExits[id] or {}
+        setExit( id, -1, dir )
+        culledExits[id][dir] = true
+        cecho( f "\n<dim_grey>Culled looping <cyan>{dir}<dim_grey> exit from <dark_orange>{id}<reset>" )
+      end
+    end
+  end
+  cecho( f "\n<dim_grey>Culled <dark_orange>{cullCount}<dim_grey> total exits<reset>" )
+  updateMap()
+  table.save( 'C:/Dev/mud/mudlet/gizmo/data/culledExits.lua', culledExits )
+end
+
+function combineArea( dstArea, srcArea )
+  local srcRooms = getAreaRooms( srcArea )
+  for _, srcRoom in ipairs( srcRooms ) do
+    setRoomArea( srcRoom, dstArea )
+  end
+  updateMap()
+end
+
+function getRoomStringOld( id, detail )
+  detail = detail or 1
+  local specTag = ""
+  local roomString = nil
+  local roomData = worldData[roomToAreaMap[id]].rooms[id]
+  local roomName = roomData.roomName
+  local nc = MAP_COLOR["number"]
+  local rc = nil
+
+  if roomData.roomSpec > 0 then
+    specTag = f " ~<ansi_light_yellow>{roomData.roomSpec}<reset>~"
+  end
+  if uniqueRooms[roomName] then
+    rc = MAP_COLOR['roomNameU']
+  else
+    rc = MAP_COLOR['roomName']
+  end
+  -- Detail 1 is name and number
+  if detail == 1 then
+    roomString = f "{rc}{roomName}<reset> ({MAP_COLOR['number']}{id}<reset>){specTag}"
+    return roomString
+  end
+  -- Add room type for detail level 2
+  local roomType = roomData.roomType
+  local tc = MAP_COLOR[roomType]
+  if detail == 2 then
+    roomString = f "{rc}{roomName}<reset> [{tc}{roomType}<reset>] ({nc}{id}<reset>){specTag}"
+    return roomString
+  end
+  -- Add map coordinates at level 3
+  local uc = MAP_COLOR["mapui"]
+  local cX = nil
+  local cY = nil
+  local cZ = nil
+  cX, cY, cZ = getRoomCoordinates( id )
+  local cString = f "{uc}{cX}<reset>, {uc}{cY}<reset>, {uc}{cZ}<reset>"
+  roomString = f "{rc}{roomName}<reset> [{tc}{roomType}<reset>] ({nc}{id}<reset>) ({cString}){specTag}"
+  return roomString
+end
+
+-- Attempt a "virtual move"; on success report on area transitions and update virtual coordinates.
+function moveExitOld( direction )
+  local nc = MAP_COLOR["number"]
+  -- Guard against variations in the Exit data by searching for the Exit in question
+  for _, exit in pairs( currentRoomData.exits ) do
+    if exit.exitDirection == direction then
+      if not roomToAreaMap[exit.exitDest] then
+        cecho( f "\n<dim_grey>err: Room {nc}{exit.exitDest}<reset><dim_grey> has no area mapping.<reset>" )
+        return
+      end
+      -- Update coordinates for the new Room (and possibly Area)
+      updatePlayerLocation( exit.exitDest, direction )
+      displayRoom()
+      return true
+    end
+  end
+  cecho( "\n<dim_grey>Alas, you cannot go that way.<reset>" )
+  return false
+end
+
+exitData = exitData or {}
+
+-- Load all Exit data from the gizwrld.db database into a Lua table
+function loadExitData()
+  local luasql = require "luasql.sqlite3"
+  local env = luasql.sqlite3()
+  local conn = env:connect( 'C:/Dev/mud/gizmo/data/gizwrld.db' )
+
+  if not conn then
+    gizErr( "Error connecting to gizwrld.db." )
+    return nil
+  end
+  local cursor = conn:execute( "SELECT * FROM Exit" )
+
+  local row = cursor:fetch( {}, "a" )
+  while row do
+    local roomID = tonumber( row.roomRNumber )
+    local dir = row.exitDirection
+    local keyword = row.exitKeyword
+
+    -- Only store exits with a keyword that is not nil and not an empty string
+    if keyword and #keyword > 0 then
+      -- Extract only the first word from the keyword
+      local firstWord = keyword:match( "^(%w+)" )
+      exitData[roomID] = exitData[roomID] or {}
+      exitData[roomID][dir] = {
+        exitDest = tonumber( row.exitDest ),
+        exitKeyword = firstWord,
+        exitFlags = tonumber( row.exitFlags ),
+        exitDescription = row.exitDescription
+      }
+
+      -- Only store keys when exitKey is not nil and greater than 0
+      local key = tonumber( row.exitKey )
+      if key and key > 0 then
+        exitData[roomID][dir].exitKey = key
+      end
+    end
+    row = cursor:fetch( row, "a" )
+  end
+  cursor:close()
+  conn:close()
+  env:close()
+
+  table.save( 'C:/Dev/mud/mudlet/gizmo/data/exitData.lua', exitData )
+end
+
+-- Load all Exit data from the gizwrld.db database into a Lua table
+function loadExitData()
+  local luasql = require "luasql.sqlite3"
+  local env = luasql.sqlite3()
+  local conn = env:connect( 'C:/Dev/mud/gizmo/data/gizwrld.db' )
+
+  if not conn then
+    gizErr( "Error connecting to gizwrld.db." )
+    return nil
+  end
+  local cursor = conn:execute( "SELECT * FROM Exit" )
+
+  local row = cursor:fetch( {}, "a" )
+  while row do
+    local roomID = tonumber( row.roomRNumber )
+    local dir = row.exitDirection
+    local keyword = row.exitKeyword
+
+    -- Only store exits with a keyword that is not nil and not an empty string
+    if keyword and #keyword > 0 then
+      -- Extract only the first word from the keyword
+      local firstWord = keyword:match( "^(%w+)" )
+      exitData[roomID] = exitData[roomID] or {}
+      exitData[roomID][dir] = {
+        exitDest = tonumber( row.exitDest ),
+        exitKeyword = firstWord,
+        exitFlags = tonumber( row.exitFlags ),
+        exitDescription = row.exitDescription
+      }
+
+      -- Only store keys when exitKey is not nil and greater than 0
+      local key = tonumber( row.exitKey )
+      if key and key > 0 then
+        exitData[roomID][dir].exitKey = key
+      end
+    end
+    row = cursor:fetch( row, "a" )
+  end
+  cursor:close()
+  conn:close()
+  env:close()
+
+  table.save( 'C:/Dev/mud/mudlet/gizmo/data/exitData.lua', exitData )
+end
+
+-- Display the properties of an exit for mapping and validation purposes; displayed when I issue a virtual "look <direction>" command
+function inspectExit( direction )
+  local fullDirection
+  for dir, num in pairs( DIRECTIONS ) do
+    if DIRECTIONS[direction] == num and #dir > 1 then
+      fullDirection = dir
+      break
+    end
+  end
+  for _, exit in ipairs( currentRoomData.exits ) do
+    if exit.exitDirection == fullDirection then
+      local ec      = MAP_COLOR["exitDir"]
+      local es      = MAP_COLOR["exitStr"]
+      local esp     = MAP_COLOR["exitSpec"]
+      local nc      = MAP_COLOR["number"]
+
+      local exitStr = f "The {ec}{fullDirection}<reset> exit: "
+      if exit.exitKeyword and #exit.exitKeyword > 0 then
+        exitStr = exitStr .. f "\n  keywords: {es}{exit.exitKeyword}<reset>"
+      end
+      local isSpecial = false
+      if (exit.exitFlags and exit.exitFlags ~= -1) or (exit.exitKey and exit.exitKey ~= -1) then
+        isSpecial = true
+        exitStr = exitStr ..
+            (exit.exitFlags and exit.exitFlags ~= -1 and f "\n  flags: {esp}{exit.exitFlags}<reset>" or "") ..
+            (exit.exitKey and exit.exitKey ~= -1 and f "\n  key: {nc}{exit.exitKey}<reset>" or "")
+        if exit.exitKey and exit.exitKey > 0 then
+          lastKey = exit.exitKey
+        end
+      end
+      if exit.exitDescription and #exit.exitDescription > 0 then
+        exitStr = exitStr .. f "\n  description: {es}{exit.exitDescription}<reset>"
+      end
+      cecho( f "\n{exitStr}" )
+      return
+    end
+  end
+  cecho( f "\n{MAP_COLOR['roomDesc']}You see no exit in that direction.<reset>" )
+end
+
+-- Get the Area data for a given areaRNumber
+function getAreaData( areaRNumber )
+  return worldData[areaRNumber]
+end
+
+-- Get the Room data for a given roomRNumber
+function getRoomData( roomRNumber )
+  local areaRNumber = roomToAreaMap[roomRNumber]
+  if areaRNumber and worldData[areaRNumber] then
+    return worldData[areaRNumber].rooms[roomRNumber]
+  end
+end
+
+-- Get Exits from room with the given roomRNumber
+function getExitData( roomRNumber )
+  local roomData = getRoomData( roomRNumber )
+  return roomData and roomData.exits
+end
+
+function getAreaByRoom( roomRNumber )
+  local areaRNumber = roomToAreaMap[roomRNumber]
+  return getAreaData( areaRNumber )
+end
+
+function getAllRoomsByArea( areaRNumber )
+  local areaData = getAreaData( areaRNumber )
+  return areaData and areaData.rooms or {}
+end
+
+-- Use a breadth-first-search (BFS) to find the shortest path between two rooms
+function findShortestPath( srcRoom, dstRoom )
+  if srcRoom == dstRoom then return {srcRoom} end
+  -- Table for visisted rooms to avoid revisiting
+  local visitedRooms = {}
+
+  -- The search queue, seeded with the srcRoom
+  local pathQueue    = {{srcRoom}}
+
+  -- As long as there are paths in the queue, "pop" one off and explore it fully
+  while #pathQueue > 0 do
+    local path = table.remove( pathQueue, 1 )
+    local lastRoom = path[#path]
+
+    -- Only visit unvisited rooms (this path)
+    if not visitedRooms[lastRoom] then
+      -- Mark the room visited
+      visitedRooms[lastRoom] = true
+
+      -- Look up the room in the worldData table
+      for _, areaData in pairs( worldData ) do
+        local roomData = areaData.rooms[lastRoom]
+
+        -- For the love of St. Christopher (patron saint of bachelors and travel), don't add DTs to paths
+        if roomData and not roomData.roomFlags:find( "DEATH" ) then
+          -- Examine each exit from the room
+          for _, exit in pairs( roomData.exits ) do
+            local nextRoom = exit.exitDest
+
+            -- If one of the exits is dstRoom; constrcut and return the path
+            if nextRoom == dstRoom then
+              local shortestPath = {unpack( path )}
+              table.insert( shortestPath, nextRoom )
+              return shortestPath
+            end
+            -- Otherwise, extend the path and queue
+            if not visitedRooms[nextRoom] then
+              local newPath = {unpack( path )}
+              table.insert( newPath, nextRoom )
+              pathQueue[#pathQueue + 1] = newPath
+            end
+          end
+        end
+      end
+    end
+  end
+  -- Couldn't find a path to the destination
+  return nil
+end
+
+function roomsReport()
+  local minRoom = worldData[currentAreaNumber].areaMinRoomRNumber
+  local maxRoom = worldData[currentAreaNumber].areaMaxRoomRNumber
+  local roomsMapped = 0
+  for r = minRoom, maxRoom do
+    if roomExists( r ) then roomsMapped = roomsMapped + 1 end
+  end
+  --local mappedRooms = getAreaRooms( currentAreaNumber )
+  --local roomsMapped = #mappedRooms + 1
+  local roomsTotal = worldData[currentAreaNumber].areaRoomCount
+  local roomsLeft = roomsTotal - roomsMapped
+  local ac = MAP_COLOR["area"]
+  local nc = MAP_COLOR["number"]
+  local rc = MAP_COLOR["roomName"]
+  mapInfo( f 'Found <yellow_green>{roomsMapped}<reset> of <dark_orange>{roomsTotal}<reset> rooms in {areaTag()}<reset>.' )
+
+  -- Check if there are 10 or fewer rooms left to map
+  if roomsLeft == 0 then
+    mapInfo( "<yellow_green>Area Complete!<reset>" )
+  elseif roomsLeft > 0 and roomsLeft <= 10 then
+    mapInfo( "\n<orange>Unmapped<reset>:\n" )
+    for roomRNumber, roomData in pairs( worldData[currentAreaNumber].rooms ) do
+      if not contains( roomsMapped, roomRNumber, true ) then
+        local roomName = roomData.roomName
+        local exitsInfo = ""
+
+        -- Iterate through exits using pairs
+        for _, exit in pairs( roomData.exits ) do
+          exitsInfo = exitsInfo .. exit.exitDirection .. f " to {nc}" .. exit.exitDest .. "<reset>; "
+        end
+        cecho( f '[+   Room: {rc}{roomName}<reset> (ID: {nc}{roomRNumber}<reset>)\n    Exits: {exitsInfo}\n' )
+      end
+    end
+  end
+  local worldRooms = getRooms()
+  local worldRoomsCount = 0
+
+  for _ in pairs( worldRooms ) do
+    worldRoomsCount = worldRoomsCount + 1
+  end
+  mapInfo( f '<olive_drab>World<reset> total: {nc}{worldRoomsCount}<reset>' )
+end
+
+function roomTag()
+  return f "<light_steel_blue>currentRoomName<reset> [<royal_blue>currentRoomNumber<reset>]"
+end
+
+-- Function to find all neighboring rooms with exits leading to a specific roomRNumber
+function findNeighbors( targetRoomRNumber )
+  local neighbors = {}
+  local nc = MAP_COLOR["number"]
+  local minR, maxR = currentAreaData.areaMinRoomRNumber, currentAreaData.areaMaxRoomRNumber
+  for r = minR, maxR do
+    local roomData = currentAreaData.rooms[r]
+    local exitData = roomData.exits
+    for _, exit in pairs( exitData ) do
+      if exit.exitDest == targetRoomRNumber then
+        table.insert( neighbors, r )
+      end
+    end
+  end
+  mapInfo( f ' Neighbors for {nc}{targetRoomRNumber}<reset>:\n' )
+  display( neighbors )
+end
+
+function setMinimumRoomNumber( areaID, newMinimum )
+  local luasql = require "luasql.sqlite3"
+  local env = luasql.sqlite3()
+  local conn = env:connect( 'C:/Dev/mud/gizmo/data/gizwrld.db' )
+  local nc = MAP_COLOR["number"]
+  local ac = MAP_COLOR["area"]
+  if not conn then
+    gizErr( 'Error connecting to gizwrld.db.' )
+    return
+  end
+  -- Fetch the current minimum room number for the area
+  local cursor, err = conn:execute( f( "SELECT areaMinRoomRNumber FROM Area WHERE areaRNumber = {areaID}" ) )
+  if not cursor then
+    gizErr( f( "Error fetching data for {ac}{areaID}<reset>: {err}" ) )
+    return
+  end
+  local row = cursor:fetch( {}, "a" )
+  if not row then
+    gizErr( f "Area {ac}{areaID}<reset> not found." )
+    return
+  end
+  local currentMinRoomNumber = tonumber( row.areaMinRoomRNumber )
+  if currentMinRoomNumber == newMinimum then
+    cecho( f "\nFirst room for {ac}{areaID}<reset> already {nc}{newMinimum}<reset>" )
+  else
+    -- Update the minimum room number
+    local update_stmt = f( "UPDATE Area SET areaMinRoomRNumber = {newMinimum} WHERE areaRNumber = {areaID}" )
+    local res, upd_err = conn:execute( update_stmt )
+    if not res then
+      gizErr( f( "Error updating data for {ac}{areaID}<reset>: {upd_err}" ) )
+      return
+    end
+    cecho( f "\nUpdated first room for {ac}{areaID}<reset> from {nc}{currentMinRoomNumber}<reset> to {nc}{newMinimum}<reset>" )
+  end
+  -- Clean up
+  if cursor then cursor:close() end
+  conn:close()
+  env:close()
+end
+
+-- From the current room, search for neighboring rooms in this Area;
+-- Good neighbors are those that have a corresponding return/reverse exit back to our current room; reposition those rooms near us
+-- Bad neighbors have no return/reverse exit; cull those exits (remove them from the map and store them in the culledExits table)
+function findNearestNeighbors()
+  local currentExits = getRoomExits( currentRoomNumber )
+  local rc = MAP_COLOR["number"]
+
+  for dir, roomNumber in pairs( currentExits ) do
+    if roomExists( roomNumber ) and roomNumber ~= currentRoomNumber then
+      local reverseDir = REVERSE[dir]
+      local neighborExits = getRoomExits( roomNumber )
+
+      if neighborExits and neighborExits[reverseDir] == currentRoomNumber then
+        -- Good neighbor: reposition
+        repositionRoom( roomNumber, dir )
+        local path = createWintin( {dir} )
+        --cecho( f( "\n<cyan>{path}<reset> to room {rc}{roomNumber}<reset>" ) )
+      elseif neighborExits and (not neighborExits[reverseDir] or neighborExits[reverseDir] ~= currentRoomNumber) then
+        cecho( f "\nRoom {rc}{roomNumber}<reset> is bad neighbor to our <cyan>{dir}<reset>, consider <firebrick>culling<reset> it" )
+        --cullExit( dir )
+      end
+    end
+  end
+end
+
+-- Move a room to a location relative to our current location (mX, mY, mZ)
+function repositionRoom( id, relativeDirection )
+  if not id or not relativeDirection then return end
+  local rc = MAP_COLOR["number"]
+  local mc = "<medium_orchid>"
+  local rX, rY, rZ = mX, mY, mZ
+  if relativeDirection == "north" then
+    rY = rY + 1
+  elseif relativeDirection == "south" then
+    rY = rY - 1
+  elseif relativeDirection == "east" then
+    rX = rX + 1
+  elseif relativeDirection == "west" then
+    rX = rX - 1
+  elseif relativeDirection == "up" then
+    rZ = rZ + 1
+  elseif relativeDirection == "down" then
+    rZ = rZ - 1
+  end
+  cecho( f "\nRoom {rc}{id}<reset> is good neighbor to our <cyan>{relativeDirection}<reset>, moving to {mc}{rX}<reset>, {mc}{rY}<reset>, {mc}{rZ}<reset>" )
+  setRoomCoordinates( id, rX, rY, rZ )
+  updateMap()
+end
+
+function auditAreaCoordinates()
+  local nc = MAP_COLOR["number"]
+  local areaCoordinates = {}
+  local minRoom = worldData[currentAreaNumber].areaMinRoomRNumber
+  local maxRoom = worldData[currentAreaNumber].areaMaxRoomRNumber
+
+  for r = minRoom, maxRoom do
+    if roomExists( r ) then
+      local roomX, roomY, roomZ = getRoomCoordinates( r )
+      local coordKey = roomX .. ":" .. roomY .. ":" .. roomZ
+
+      if areaCoordinates[coordKey] then
+        -- Found overlapping rooms
+        cecho( f(
+          "\nRooms {nc}{areaCoordinates[coordKey]}<reset> and {nc}{r}<reset> overlap at coordinates ({roomX}, {roomY}, {roomZ})." ) )
+      else
+        -- Store the coordinate key with its room number
+        areaCoordinates[coordKey] = r
+      end
+    end
+  end
+end
+
+function countRooms()
+  local areaCounts = {}
+  local allRooms = getRooms()
+  for id, name in pairs( allRooms ) do
+    local area = getRoomArea( id )
+    local areaName = getRoomAreaName( area )
+    areaCounts[areaName] = (areaCounts[areaName] or 0) + 1
+  end
+  display( areaCounts )
+end
+
+-- The "main" display function to print the current room as if we just moved into it or looked at it
+-- in the game; prints the room name, description, and exits.
+function displayRoom( brief )
+  brief = brief or true
+  local rd = MAP_COLOR["roomDesc"]
+  cecho( f "\n\n{getRoomString(currentRoomNumber, 2)}" )
+  if not brief then
+    cecho( f "\n{rd}{currentRoomData.roomDescription}<reset>" )
+  end
+  if currentRoomData.roomSpec > 0 then
+    local renv = getRoomEnv( currentRoomNumber )
+    if renv ~= COLOR_PROC then
+      setRoomStyle()
+    end
+    cecho( f "\n\tThis room has a ~<ansi_light_yellow>special procedure<reset>~.\n" )
+  end
+  displayExits()
+end
+
+function setCurrentRoomxx( id )
+  -- If this is the first Area or the id is outside the current Area, update Area before Room
+  if currentAreaNumber < 0 or (not worldData[currentAreaNumber].rooms[id]) then
+    setCurrentArea( roomToAreaMap[id] )
+  end
+  -- Save our lastRoomNumber for back-linking
+  if currentRoomNumber > 0 then
+    lastRoomNumber = currentRoomNumber
+  end
+  currentRoomData   = currentAreaData.rooms[id]
+  currentRoomNumber = currentRoomData.roomRNumber
+  currentRoomName   = currentRoomData.roomName
+end
+
+function setCurrentRoom( id )
+  local roomNumber = tonumber( id )
+  local roomArea = getRoomArea( roomNumber )
+  roomArea = tonumber( roomArea )
+  -- If this is the first Area or the id is outside the current Area, update Area before Room
+  if currentAreaNumber ~= roomArea then
+    setCurrentArea( roomArea )
+  end
+  --currentRoomData   = currentAreaData.rooms[id]
+  currentRoomNumber = roomNumber                       -- currentRoomData.roomRNumber
+  currentRoomName   = getRoomName( currentRoomNumber ) -- currentRoomData.roomName
+  roomExits         = getRoomExits( currentRoomNumber )
+end
+
+function setCurrentAreax( id )
+  currentAreaData   = worldData[id]
+  currentAreaNumber = tonumber( currentAreaData.areaRNumber )
+  currentAreaName   = tostring( currentAreaData.areaName )
+end
+
+function setCurrentArea( id )
+  -- Store the room number of the "entrance" so we can easily reset to the start of an area when mapping
+  -- firstAreaRoomNumber = id
+  -- If we're leaving an Area, store information and report on the transition
+  if currentAreaNumber > 0 then
+    lastAreaNumber = currentAreaNumber
+    lastAreaName   = currentAreaName
+    mapInfo( f "Left: {areaTag()}" )
+  end
+  -- currentAreaData   = worldData[id]
+  -- currentAreaNumber = tonumber( currentAreaData.areaRNumber )
+  -- currentAreaName   = tostring( currentAreaData.areaName )
+  currentAreaNumber = getRoomArea( id )
+  currentAreaName   = getRoomAreaName( id )
+  mapInfo( f "Entered {areaTag()}" )
+  setMapZoom( 28 )
+end
+
+function setCurrentRoomNew( id )
+  if currentAreaNumber < 0 or getRoomArea( id ) ~= currentAreaNumber then
+    setCurrentArea( getRoomArea( id ) )
+  end
+end
+
+function setCurrentAreaNew( id )
+  -- If we're leaving an Area, store information and report on the transition
+  if currentAreaNumber > 0 then
+    lastAreaNumber = currentAreaNumber
+    lastAreaName   = currentAreaName
+    mapInfo( f "Left: {areaTag()}" )
+  end
+  currentAreaNumber = getRoomArea( id )
+  currentAreaName   = getRoomAreaName( id )
+  mapInfo( f "Entered {areaTag()}" )
+  setMapZoom( 28 )
+end
+
+function setCurrentRoomxx( id )
+  -- If this is the first Area or the id is outside the current Area, update Area before Room
+  if currentAreaNumber < 0 or (not worldData[currentAreaNumber].rooms[id]) then
+    setCurrentArea( roomToAreaMap[id] )
+  end
+  -- Save our lastRoomNumber for back-linking
+  if currentRoomNumber > 0 then
+    lastRoomNumber = currentRoomNumber
+  end
+  currentRoomData   = currentAreaData.rooms[id]
+  currentRoomNumber = currentRoomData.roomRNumber
+  currentRoomName   = currentRoomData.roomName
+end
+
+-- Display all exits of the current room as they might appear in the MUD
+function displayExits( id )
+  local exitData = currentRoomData.exits
+  local exitString = ""
+  local isFirstExit = true
+
+  local minRNumber = currentAreaData.areaMinRoomRNumber
+  local maxRNumber = currentAreaData.areaMaxRoomRNumber
+
+  for _, exit in pairs( exitData ) do
+    local dir = exit.exitDirection
+    local to = exit.exitDest
+    local ec = MAP_COLOR["exitDir"]
+    local nc
+
+    -- Determine the color based on exit properties
+    if to == currentRoomNumber or (culledExits[currentRoomNumber] and culledExits[currentRoomNumber][dir]) then
+      -- "Dim" the exit if it leads to the same room or has been culled (because several exits lead to the same destination)
+      nc = "<dim_grey>"
+    elseif not isInArea( to, currentAreaNumber ) then --to < minRNumber or to > maxRNumber then
+      -- The room leads to a different area
+      nc = MAP_COLOR["area"]
+    else
+      local destRoom = currentAreaData.rooms[to]
+      if destRoom and destRoom.roomFlags:find( "DEATH" ) then
+        nc = MAP_COLOR["death"]
+      elseif (exit.exitFlags and exit.exitFlags ~= -1) or (exit.exitKey and exit.exitKey ~= -1) then
+        nc = MAP_COLOR["exitSpec"]
+      else
+        nc = MAP_COLOR["number"]
+      end
+    end
+    --local nextExit = f "{ec}{dir}<reset> ({nc}{to}<reset>)"
+    local nextExit = f "{nc}{dir}<reset>)"
+    if isFirstExit then
+      exitString = f "{MAP_COLOR['exitStr']}Exits:  [" .. nextExit .. f "{MAP_COLOR['exitStr']}]<reset>"
+      isFirstExit = false
+    else
+      exitString = exitString .. f " {MAP_COLOR['exitStr']}[<reset>" .. nextExit .. f "{MAP_COLOR['exitStr']}]<reset>"
+    end
+  end
+  cecho( f "\n   {exitString}" )
+end
+
+-- A function to determine whether a Room belongs to a given Area
+function isInArea( roomID, areaID )
+  local roomArea = getRoomArea( roomID )
+  -- If the Room exists (i.e., it has been mapped), then use Mudlet as our source of truth
+  if roomArea == areaID or roomArea == getRoomArea( currentRoomNumber ) then
+    return true
+    -- If the Room has not been mapped, see if it is a member of the Area's room table in the worldData table
+  elseif not roomExists( roomID ) and worldData[areaID].rooms[roomID] then
+    return true
+  end
+  return false
+end
+
+-- From the gizwrld database, load the Area, Room, and Exit data into a Lua table
+function loadWorldData()
+  local luasql = require "luasql.sqlite3"
+  local env = luasql.sqlite3()
+  local conn = env:connect( 'C:/Dev/mud/gizmo/data/gizwrld.db' )
+
+  if not conn then
+    gizErr( f 'Error connecting to gizwrld.db.' )
+    return nil
+  end
+  local areas = {}
+  local cursor
+
+  -- Load Areas
+  cursor = conn:execute( "SELECT * FROM Area" )
+  local row = cursor:fetch( {}, "a" )
+  while row do
+    areas[row.areaRNumber] = {
+      areaRNumber = row.areaRNumber,
+      areaName = row.areaName,
+      areaResetType = row.areaResetType,
+      areaFirstRoomName = row.areaFirstRoomName,
+      areaMinRoomRNumber = row.areaMinRoomRNumber,
+      areaMaxRoomRNumber = row.areaMaxRoomRNumber,
+      areaMinVNumber = row.areaMinVNumber,
+      areaMaxVNumberActual = row.areaMaxVNumberActual,
+      areaMaxVNumberAllowed = row.areaMaxVNumberAllowed,
+      areaRoomCount = row.areaRoomCount,
+      rooms = {}
+    }
+    row = cursor:fetch( row, "a" )
+  end
+  cursor:close()
+
+  -- Load Rooms
+  cursor = conn:execute( "SELECT * FROM Room" )
+  row = cursor:fetch( {}, "a" )
+  while row do
+    if areas[row.areaRNumber] then
+      areas[row.areaRNumber].rooms[row.roomRNumber] = {
+        roomRNumber = row.roomRNumber,
+        roomName = row.roomName,
+        roomType = row.roomType,
+        roomSpec = row.roomSpec,
+        roomFlags = row.roomFlags,
+        roomDescription = row.roomDescription,
+        roomExtraKeyword = row.roomExtraKeyword,
+        roomVNumber = row.roomVNumber,
+        exits = {}
+      }
+    else
+      cecho( f '{{Unmatched Room: {row.roomRNumber} in Area: {row.areaRNumber}\n' )
+    end
+    row = cursor:fetch( row, "a" )
+  end
+  cursor:close()
+
+  -- Load Exits
+  cursor = conn:execute( "SELECT * FROM Exit" )
+  row = cursor:fetch( {}, "a" )
+  while row do
+    for _, area in pairs( areas ) do
+      if area.rooms[row.roomRNumber] then
+        table.insert( area.rooms[row.roomRNumber].exits, {
+          exitID = row.exitID,
+          exitDirection = row.exitDirection,
+          exitDest = row.exitDest,
+          exitKeyword = row.exitKeyword,
+          exitFlags = row.exitFlags,
+          exitKey = row.exitKey,
+          exitDescription = row.exitDescription
+        } )
+        break -- Exit found and added, no need to continue looping through areas
+      end
+    end
+    row = cursor:fetch( row, "a" )
+  end
+  -- Create a lookup table that maps roomRNumber(s) to areaRNumber(s)
+  for areaID, area in pairs( areas ) do
+    for roomID, _ in pairs( area.rooms ) do
+      roomToAreaMap[roomID] = areaID
+    end
+  end
+  cursor:close()
+  conn:close()
+  env:close()
+  return areas
+end
+
+--[[
+Functions to load, query, and interact with data from the database: 'C:/Dev/mud/gizmo/data/gizwrld.db'
+
+Table Structure:
+  Area Table:
+  areaRNumber INTEGER; A unique identifier and primary key for Area
+  areaName TEXT; The name of the Area in the MUD
+  areaResetType TEXT; A string describing how and when the area repopulates
+  areaFirstRoomName TEXT; The name of the first Room in the Area; usually the Room with areaMinRoomRNumber
+  areaMinRoomRNumber INTEGER; The lowest value of roomRNumber for Rooms in the Area
+  areaMaxRoomRNumber INTEGER; The highest value of roomRNumber for Rooms in the Area
+  areaMinVNumber INTEGER; The lowest value of roomVNumber for Rooms in the Area; usually the same room as areaMinRoomRNumber
+  areaMaxVNumberActual INTEGER; The highest value for Rooms that actually exist in the Area
+  areaMaxVNumberAllowed INTEGER; The highest value that a Room could theoretically have in the Area
+  areaRoomCount INTEGER; How many Rooms are in the Area
+
+  Room Table:
+  roomName TEXT; The name of the Room in the MUD
+  roomVNumber INTEGER; The VNumber of the Room; an alternative identifier
+  roomRNumber INTEGER; The RNumber of the Room; the primary unique identifier
+  roomType TEXT; The "Terrain" or "Sector" type of the Room; will be used for color selection
+  roomSpec BOOLEAN; Boolean value identifying Rooms with "special procedures" which will affect players in the Room
+  roomFlags TEXT; A list of flags that identify special properties of the Room
+  roomDescription TEXT; A long description of the Room that players see in game
+  roomExtraKeyword TEXT; A list of one or more words that identify things in the room players can examine or interact with
+  areaRNumber INTEGER; Foreign key to the Area in which this Room exists
+
+  Exit Table:
+  exitDirection TEXT; The direction the player must travel to use this Exit
+  exitDest INTEGER; The roomRNumber of the Room the player travels to when using this Exit
+  exitKeyword TEXT; Keywords Players use to interact with an Exit such as 'door' or 'gate'
+  exitFlags INTEGER; A list of flags that identify special properties of an Exit, usually a door
+  exitKey INTEGER; For Exits that require keys to lock/unlock, this is the in-game ID for the key
+  exitDescription TEXT; A short description of the Exit such as 'A gravel path leading west.'
+  roomRNumber INTEGER; Foreign key to the Room in which this Exit belongs
+--]]
+-- From the gizwrld database, load the Area, Room, and Exit data into a Lua table
+function loadFollowData()
+  local luasql = require "luasql.sqlite3"
+  local env = luasql.sqlite3()
+  local conn = env:connect( 'C:/Dev/mud/gizmo/data/gizwrld.db' )
+
+  if not conn then
+    gizErr( f 'Error connecting to gizwrld.db.' )
+    return nil
+  end
+  local areas = {}
+  local cursor
+
+  -- Load Areas
+  cursor = conn:execute( "SELECT * FROM Area" )
+  local row = cursor:fetch( {}, "a" )
+  while row do
+    areas[row.areaRNumber] = {
+      areaRNumber = row.areaRNumber,
+      areaName = row.areaName,
+      rooms = {}
+    }
+    row = cursor:fetch( row, "a" )
+  end
+  cursor:close()
+
+  -- Load Rooms
+  cursor = conn:execute( "SELECT * FROM Room" )
+  row = cursor:fetch( {}, "a" )
+  while row do
+    if areas[row.areaRNumber] then
+      areas[row.areaRNumber].rooms[row.roomRNumber] = {
+        roomRNumber = row.roomRNumber,
+        roomName = row.roomName,
+        exits = {}
+      }
+    else
+      cecho( f '{{Unmatched Room: {row.roomRNumber} in Area: {row.areaRNumber}\n' )
+    end
+    row = cursor:fetch( row, "a" )
+  end
+  cursor:close()
+
+  -- Load Exits
+  cursor = conn:execute( "SELECT * FROM Exit" )
+  row = cursor:fetch( {}, "a" )
+  while row do
+    for _, area in pairs( areas ) do
+      if area.rooms[row.roomRNumber] then
+        table.insert( area.rooms[row.roomRNumber].exits, {
+          exitDirection = row.exitDirection,
+          exitDest = row.exitDest,
+        } )
+        break -- Exit found and added, no need to continue looping through areas
+      end
+    end
+    row = cursor:fetch( row, "a" )
+  end
+  -- Create a lookup table that maps roomRNumber(s) to areaRNumber(s)
+  for areaID, area in pairs( areas ) do
+    for roomID, _ in pairs( area.rooms ) do
+      roomToAreaMap[roomID] = areaID
+    end
+  end
+  cursor:close()
+  conn:close()
+  env:close()
+  -- Create a lookup table that maps roomRNumber(s) to areaRNumber(s)
+  for areaID, area in pairs( areas ) do
+    for roomID, _ in pairs( area.rooms ) do
+      roomToAreaMap[roomID] = areaID
+    end
+  end
+  return areas
+end
+
+roomToAreaMap = {}
+worldData = {}
+currentAreaData = {}
+currentRoomData = {}
+currentAreaNumber = -1
+currentAreaName = ""
+currentRoomNumber = -1
+currentRoomName = ""
+roomExits = {}
+
+-- Basically just getPathAlias but automatically follow the route.
+function gotoAlias()
+  getPathAlias()
+  doWintin( walkPath )
+end
+
+-- Use built-in Mudlet path finding to get a path to the specified room.
+function getPathAlias()
+  -- Clear the pathing globals
+  speedWalkDir = nil
+  speedWalkPath = nil
+
+  local nc = MAP_COLOR["number"]
+  local rc = MAP_COLOR["roomNameU"]
+  local dirs = nil
+  local dstRoomName = nil
+  local dstRoomNumber = tonumber( matches[2] )
+  if currentRoomNumber == dstRoomNumber then
+    cecho( f "\nYou're already in {rc}{currentRoomName}<reset>." )
+  elseif not roomExists( dstRoomNumber ) then
+    cecho( f "\nRoom {nc}{dstRoomNumber}<reset> doesn't exist yet." )
+  else
+    getPath( currentRoomNumber, dstRoomNumber )
+    if speedWalkDir then
+      dstRoomName = getRoomName( dstRoomNumber )
+      dirs = createWintin( speedWalkDir )
+      cecho( f "\n\nPath from {rc}{currentRoomName}<reset> [{nc}{currentRoomNumber}<reset>] to {rc}{dstRoomName}<reset> [{nc}{dstRoomNumber}<reset>]:" )
+      cecho( f "\n<green_yellow>{dirs}<reset>" )
+      walkPath = dirs
+    end
+  end
+end
+
+worldData = loadFollowData()
+-- Create all Exits, Exit Stubs, and/or Doors from the Current Room to adjacent Rooms
+function updateExits()
+  if true then return end
+  for _, exit in ipairs( currentRoomData.exits ) do
+    local exitDirection = exit.exitDirection
+    if (not culledExits[currentRoomNumber]) or (not culledExits[currentRoomNumber][exitDirection]) then
+      local exitDest = tonumber( exit.exitDest )
+      local exitKeyword = exit.exitKeyword
+      local exitFlags = exit.exitFlags
+      local exitKey = tonumber( exit.exitKey )
+      local exitDescription = exit.exitDescription
+
+      -- Skip any exits that lead to the room we're already in
+      if exitDest ~= currentRoomNumber then
+        -- If the destination room is already mapped, remove any existing exit stub and create a "real" exit in that direction
+        if roomExists( exitDest ) then
+          setExitStub( currentRoomNumber, exitDirection, false )
+          setExit( currentRoomNumber, exitDest, exitDirection )
+
+          -- If the destination room we just linked links back to the current room, create the corresponding reverse exit
+          local reverseDir = EXIT_MAP[REVERSE[exitDirection]]
+          local destStubs = getExitStubs1( exitDest )
+          if contains( destStubs, reverseDir, false ) then
+            setExitStub( exitDest, reverseDir, false )
+            setExit( exitDest, currentRoomNumber, reverseDir )
+          end
+          -- With all exits presumably created, call optimizeExits to remove superfluous or redundant exits
+          -- (e.g., if room A has e/w exits to room B but room B only has an e exit to room A, we'll eliminate the w exit from A)
+          --optimizeExits( currentRoomNumber )
+        else
+          -- If the destination room hasn't been mapped yet, create a stub for later
+          setExitStub( currentRoomNumber, exitDirection, true )
+        end
+        -- The presence of exitFlags indicates a door; a non-zero key value indicates locked status
+        if exitFlags and exitFlags ~= -1 then
+          local doorStatus = (exitKey and exitKey > 0) and 3 or 2
+          local shortExit = exitDirection:match( '%w' )
+          setDoor( currentRoomNumber, shortExit, doorStatus )
+          if exitKey and exitKey > 0 then
+            setRoomUserData( currentRoomNumber, f "key_{shortExit}", exitKey )
+          end
+        end
+      end
+    end
+  end
+end
+
+-- Get new coordinates based on the existing global coordinates and the recent direction of travel
+function getNextCoordinates( direction )
+  local nextX, nextY, nextZ = mX, mY, mZ
+  -- Increment by 2 to provide a buffer on the Map for moving rooms around (don't buffer in the Z dimension)
+  if direction == "north" then
+    nextY = nextY + 2
+  elseif direction == "south" then
+    nextY = nextY - 2
+  elseif direction == "east" then
+    nextX = nextX + 2
+  elseif direction == "west" then
+    nextX = nextX - 2
+  elseif direction == "up" then
+    nextZ = nextZ + 1
+  elseif direction == "down" then
+    nextZ = nextZ - 1
+  end
+  return nextX, nextY, nextZ
+end
+
+function setRoomStyleAlias()
+  local roomStyle = matches[2]
+  if roomStyle == "mana" then
+    unHighlightRoom( currentRoomNumber )
+    setRoomEnv( currentRoomNumber, COLOR_CLUB )
+    setRoomChar( currentRoomNumber, "💤" )
+  elseif roomStyle == "shop" then
+    unHighlightRoom( currentRoomNumber )
+    setRoomEnv( currentRoomNumber, COLOR_SHOP )
+    setRoomChar( currentRoomNumber, "💰" )
+    --setRoomCharColor( currentRoomNumber, 140, 130, 15, 255 )
+  elseif roomStyle == "death" then
+    unHighlightRoom( currentRoomNumber )
+    setRoomEnv( currentRoomNumber, COLOR_DEATH )
+    setRoomChar( currentRoomNumber, "💀 " )
+    lockRoom( currentRoomNumber, true )
+  elseif roomStyle == "proc" then
+    unHighlightRoom( id )
+    setRoomEnv( id, COLOR_PROC )
+    setRoomChar( id, "📁 " )
+  end
+end
+
+-- Cull redundant (leading to the same room) exits from a given room
+function cullRedundantExits( roomID )
+  local roomExits = getRoomExits( roomID )
+  local exitCounts = {}
+
+  -- Count the number of exits leading to each destination
+  for dir, destID in pairs( roomExits ) do
+    if not exitCounts[destID] then
+      exitCounts[destID] = {}
+    end
+    table.insert( exitCounts[destID], dir )
+  end
+  for destID, exits in pairs( exitCounts ) do
+    -- Proceed only if there are multiple exits leading to the same destination
+    if #exits > 1 then
+      culledExits[roomID] = culledExits[roomID] or {}
+
+      -- If the destination room has a "reverse" (return) of the exit, keep that one
+      local destExits = getRoomExits( destID )
+      local reverseExit = nil
+      for destDir, backDestID in pairs( destExits ) do
+        if backDestID == roomID then
+          reverseExit = destDir
+          break
+        end
+      end
+      -- Find the corresponding exit to keep
+      local exitToKeep = nil
+      if reverseExit then
+        for _, exitDir in pairs( exits ) do
+          exitToKeep = exitDir
+          break
+        end
+      end
+    end
+    -- If there's no matching 'return' exit, prefer exits in this order
+    if not exitToKeep then
+      local dirOrder = {"north", "south", "east", "west", "up", "down"}
+      for _, dir in ipairs( dirOrder ) do
+        if contains( exits, dir, true ) then
+          exitToKeep = dir
+          break
+        end
+      end
+    end
+    -- Remove all exits except the one to keep
+    for _, exitDir in pairs( exits ) do
+      if exitDir ~= exitToKeep then
+        cullExit( exitDir )
+      end
+    end
   end
 end

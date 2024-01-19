@@ -7,19 +7,19 @@ Globals & constants for Mapping & the Mudlet Mapper
 mapZoomLevel        = 28
 
 -- Valid directions for exits and travel; MUD does not support diagonal travel
-DIRECTIONS          = DIRECTIONS or {
-  ["north"] = 1,
-  ["south"] = 2,
-  ["east"]  = 3,
-  ["west"]  = 4,
-  ["up"]    = 5,
-  ["down"]  = 6,
-  ["n"]     = 1,
-  ["s"]     = 2,
-  ["e"]     = 3,
-  ["w"]     = 4,
-  ["u"]     = 5,
-  ["d"]     = 6
+DIRECTIONS          = {
+  north = 1,
+  south = 2,
+  east  = 3,
+  west  = 4,
+  up    = 5,
+  down  = 6,
+  n     = 1,
+  s     = 2,
+  e     = 3,
+  w     = 4,
+  u     = 5,
+  d     = 6
 }
 
 -- Table to get the reverse of a direction; useful for bi-directional linking
@@ -53,6 +53,7 @@ LDIR                = {
   up    = "up",
   down  = "down"
 }
+
 SDIR                = {
   north = "n",
   south = "s",
@@ -86,22 +87,59 @@ EXIT_MAP            = EXIT_MAP or {
 currentAreaData     = {}
 currentAreaNumber   = {}
 currentAreaName     = ""
-
 currentRoomData     = {}
 currentRoomNumber   = -1
 currentAreaNumber   = -1
 roomToAreaMap       = {}
 worldData           = {}
 culledExits         = {}
---loadTable( 'culledExits' )
---loadTable( 'entryRooms' )
 
 -- Coordinates to track the "physical" location of the room relative to the starting point of the Area so Mudlet can draw it
 mX, mY, mZ          = 0, 0, 0
 
-firstAreaRoomNumber = -1
 lastRoomNumber      = -1
 lastAreaNumber      = -1
 lastAreaName        = ""
 lastDir             = ""
 lastKey             = -1
+COLOR_DEATH         = 300
+COLOR_CLUB          = 310
+COLOR_INSIDE        = 320
+COLOR_FOREST        = 330
+COLOR_MOUNTAINS     = 340
+COLOR_CITY          = 350
+COLOR_WATER         = 360
+COLOR_FIELD         = 370
+COLOR_HILLS         = 380
+COLOR_DEEPWATER     = 390
+COLOR_OVERLAP       = 400
+COLOR_LANDMARK      = 410
+COLOR_SHOP          = 420
+COLOR_PROC          = 430
+
+customColorsDefined = false
+
+-- When outputting data related to map generation, use these colors to highlight specific fields wich cecho()
+-- e.g., cecho( MAPGEN_COLORS["areaName"] .. area["areaName"] .. "<reset>" )
+MAP_COLOR           = {
+  -- Area, Room, Exit Data
+  ["area"]      = "<maroon>",
+  ["number"]    = "<dark_orange>",
+  ["roomName"]  = "<sky_blue>",
+  ["roomNameU"] = "<royal_blue>",
+  ["roomDesc"]  = "<olive_drab>",
+  ["exitDir"]   = "<cyan>",
+  ["exitStr"]   = "<dark_slate_grey>",
+  ["exitSpec"]  = "<gold>",
+  ["death"]     = "<orange_red>",
+  ["mapui"]     = "<medium_orchid>",
+  ["cmd"]       = "<light_steel_blue>",
+  ['Forest']    = "<olive_drab>",
+  ['Mountains'] = "<rosy_brown>",
+  ['City']      = "<dim_grey>",
+  ['Water']     = "<dodger_blue>",
+  ['Field']     = "<medium_sea_green>",
+  ['Hills']     = "<ansi_yellow>",
+  ['Deepwater'] = "<midnight_blue>",
+  ['Inside']    = "<sienna>",
+}
