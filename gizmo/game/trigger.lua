@@ -72,10 +72,10 @@ end
 function triggerCaptureRoom( room )
   if session == 1 then
     -- Synchronize the map using the table of unique room names
-    local mapRoom = uniqueRooms[trim( tostring( room ) )]
-    if mapRoom then
-      updatePlayerLocation( mapRoom )
-    end
+    --local mapRoom = uniqueRooms[trim( tostring( room ) )]
+    --if mapRoom then
+    --  updatePlayerLocation( mapRoom )
+    --end
     pcStatusRoom( 1, room )
   else
     raiseGlobalEvent( "event_pcStatus_room", session, room )

@@ -1758,3 +1758,22 @@ function cullRedundantExits( roomID )
     end
   end
 end
+
+-- Set & update the player's location, updating coordinates & creating rooms as necessary
+function updatePlayerLocationyy( roomRNumber, direction )
+  -- Store data about where we "came from" to get here
+  if direction then
+    lastDir = direction
+  end
+  -- Update the current Room (this function updates Area as needed)
+  setCurrentRoom( roomRNumber )
+  -- If the room exists already, set coordinates, otherwise calculate new ones based on the direction of travel
+  if roomExists( currentRoomNumber ) then
+    mX, mY, mZ = getRoomCoordinates( currentRoomNumber )
+  else
+    mX, mY, mZ = getNextCoordinates( direction )
+    createRoom()
+  end
+  --updateExits()
+  centerview( currentRoomNumber )
+end

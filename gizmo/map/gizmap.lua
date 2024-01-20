@@ -1,8 +1,10 @@
+runLuaFile( f "{rootDirectory}map/map_def.lua" )
+runLuaFile( f "{rootDirectory}map/map_ux.lua" )
 runLuaFile( f "{rootDirectory}map/data/area_dirs.lua" )
 runLuaFile( f "{rootDirectory}map/data/door_data.lua" )
 runLuaFile( f "{rootDirectory}map/data/unique_rooms.lua" )
 culledExits = {}
-table.load( 'C:/Dev/mud/mudlet/gizmo/data/culledExits.lua', culledExits )
+table.load( f '{rootDirectory}map/data/culledExits.lua', culledExits )
 -- Print a message w/ a tag denoting it as coming from our Mapper script
 function mapInfo( message )
   cecho( f "\n  [<peru>M<reset>] {message}" )
@@ -198,56 +200,6 @@ function displayExits( id )
   cecho( f "\n   {exitString}" )
 end
 
--- Determine the color an exit should be displayed in based on the attributes of the desination room
-function getExitColor( to, dir )
-  local toFlags = getRoomUserData( to, "roomFlags" )
-  local isDT = toFlags and toFlags:find( "DEATH" )
-  local isDoor = doorData[currentRoomNumber] and doorData[currentRoomNumber][LDIR[dir]]
-  local isLocked = isDoor and
-      doorData[currentRoomNumber][LDIR[dir]].exitKey and doorData[currentRoomNumber][LDIR[dir]].exitKey > 0
-  local isBorder = currentAreaNumber ~= getRoomArea( to )
-  local isMissing = not roomExists( to )
-  if isMissing then
-    return "<ansi_light_magenta>"
-  elseif isDT then
-    return "<ansi_light_red>"
-  elseif isDoor then
-    if isLocked then
-      return "<yellow_green>"
-    else
-      return "<gold>"
-    end
-  elseif isBorder then
-    return "<maroon>"
-  else
-    return "<dark_slate_grey>"
-  end
-end
-
-function updatePlayerLocationxx( roomRNumber )
-  setCurrentRoom( roomRNumber )
-  centerview( currentRoomNumber )
-end
-
--- Set & update the player's location, updating coordinates & creating rooms as necessary
-function updatePlayerLocationyy( roomRNumber, direction )
-  -- Store data about where we "came from" to get here
-  if direction then
-    lastDir = direction
-  end
-  -- Update the current Room (this function updates Area as needed)
-  setCurrentRoom( roomRNumber )
-  -- If the room exists already, set coordinates, otherwise calculate new ones based on the direction of travel
-  if roomExists( currentRoomNumber ) then
-    mX, mY, mZ = getRoomCoordinates( currentRoomNumber )
-  else
-    mX, mY, mZ = getNextCoordinates( direction )
-    createRoom()
-  end
-  --updateExits()
-  centerview( currentRoomNumber )
-end
-
 function updatePlayerLocation( id, dir )
   -- Store data about where we "came from" to get here
   if dir then
@@ -266,9 +218,8 @@ function setCurrentRoom( id )
   if currentAreaNumber ~= roomArea then
     setCurrentArea( roomArea )
   end
-  --currentRoomData   = currentAreaData.rooms[id]
-  currentRoomNumber = roomNumber                       -- currentRoomData.roomRNumber
-  currentRoomName   = getRoomName( currentRoomNumber ) -- currentRoomData.roomName
+  currentRoomNumber = roomNumber
+  currentRoomName   = getRoomName( currentRoomNumber )
   roomExits         = getRoomExits( currentRoomNumber )
 end
 
@@ -281,25 +232,6 @@ function setCurrentArea( id )
   currentAreaNumber = id
   currentAreaName   = getRoomAreaName( id )
   cecho( f "\n<dim_grey>  Entering {areaTag()}" )
-  setMapZoom( 28 )
-end
-
-function setCurrentRoomNew( id )
-  if currentAreaNumber < 0 or getRoomArea( id ) ~= currentAreaNumber then
-    setCurrentArea( getRoomArea( id ) )
-  end
-end
-
-function setCurrentAreaNew( id )
-  -- If we're leaving an Area, store information and report on the transition
-  if currentAreaNumber > 0 then
-    lastAreaNumber = currentAreaNumber
-    lastAreaName   = currentAreaName
-    mapInfo( f "Left: {areaTag()}" )
-  end
-  currentAreaNumber = getRoomArea( id )
-  currentAreaName   = getRoomAreaName( id )
-  mapInfo( f "Entered {areaTag()}" )
   setMapZoom( 28 )
 end
 
@@ -317,7 +249,7 @@ function cullExit( dir )
   culledExits[currentRoomNumber] = culledExits[currentRoomNumber] or {}
   setExit( currentRoomNumber, -1, dir )
   culledExits[currentRoomNumber][dir] = true
-  table.save( 'C:/Dev/mud/mudlet/gizmo/data/culledExits.lua', culledExits )
+  table.save( '{rootDirectory}map/data/culledExits.lua', culledExits )
   updateMap()
 end
 
@@ -419,7 +351,6 @@ end
 
 -- For now, initialize our location as Market Square [1121]
 function startExploration()
-  clearScreen()
   openMapWidget()
   -- Set the starting Room to Market Square and initilize coordinates
   mX, mY, mZ = 0, 0, 0

@@ -17,7 +17,6 @@ function expandWintin( wintinString )
   return commands
 end
 
-commandPacer = 0.25
 -- Use expandWintin to execute WINTIN-style command lists
 function doWintin( wintinString )
   local commands = expandWintin( wintinString )
@@ -74,6 +73,7 @@ function parseWintinAction( actionString )
   return trim( pattern ), trim( command ), trim( priority )
 end
 
+-- From a list of raw directions like ({ "n", "n", "n", "u", "u" }), create a Wintin-style command string
 function createWintin( directionList )
   if not directionList or #directionList == 0 then
     return ""

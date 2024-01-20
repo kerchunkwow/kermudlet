@@ -14,9 +14,9 @@ local commonScripts = {
 
 -- Specific to the main session
 local mainScripts = {
-  "map/map_unique.lua",
-  "map/map_dirs.lua",
-  "map/map_fol.lua",
+  --  "map/map_unique.lua",
+  -- "map/map_dirs.lua",
+  --"map/map_fol.lua",
   "config/config_main.lua",
   "gui/create_gui.lua",
   "gui/gui.lua",

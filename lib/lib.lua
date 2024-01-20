@@ -33,7 +33,6 @@ end
 -- Redefine this here so VSCode recognizes it
 function runLuaFile( filePath )
   if lfs.attributes( filePath, "mode" ) == "file" then
-    --cecho( f "\nLoading: <dim_grey>{filePath}<reset>" )
     dofile( filePath )
   else
     cecho( f "\n{dbc}{filePath}<reset> not found." )
