@@ -1,4 +1,4 @@
-cecho( f '\n\t<yellow_green>lib_string.lua<reset>: string manipulation, parsing, formatting, etc.' )
+cecho( f '\n  <steel_blue>lib_string.lua<dim_grey>: string manipulation, parsing, formatting, etc.' )
 
 -- Trim leading/trailing whitespace from a string
 function trim( s )
@@ -19,13 +19,6 @@ function split( str, delimiter )
   table.insert( substrings, string.sub( str, from ) )
 
   return substrings
-end
-
-function splitPrint( str, delimiter )
-  local substrings = split( str, delimiter )
-  for _, substring in ipairs( substrings ) do
-    print( substring )
-  end
 end
 
 -- Given a large number as a string, return a abbreviated version like '1.2B'
@@ -106,11 +99,3 @@ function isRegex( str )
   end
   return false
 end
-
---[[
-GitHub Copilot, ChatGPT notes:
-Collaborate on Lua 5.1 scripts for Mudlet in VSCode. Use f-strings, camelCase, UPPER_CASE constants.
-Prioritize performance, optimization, and modular design. Provide debugging output with cecho.
-Be critical, suggest improvements, don't apologize for errors.
-Respond concisely, treat me as a coworker.
-]]

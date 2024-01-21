@@ -1,3 +1,5 @@
+cecho( f '\n  <olive_drab>map_ux.lua<reset>: define & maintain Map UX including colors, room styles, icons, etc.' )
+
 TXT_COLOR = {
   default   = "<dim_grey>",
   roomName  = "<royal_blue>",

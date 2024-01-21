@@ -1,36 +1,4 @@
-cecho( f '\n\t<dark_violet>devtools.lua<reset>: stuff useful when developing new scripts' )
-
--- List all fonts available in Mudlet.
-function listFonts()
-  local availableFonts = getAvailableFonts()
-
-  ---@diagnostic disable-next-line: param-type-mismatch
-  for k, v in pairs( availableFonts ) do
-    print( k )
-  end
-end
-
--- Print all variables currently in _G (Lua's table for all variables); probably
--- not very readable but might be helpful
-function print_variables()
-  for k, v in pairs( _G ) do
-    local var_name, var_type, var_value, nam, typ, val = nil, nil, nil, nil, nil, nil
-
-    typ                                                = type( v )
-    nam                                                = tostring( k )
-    val                                                = tostring( v )
-
-    var_name                                           = "<sea_green>" .. nam .. "<reset>"
-    var_type                                           = "<ansi_magenta>" .. typ .. "<reset>"
-    var_value                                          = "<cyan>" .. val .. "<reset>"
-
-    if typ == "number" or typ == "boolean" then
-      cecho( f "\n{var_name} ({var_type}<reset>) == {var_value}<reset>\n-----" )
-    elseif typ == "string" then
-      cecho( f "\n{var_name} ({var_type}<reset>) ==\n{var_value}<reset>\n-----" )
-    end
-  end
-end
+cecho( f '\n  <coral>status_sim.lua<reset>: simulate a variety of gizmo MUD output for testing status tracking & updating functions' )
 
 --- Simulate the output of a 'group' command for testing triggers
 function simulate_group()

@@ -1,4 +1,4 @@
--- door_data.lua has data about every non-standard exit in the game (doors)
+cecho( f '\n  <olive_drab>map_doors.lua<reset>: a table of every non-standard exit in the game including door names & key numbers' )
 
 -- Retrieve data about the specified room's doors; if dir is supplied get that direction only
 function getDoorData( id, dir )

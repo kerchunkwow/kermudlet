@@ -1,3 +1,5 @@
+cecho( f '\n  <olive_drab>map_unique.lua<reset>: a table of every room in the game with a unique name for pathing, searching, synhronizing' )
+
 function isUnique( roomName )
   return uniqueRooms[roomName]
 end

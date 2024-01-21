@@ -1,4 +1,4 @@
-cecho( f '\n\t<yellow_green>lib_gui.lua<reset>: core GUI functions for windows, output, chat, etc.' )
+cecho( f '\n  <steel_blue>lib_gui.lua<dim_grey>: core GUI functions for windows, output, chat, etc.' )
 
 -- Use with cecho etc. to colorize output without massively long f-strings
 function ec( s, c )
@@ -27,7 +27,6 @@ function chatMessage( speaker, channel, message, window )
     cecho( window, f "\n{sh}{speaker} {de}[{ch}{channel}{de}]<reset> {message}" )
   else
     cecho( f "\n{sh}{speaker} {de}[{ch}{channel}{de}]<reset> {message}" )
-    cecho( f "{ec('DB connect failed','err')} in {ec('loadAreaList','func')}" )
   end
 end
 
@@ -89,6 +88,7 @@ function clearScreen()
   end
 end
 
+-- Generic error message formatter
 function gizErr( msg )
   cecho( f "\n{ec('Error','err')}: {msg}" )
 end
@@ -109,10 +109,12 @@ function getModifiedColor( r, g, b, d )
   return newR, newG, newB
 end
 
---[[
-GitHub Copilot, ChatGPT notes:
-Collaborate on Lua 5.1 scripts for Mudlet in VSCode. Use f-strings, camelCase, UPPER_CASE constants.
-Prioritize performance, optimization, and modular design. Provide debugging output with cecho.
-Be critical, suggest improvements, don't apologize for errors.
-Respond concisely, treat me as a coworker.
-]]
+-- List all fonts available in Mudlet.
+function listFonts()
+  local availableFonts = getAvailableFonts()
+
+  ---@diagnostic disable-next-line: param-type-mismatch
+  for k, v in pairs( availableFonts ) do
+    print( k )
+  end
+end

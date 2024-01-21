@@ -1,8 +1,4 @@
---[[ mapdef.lua
-
-Globals & constants for Mapping & the Mudlet Mapper
-
---]]
+cecho( f '\n  <olive_drab>map_ux.lua<reset>: constants & defines for mapping & following the map' )
 
 mapZoomLevel        = 28
 

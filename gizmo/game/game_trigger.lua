@@ -1,3 +1,5 @@
+cecho( f '\n  <coral>game_trigger.lua<reset>: functions called directly by in-game triggers' )
+
 function triggerAutoMira()
   if session ~= 1 then return end
   if pcStatus[1]["currentMana"] < 100 then return end

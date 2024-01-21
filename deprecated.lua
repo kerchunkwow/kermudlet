@@ -1,3 +1,26 @@
+-- Prototype/beta function for importing Wintin commands from an external file
+function importWintinActions()
+  local testActions = {}
+  -- Make an empty group to hold the imported triggers
+  permRegexTrigger( "Imported", "", {"^#"}, "" )
+
+  local triggerCounter = 1
+
+  for _, actionString in ipairs( testActions ) do
+    local triggerName = "Imported" .. triggerCounter
+    local pattern, command, priority = parseWintinAction( actionString )
+
+    command = f [[print("{command}")]]
+
+    if isRegex( pattern ) then
+      permRegexTrigger( triggerName, "Imported", {pattern}, command )
+    else
+      permSubstringTrigger( triggerName, "Imported", {pattern}, command )
+    end
+    triggerCounter = triggerCounter + 1
+  end
+end
+
 -- Create a new room in the Mudlet; by default operates on the "current" room being the one you just arrived in;
 -- passing dir and id will create a room offset from the current room (which no associated user data)
 function createRoom( dir, id )
@@ -1776,4 +1799,11 @@ function updatePlayerLocationyy( roomRNumber, direction )
   end
   --updateExits()
   centerview( currentRoomNumber )
+end
+
+function splitPrint( str, delimiter )
+  local substrings = split( str, delimiter )
+  for _, substring in ipairs( substrings ) do
+    print( substring )
+  end
 end

@@ -1,8 +1,4 @@
-cecho( f '\n\t<dark_violet>config_common.lua<reset>: define globals & tables shared by all sessions' )
-
--- Ideally used to suppress aliases, triggers, and script that's only needed for testing & QA so it's not
--- loaded during regular play.
-developer_mode     = true
+cecho( f '\n  <coral>config_common.lua<reset>: define globals & tables shared by all sessions' )
 
 -- Neutral color for "ui" output like spacer lines, separators, etc.
 ui_color           = "<light_steel_blue>"

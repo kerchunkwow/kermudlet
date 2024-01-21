@@ -1,4 +1,4 @@
-cecho( f '\n\t<dark_violet>game_alias.lua<reset>: functions to directly support aliases like recasting' )
+cecho( f '\n  <coral>game_alias.lua<reset>: functions to directly support aliases like recasting' )
 
 -- Get the optimal Magic-User for a cast
 function getCasterMU( mana_cost )

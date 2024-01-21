@@ -1,4 +1,6 @@
-cecho( f '\n\t<yellow_green>lib_react.lua<reset>: Functions related to Mudlet "reactions" i.e., triggers, aliases' )
+cecho( f '\n  <steel_blue>lib_react.lua<dim_grey>: Functions related to Mudlet "reactions" i.e., triggers, aliases' )
+
+sureCastTrigger = nil
 
 -- Enable an alias for the specified duration then disable it again; useful for triggers that are only
 -- needed in niche circumstances like then viewing your 'eq' or interacting with a shopkeeper
@@ -88,11 +90,3 @@ function sureCast( spell, target )
   end
   sureCastTrigger = tempRegexTrigger( "^You lost your concentration!$", castCode, 1 )
 end
-
---[[
-GitHub Copilot, ChatGPT notes:
-Collaborate on Lua 5.1 scripts for Mudlet in VSCode. Use f-strings, camelCase, UPPER_CASE constants.
-Prioritize performance, optimization, and modular design. Provide debugging output with cecho.
-Be critical, suggest improvements, don't apologize for errors.
-Respond concisely, treat me as a coworker.
-]]

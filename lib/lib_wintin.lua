@@ -1,3 +1,5 @@
+cecho( f '\n  <steel_blue>lib_wintin.lua<dim_grey>: Create and interact with Wintin-compatible command lists' )
+
 -- Expand #WINTIN-style command strings
 -- e.g., "#3 n;#2 u" = { "n", "n", "n", "u", "u" }
 function expandWintin( wintinString )
@@ -18,6 +20,8 @@ function expandWintin( wintinString )
 end
 
 -- Use expandWintin to execute WINTIN-style command lists
+-- Temporarily set to echo commands online for offline mapping purposes
+-- [LATER] This can probably just be turned into a generic 'doCommands' function
 function doWintin( wintinString )
   local commands = expandWintin( wintinString )
   for _, command in ipairs( commands ) do
@@ -107,26 +111,4 @@ function createWintin( directionList )
     table.insert( wintinCommands, (count > 1 and "#" .. count .. " " or "") .. currentDirection )
   end
   return table.concat( wintinCommands, ";" )
-end
-
-function importWintinActions()
-  local testActions = {}
-  -- Make an empty group to hold the imported triggers
-  permRegexTrigger( "Imported", "", {"^#"}, "" )
-
-  local triggerCounter = 1
-
-  for _, actionString in ipairs( testActions ) do
-    local triggerName = "Imported" .. triggerCounter
-    local pattern, command, priority = parseWintinAction( actionString )
-
-    command = f [[print("{command}")]]
-
-    if isRegex( pattern ) then
-      permRegexTrigger( triggerName, "Imported", {pattern}, command )
-    else
-      permSubstringTrigger( triggerName, "Imported", {pattern}, command )
-    end
-    triggerCounter = triggerCounter + 1
-  end
 end

@@ -1,4 +1,4 @@
-cecho( f '\n\t<dark_violet>affect.lua<reset>: to maintain buffs/debuffs and track duration' )
+cecho( f '\n  <coral>status_affect.lua<reset>: uses emoji strings to track status affects/uptime (Prototype)' )
 
 -- The affects we want to track; set this to "save" in Variables to maintain durations between sessions
 affectInfo = affectInfo or {
@@ -124,11 +124,3 @@ function printAffectStrings()
     end
   end
 end
-
---[[
-GitHub Copilot, ChatGPT notes:
-Collaborate on Lua 5.1 scripts for Mudlet in VSCode. Use f-strings, camelCase, UPPER_CASE constants.
-Prioritize performance, optimization, and modular design. Provide debugging output with cecho.
-Be critical, suggest improvements, don't apologize for errors.
-Respond concisely, treat me as a coworker.
-]]

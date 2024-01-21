@@ -1,34 +1,31 @@
-cecho( f '\n\t<dark_violet>giz_init.lua<reset>: entry point to Gizmo-specific scripts and functions' )
+cecho( f '\n<orange_red>gizmo_init.lua<reset>: entry point to Gizmo-specific scripts and functions' )
 
 session = getProfileTabNumber()
 
 -- Common to all sessions
 local commonScripts = {
-  "game/trigger.lua",
-  "config/events.lua",
-  "config/config_common.lua",
-  "alias/game_alias.lua",
-  "eq/eqdb.lua",
-  "status/affect.lua",
+  "gizmo/game/game_trigger.lua",
+  "gizmo/config/config_events.lua",
+  "gizmo/config/config_common.lua",
+  "gizmo/alias/game_alias.lua",
+  "gizmo/eq/eq_db.lua",
+  "gizmo/status/status_affect.lua",
 }
 
 -- Specific to the main session
 local mainScripts = {
-  --  "map/map_unique.lua",
-  -- "map/map_dirs.lua",
-  --"map/map_fol.lua",
-  "config/config_main.lua",
-  "gui/create_gui.lua",
-  "gui/gui.lua",
-  "status/update_status.lua",
-  "status/parse_main.lua",
-  "eq/inventory.lua",
+  "gizmo/config/config_main.lua",
+  "gizmo/gui/gui_create.lua",
+  "gizmo/gui/gui.lua",
+  "gizmo/status/status_update.lua",
+  "gizmo/status/status_parse_main.lua",
+  "gizmo/eq/eq_inventory.lua",
 }
 
 -- Specific to alt sessions
 local altScripts = {
-  "config/config_alt.lua",
-  "status/parse_alt.lua",
+  "gizmo/config/config_alt.lua",
+  "gizmo/status/status_parse_alt.lua",
 }
 
 runLuaFiles( commonScripts )
@@ -62,10 +59,3 @@ end
 warning_calls = createWarningCalls()
 
 tempTimer( 0.1, [[cecho(f"\n<olive_drab>(Gizmo)<reset> loaded for {my_color}{myself}<reset>.")]] )
---[[
-GitHub Copilot, ChatGPT notes:
-Collaborate on Lua 5.1 scripts for Mudlet in VSCode. Use f-strings, camelCase, UPPER_CASE constants.
-Prioritize performance, optimization, and modular design. Provide debugging output with cecho.
-Be critical, suggest improvements, don't apologize for errors.
-Respond concisely, treat me as a coworker.
-]]

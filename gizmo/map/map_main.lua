@@ -1,10 +1,11 @@
-runLuaFile( f "{rootDirectory}map/map_def.lua" )
-runLuaFile( f "{rootDirectory}map/map_ux.lua" )
-runLuaFile( f "{rootDirectory}map/data/area_dirs.lua" )
-runLuaFile( f "{rootDirectory}map/data/door_data.lua" )
-runLuaFile( f "{rootDirectory}map/data/unique_rooms.lua" )
+cecho( f '\n<lawn_green>map_main.lua<reset>: main mapper class for creating, following, and searching the map' )
+runLuaFile( "gizmo/map/map_const.lua" )
+runLuaFile( "gizmo/map/map_ux.lua" )
+runLuaFile( "gizmo/map/data/area_dirs.lua" )
+runLuaFile( "gizmo/map/data/door_data.lua" )
+runLuaFile( "gizmo/map/data/map_unique.lua" )
 culledExits = {}
-table.load( f '{rootDirectory}map/data/culledExits.lua', culledExits )
+table.load( f '{homeDirectory}gizmo/map/data/culledExits.lua', culledExits )
 -- Print a message w/ a tag denoting it as coming from our Mapper script
 function mapInfo( message )
   cecho( f "\n  [<peru>M<reset>] {message}" )
@@ -249,7 +250,7 @@ function cullExit( dir )
   culledExits[currentRoomNumber] = culledExits[currentRoomNumber] or {}
   setExit( currentRoomNumber, -1, dir )
   culledExits[currentRoomNumber][dir] = true
-  table.save( '{rootDirectory}map/data/culledExits.lua', culledExits )
+  table.save( 'gizmo/map/data/culledExits.lua', culledExits )
   updateMap()
 end
 
@@ -351,7 +352,7 @@ end
 
 -- For now, initialize our location as Market Square [1121]
 function startExploration()
-  openMapWidget()
+  --openMapWidget()
   -- Set the starting Room to Market Square and initilize coordinates
   mX, mY, mZ = 0, 0, 0
   updatePlayerLocation( 1121 )

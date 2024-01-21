@@ -1,3 +1,5 @@
+cecho( f '\n  <coral>eq_db.lua<reset>: interface with item/eq database for e.g., appending stats to items' )
+
 function trimName( name )
   -- Trim the "flags" from the end of an item name (along with any excess whitespace)
 

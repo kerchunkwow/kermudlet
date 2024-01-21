@@ -1,3 +1,5 @@
+cecho( f '\n  <olive_drab>map_dirs.lua<reset>: directions to all Areas and functions to make using them easier' )
+
 -- Retrieve then follow the path to an area; this uses the Wintin string but should
 -- probably skip this and iterate over the rawDirs
 function goArea( area )

@@ -1,4 +1,4 @@
-cecho( f '\n\t<yellow_green>lib_moblist.lua<reset>: functions to maintain & update a list of mobs w/ counts' )
+cecho( f '\n  <steel_blue>lib_moblist.lua<dim_grey>: maintaining & updating mob or target lists (Prototype)' )
 
 mobList = {
   ["A Yeti stares at your flesh with a hunger."] = {count = 1, color = "<maroon>"},
@@ -58,11 +58,3 @@ function resetMobList()
     mobList[str].count = 0
   end
 end
-
---[[
-GitHub Copilot, ChatGPT notes:
-Collaborate on Lua 5.1 scripts for Mudlet in VSCode. Use f-strings, camelCase, UPPER_CASE constants.
-Prioritize performance, optimization, and modular design. Provide debugging output with cecho.
-Be critical, suggest improvements, don't apologize for errors.
-Respond concisely, treat me as a coworker.
-]]
