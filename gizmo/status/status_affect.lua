@@ -1,4 +1,4 @@
-cecho( f '\n  <coral>status_affect.lua<reset>: uses emoji strings to track status affects/uptime (Prototype)' )
+cecho( f '\n  <coral>status_affect.lua<dim_grey>: uses emoji strings to track status affects/uptime [PROTOTYPE]' )
 
 -- The affects we want to track; set this to "save" in Variables to maintain durations between sessions
 affectInfo = affectInfo or {

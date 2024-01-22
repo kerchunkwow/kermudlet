@@ -1,7 +1,5 @@
 cecho( f '\n<cyan>stdlib.lua<dim_grey>: Main Mudlet standard lib with common functions; generally not MUD specific' )
 
-
-
 -- Compile and execute a lua function directly from the command-line; used
 -- throughout other scripts and in aliases as 'lua <command> <args>'
 function runLuaLine()
@@ -47,14 +45,14 @@ function runLuaFiles( files )
   end
 end
 
--- Add functions to this table from loaded scripts if you want to be able to unload them later
-function unloadFile( file )
-  local funcList = allFunctions[file]
-  if funcList then
-    for _, funcName in ipairs( funcList ) do
+-- Ensure all changes to global external functions are pulled into Mudlet by undefining all functions before a reload
+function unfunctionAll()
+  for _, funcName in ipairs( allFunctions ) do
+    if type( _G[funcName] ) == "function" then
       _G[funcName] = nil
     end
   end
+  allFunctions = {}
 end
 
 -- Function to check if a value is in a list or table

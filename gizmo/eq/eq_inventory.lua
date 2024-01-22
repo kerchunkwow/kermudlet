@@ -1,4 +1,4 @@
-cecho( f '\n  <coral>eq_inventory.lua<reset>: inventory and equipment management, juggling, swapping, etc.' )
+cecho( f '\n  <coral>eq_inventory.lua<dim_grey>: inventory and equipment management, juggling, swapping, etc.' )
 
 nanMode = nanMode or nil
 

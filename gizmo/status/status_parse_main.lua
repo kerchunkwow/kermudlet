@@ -1,5 +1,5 @@
 ---@diagnostic disable: cast-local-type
-cecho( f '\n  <coral>status_parse_main.lua<reset>: main session prompt parser, it can access the pcStatus table directly' )
+cecho( f '\n  <coral>status_parse_main.lua<dim_grey>: main session prompt parser, it can access the pcStatus table directly' )
 
 -- Pull stats from the prompt and update status & status table
 function triggerParsePrompt()
@@ -34,6 +34,7 @@ function triggerParsePrompt()
   end
 end
 
+-- Pull stats & data from a "score"; unlike prompt(s) this updates the maximum values
 function triggerParseScore()
   -- Just need this to fire once each time we 'score'
   disableTrigger( "Parse Score" )

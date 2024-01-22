@@ -1,4 +1,4 @@
-cecho( f '\n  <coral>create_gui.lua<reset>: initial functions to build/create Gizmo GUI: info, chat, party console' )
+cecho( f '\n  <coral>create_gui.lua<dim_grey>: initial functions to build/create Gizmo GUI: info, chat, party console' )
 
 function openOutputWindows()
   local chat_window_name  = "chat"

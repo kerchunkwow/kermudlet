@@ -1,4 +1,4 @@
-cecho( f '\n<lawn_green>map_main.lua<reset>: main mapper class for creating, following, and searching the map' )
+cecho( f '\n<lawn_green>map_main.lua<dim_grey>: main mapper class for creating, following, and searching the map' )
 runLuaFile( "gizmo/map/map_const.lua" )
 runLuaFile( "gizmo/map/map_ux.lua" )
 runLuaFile( "gizmo/map/data/area_dirs.lua" )

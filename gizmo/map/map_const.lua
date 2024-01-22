@@ -1,4 +1,4 @@
-cecho( f '\n  <olive_drab>map_ux.lua<reset>: constants & defines for mapping & following the map' )
+cecho( f '\n  <olive_drab>map_ux.lua<dim_grey>: constants & defines for mapping & following the map' )
 
 mapZoomLevel        = 28
 

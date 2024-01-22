@@ -1,18 +1,19 @@
---[[
-  kermudlet.lua is an entry point to establish some commonality and consistency across Mudlet sessions and profiles
---]]
-cecho( f '\n<ansi_light_magenta>gizmudlet.lua<dim_grey>: common entry point all projects' )
+cecho( f '\n\n<ansi_light_magenta>gizmudlet.lua<dim_grey>: common entry point all projects' )
 homeDirectory = 'C:/dev/mud/mudlet/'
 luasql = require( "luasql.sqlite3" )
 
 local function createLibAliasesOnce()
   if exists( 'lib', 'alias' ) == 0 then
-    permAlias( 'lib', '', '', '' )
+    cecho( f "\n<medium_orchid>lib Alias group not found; creating...<reset>" )
+    permAlias( 'lib', 'gizmudlet', '', '' )
     permAlias( 'Run Lua File (rf)', 'lib', '^rf (.+?)(?:\\.lua)?$', 'runLuaFile( matches[2] )' )
     permAlias( 'Run Lua (lua)', 'lib', '^lua (.*)$', 'runLuaLine( matches[2] )' )
     permAlias( 'Clear Screen (cls)', 'lib', '^cls$', 'clearScreen()' )
     permAlias( 'Simulate Output (sim)', 'lib', '^sim (.+)$', 'simulateOutput()' )
     permAlias( 'Save Layout (swl)', 'lib', '^swl$', 'saveWindowLayout()' )
+    permAlias( 'List Fonts (lfonts)', 'lib', '^lfonts$', 'listFonts()' )
+    permAlias( 'Print Variables (pvars)', 'lib', '^pvars$', 'printVariables()' )
+    permAlias( 'Reload (reload)', 'lib', '^reload$', [[runLuaFile(f'gizmudlet.lua')]] )
   end
 end
 createLibAliasesOnce()

@@ -1,4 +1,4 @@
-cecho( f '\n  <coral>status_update.lua<reset>: maintains the pcStatus table w/ information about pc health, mana, etc.' )
+cecho( f '\n  <coral>status_update.lua<dim_grey>: maintains the pcStatus table w/ information about pc health, mana, etc.' )
 
 -- Update status for the given pc with data captured from the prompt; we ignore "max" values from the prompt
 -- since those change infrequently and would almost never result in inserts anyway

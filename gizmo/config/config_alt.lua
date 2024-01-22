@@ -1,4 +1,4 @@
-cecho( f '\n\t<dark_violet>config_alt.lua<reset>: define global tables & variables exclusive to alts' )
+cecho( f '\n\t<dark_violet>config_alt.lua<dim_grey>: define global tables & variables exclusive to alts' )
 
 pc_last_status = {}
 function resetLastStatus()

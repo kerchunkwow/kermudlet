@@ -64,6 +64,24 @@ function fill( number, char, color )
   return f "{color}" .. string.rep( char, number ) .. "<reset>"
 end
 
+-- Use with cecho etc. to colorize output without massively long f-strings
+function ec( s, c )
+  local colors = {
+    err  = "orange_red",   -- Error
+    dbg  = "dodger_blue",  -- Debug
+    val  = "blue_violet",  -- Value
+    var  = "dark_orange",  -- Variable Name
+    func = "green_yellow", -- Function Name
+    info = "sea_green",    -- Info/Data
+  }
+  local sc = colors[c] or "ivory"
+  if c ~= 'func' then
+    return "<" .. sc .. ">" .. s .. "<reset>"
+  else
+    return "<" .. sc .. ">" .. s .. "<reset>()"
+  end
+end
+
 -- Returns the length of the longest string in a list
 function getMaxStringLength( stringList )
   local maxLength = 0

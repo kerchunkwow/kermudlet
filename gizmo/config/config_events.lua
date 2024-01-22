@@ -1,4 +1,4 @@
-cecho( f '\n  <coral>config_events.lua<reset>: this is how sessions communicate with one another' )
+cecho( f '\n  <coral>config_events.lua<dim_grey>: this is how sessions communicate with one another' )
 
 -- Raise event_session_x to "pass" commands to sessions. raiseEvent is heard by the raising
 -- session; raiseGlobalEvent is heard by all OTHER sessions (you must use both if you want

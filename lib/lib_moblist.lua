@@ -1,4 +1,4 @@
-cecho( f '\n  <steel_blue>lib_moblist.lua<dim_grey>: maintaining & updating mob or target lists (Prototype)' )
+cecho( f '\n  <steel_blue>lib_moblist.lua<dim_grey>: maintaining & updating mob or target lists [PROTOTYPE]' )
 
 mobList = {
   ["A Yeti stares at your flesh with a hunger."] = {count = 1, color = "<maroon>"},

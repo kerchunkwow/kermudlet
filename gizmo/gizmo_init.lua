@@ -1,4 +1,4 @@
-cecho( f '\n<orange_red>gizmo_init.lua<reset>: entry point to Gizmo-specific scripts and functions' )
+cecho( f '\n\n<orange_red>gizmo_init.lua<dim_grey>: entry point to Gizmo-specific scripts and functions' )
 
 session = getProfileTabNumber()
 

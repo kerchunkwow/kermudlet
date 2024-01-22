@@ -35,7 +35,7 @@ function doWintin( wintinString )
   end
 end
 
--- Parse a WINTIN-style action string into its component parts
+-- Parse a WINTIN-style command string into its component parts
 -- "#ACTION {pattern} {command} {priority}" = { "pattern", "command", "priority" }
 function parseWintinAction( actionString )
   local pattern, command, priority = "", "", ""
@@ -77,7 +77,8 @@ function parseWintinAction( actionString )
   return trim( pattern ), trim( command ), trim( priority )
 end
 
--- From a list of raw directions like ({ "n", "n", "n", "u", "u" }), create a Wintin-style command string
+-- From a list of raw directions, create a Wintin-style command string
+-- e.g., { "n", "n", "n", "u", "u" } = "#3 n;#2 u"
 function createWintin( directionList )
   if not directionList or #directionList == 0 then
     return ""

@@ -1,4 +1,4 @@
-cecho( f '\n  <coral>config_main.lua<reset>: globals & tables exclusive to the main session' )
+cecho( f '\n  <coral>config_main.lua<dim_grey>: globals & tables exclusive to the main session' )
 
 -- A set to keep track of items collected via auto-gathering, like resin
 gathered = {}
