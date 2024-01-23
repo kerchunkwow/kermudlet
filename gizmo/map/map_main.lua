@@ -1,11 +1,11 @@
-cecho( f '\n<lawn_green>map_main.lua<dim_grey>: main mapper class for creating, following, and searching the map' )
 runLuaFile( "gizmo/map/map_const.lua" )
 runLuaFile( "gizmo/map/map_ux.lua" )
-runLuaFile( "gizmo/map/data/area_dirs.lua" )
-runLuaFile( "gizmo/map/data/door_data.lua" )
+runLuaFile( "gizmo/map/data/map_dirs.lua" )
+runLuaFile( "gizmo/map/data/map_doors.lua" )
 runLuaFile( "gizmo/map/data/map_unique.lua" )
 culledExits = {}
 table.load( f '{homeDirectory}gizmo/map/data/culledExits.lua', culledExits )
+
 -- Print a message w/ a tag denoting it as coming from our Mapper script
 function mapInfo( message )
   cecho( f "\n  [<peru>M<reset>] {message}" )
@@ -254,102 +254,6 @@ function cullExit( dir )
   updateMap()
 end
 
--- Group related areas into a contiguous group for labeling purposes
-function getLabelArea()
-  if currentAreaNumber == 21 or currentAreaNumber == 30 or currentAreaNumber == 24 or currentAreaNumber == 22 or currentAreaData == 110 then
-    return 21
-  elseif currentAreaNumber == 89 or currentAreaNumber == 116 or currentAreaNumber == 87 then
-    return 87
-  elseif currentAreaNumber == 108 or currentAreaNumber == 103 or currentAreaNumber == 102 then
-    return 102
-  else
-    return tonumber( currentAreaNumber )
-  end
-end
-
--- Give new labels a relative starting point to speed up placement
-function getLabelPosition( direction )
-  if direction == 'n' then
-    return -0.5, 0.5
-  elseif direction == 's' then
-    return -0.5, -0.5
-  elseif direction == 'e' then
-    return 0.5, 0.5
-  elseif direction == 'w' then
-    return -2.5, 0.5 -- Labels are justified, so move them further left to compensate
-  end
-end
-
--- Add a label string to the Map customized by topic
-function addLabel()
-  local labelDirection = matches[2]
-  local labelType = matches[3]
-  local dX = 0
-  local dY = 0
-  -- Adjust the label position based on initial direction parameter for less after-placement adjustment
-  dX, dY = getLabelPosition( labelDirection )
-
-  -- Hang on to the rest in globals so we can nudge with WASD; confirm with 'F' and cancel with 'C'
-  if labelType == "room" then
-    labelText = addNewlineToRoomLabels( currentRoomName )
-  elseif labelType == "key" and lastKey > 0 then
-    labelText = tostring( lastKey )
-    lastKey = -1
-  elseif labelType == "proc" then
-    labelText = currentRoomData.roomSpec
-  else
-    labelText = matches[4]
-    -- Replace '\\n' in our label strings with a "real" newline; probably a better way to do this
-    labelText = labelText:gsub( "\\\\n", "\n" )
-  end
-  labelArea = getRoomArea( currentRoomNumber )
-  labelX = mX + dX
-  labelY = mY + dY
-  labelR, labelG, labelB, labelSize = getLabelStyle( labelType )
-  if not labelSize then return end -- Return if type invalid
-  labelID = createMapLabel( labelArea, labelText, labelX, labelY, mZ, labelR, labelG, labelB, 0, 0, 0, 0, labelSize, true,
-    true, "Bitstream Vera Sans Mono", 255, 0 )
-
-  enableKey( "Labeling" )
-end
-
--- Once we're finished placing a label, clean up the globals we used to keep track of it
-function finishLabel()
-  labelText, labelArea, labelX, labelY = nil, nil, nil, nil
-  labelR, labelG, labelB, labelSize = nil, nil, nil, nil
-  labelID = nil
-  disableKey( "Labeling" )
-end
-
--- Delete the label we're working on and clean up globals
-function cancelLabel()
-  deleteMapLabel( labelArea, labelID )
-  finishLabel()
-end
-
--- Bind to keys in "Labeling" category to fine-tune label positions between addLabel() and finishLabel()
--- e.g., W for adjustLabel( 'left' ), CTRL-W for adjustLabel( 'left', 0.025 ) for finer-tune adjustments
-function adjustLabel( direction, scale )
-  -- Adjust the default scale as needed based on your Map's zoom level, font size, and auto scaling preference
-  scale = scale or 0.05
-  deleteMapLabel( labelArea, labelID )
-  if direction == "left" then
-    labelX = labelX - scale
-  elseif direction == "right" then
-    labelX = labelX + scale
-  elseif direction == "up" then
-    labelY = labelY + scale
-  elseif direction == "down" then
-    labelY = labelY - scale
-  end
-  -- Round coordinates to the nearest scale value
-  labelX = round( labelX, scale )
-  labelY = round( labelY, scale )
-  -- Recreate the label at the new position
-  labelID = createMapLabel( labelArea, labelText, labelX, labelY, mZ, labelR, labelG, labelB, 0, 0, 0, 0, labelSize, true,
-    true, "Bitstream Vera Sans Mono", 255, 0 )
-end
-
 -- For now, initialize our location as Market Square [1121]
 function startExploration()
   --openMapWidget()
@@ -430,6 +334,7 @@ function defineCustomEnvColors()
 end
 
 defineCustomEnvColors()
+
 function styleAllRooms()
   local allRooms = getRooms()
   for id, name in pairs( allRooms ) do
@@ -477,4 +382,16 @@ function setRoomStyle( id )
     setRoomEnv( id, color )
   end
   updateMap()
+end
+
+-- Redefine this when simulating the map to send "fake" commands and movement aliases
+function doWintin( wintinString )
+  local commands = expandWintin( wintinString )
+  for _, command in ipairs( commands ) do
+    if #command == 1 then
+      expandAlias( command )
+    elseif #command > 1 then
+      cecho( f "\n{MAP_COLOR['cmd']}{command}" )
+    end
+  end
 end

@@ -1,6 +1,4 @@
 ---@diagnostic disable: cast-local-type
-cecho( f '\n  <coral>status_parse_main.lua<dim_grey>: main session prompt parser, it can access the pcStatus table directly' )
-
 -- Pull stats from the prompt and update status & status table
 function triggerParsePrompt()
   -- Get current HP, MANA, MOVE from prompt

@@ -1,5 +1,3 @@
-cecho( f '\n  <coral>status_sim.lua<dim_grey>: simulate a variety of gizmo MUD output for testing status tracking & updating functions' )
-
 --- Simulate the output of a 'group' command for testing triggers
 function simulate_group()
   cfeedTriggers( f [[

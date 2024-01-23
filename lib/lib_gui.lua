@@ -1,5 +1,3 @@
-cecho( f '\n  <steel_blue>lib_gui.lua<dim_grey>: core GUI functions for windows, output, chat, etc.' )
-
 -- Standard format/highlight for chat message; pass a window name to route chat there
 function chatMessage( speaker, channel, message, window )
   local de, sh, ch = "<gainsboro>", "<yellow_green>", "<maroon>"

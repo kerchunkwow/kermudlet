@@ -1,5 +1,3 @@
-cecho( f '\n  <olive_drab>map_ux.lua<dim_grey>: constants & defines for mapping & following the map' )
-
 mapZoomLevel        = 28
 
 -- Valid directions for exits and travel; MUD does not support diagonal travel

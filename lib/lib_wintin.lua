@@ -1,5 +1,3 @@
-cecho( f '\n  <steel_blue>lib_wintin.lua<dim_grey>: Create and interact with Wintin-compatible command lists' )
-
 -- Expand #WINTIN-style command strings
 -- e.g., "#3 n;#2 u" = { "n", "n", "n", "u", "u" }
 function expandWintin( wintinString )
@@ -25,13 +23,7 @@ end
 function doWintin( wintinString )
   local commands = expandWintin( wintinString )
   for _, command in ipairs( commands ) do
-    --send( command, false )
-    if #command == 1 then
-      expandAlias( command )
-    elseif #command > 1 then
-      --send( 'command', false )
-      cecho( f "\n{MAP_COLOR['cmd']}{command}" )
-    end
+    send( command, false )
   end
 end
 

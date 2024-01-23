@@ -1,5 +1,3 @@
-cecho( f '\n  <coral>gui.lua<dim_grey>: functions for maintaining & updating the GUI during play' )
-
 -- Display a warning in the Info window; see Game Globals for a list of customizable messages
 function show_warning( event_raised, session, warning_type, extra_info )
   local msg = warning_messages[warning_type]

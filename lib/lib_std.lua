@@ -1,5 +1,3 @@
-cecho( f '\n<cyan>stdlib.lua<dim_grey>: Main Mudlet standard lib with common functions; generally not MUD specific' )
-
 -- Compile and execute a lua function directly from the command-line; used
 -- throughout other scripts and in aliases as 'lua <command> <args>'
 function runLuaLine()

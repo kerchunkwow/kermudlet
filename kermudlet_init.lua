@@ -1,6 +1,9 @@
-cecho( f '\n\n<ansi_light_magenta>gizmudlet.lua<dim_grey>: common entry point all projects' )
 homeDirectory = 'C:/dev/mud/mudlet/'
 luasql = require( "luasql.sqlite3" )
+
+-- If we're reloading, clear the screen and reset the timers
+if clearScreen then clearScreen() end
+runLuaFile( 'kermudlet_help.lua' )
 
 local function createLibAliasesOnce()
   if exists( 'lib', 'alias' ) == 0 then
@@ -13,13 +16,12 @@ local function createLibAliasesOnce()
     permAlias( 'Save Layout (swl)', 'lib', '^swl$', 'saveWindowLayout()' )
     permAlias( 'List Fonts (lfonts)', 'lib', '^lfonts$', 'listFonts()' )
     permAlias( 'Print Variables (pvars)', 'lib', '^pvars$', 'printVariables()' )
-    permAlias( 'Reload (reload)', 'lib', '^reload$', [[runLuaFile(f'gizmudlet.lua')]] )
+    permAlias( 'Reload (reload)', 'lib', '^reload$', [[runLuaFile(f'mudlet_init.lua')]] )
+    permAlias( 'Help (help)', 'lib', '^#help$', 'getHelp()' )
   end
 end
 createLibAliasesOnce()
 
--- If we're reloading, clear the screen and reset the timers
-if clearScreen then clearScreen() end
 -- A table to hold the names of defined functions in case we want to undefine them later
 allFunctions      = {}
 
@@ -45,10 +47,7 @@ timeStart = getStopWatchTime( "timer" )
 -- Load the standard library (and any sub-libraries it loads)
 runLuaFile( 'lib/lib_std.lua' )
 
-if profileName == "MAP" then -- Offline Mapping
-  runLuaFile( 'gizmo/map/map_main.lua' )
-else                         -- Playing Gizmo
-  runLuaFile( 'gizmo/gizmo_init.lua' )
-end
+runLuaFile( 'gizmo/gizmo_init.lua' )
+
 -- Put a little buffer after the init/loading messages
 cecho( "\n\n" )

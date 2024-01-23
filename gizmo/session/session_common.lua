@@ -1,5 +1,3 @@
-cecho( f '\n  <coral>config_common.lua<dim_grey>: define globals & tables shared by all sessions' )
-
 -- Neutral color for "ui" output like spacer lines, separators, etc.
 ui_color           = "<light_steel_blue>"
 

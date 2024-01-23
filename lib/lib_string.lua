@@ -1,5 +1,3 @@
-cecho( f '\n  <steel_blue>lib_string.lua<dim_grey>: string manipulation, parsing, formatting, etc.' )
-
 -- Trim leading/trailing whitespace from a string
 function trim( s )
   return s:match( "^%s*(.-)%s*$" )

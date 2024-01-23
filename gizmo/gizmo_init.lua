@@ -1,20 +1,18 @@
-cecho( f '\n\n<orange_red>gizmo_init.lua<dim_grey>: entry point to Gizmo-specific scripts and functions' )
-
 session = getProfileTabNumber()
 
 -- Common to all sessions
 local commonScripts = {
-  "gizmo/game/game_trigger.lua",
-  "gizmo/config/config_events.lua",
-  "gizmo/config/config_common.lua",
-  "gizmo/alias/game_alias.lua",
+  "gizmo/react/react_trigger.lua",
+  "gizmo/react/react_alias.lua",
+  "gizmo/session/session_events.lua",
+  "gizmo/session/session_common.lua",
   "gizmo/eq/eq_db.lua",
   "gizmo/status/status_affect.lua",
 }
 
 -- Specific to the main session
 local mainScripts = {
-  "gizmo/config/config_main.lua",
+  "gizmo/session/session_main.lua",
   "gizmo/gui/gui_create.lua",
   "gizmo/gui/gui.lua",
   "gizmo/status/status_update.lua",
@@ -24,7 +22,7 @@ local mainScripts = {
 
 -- Specific to alt sessions
 local altScripts = {
-  "gizmo/config/config_alt.lua",
+  "gizmo/session/session_alt.lua",
   "gizmo/status/status_parse_alt.lua",
 }
 
@@ -36,7 +34,7 @@ else
   runLuaFiles( altScripts )
 end
 -- This local function helps create "code strings" from the messages in the warning_messages
--- table (config_common) for later posting to the Info window
+-- table (session_common) for later posting to the Info window
 local function createWarningCalls()
   local calls = {}
   local warningMethod = nil
@@ -58,4 +56,17 @@ end
 --Create session-custom warning messages so they don't need to be created on demand
 warning_calls = createWarningCalls()
 
-tempTimer( 0.1, [[cecho(f"\n<olive_drab>(Gizmo)<reset> loaded for {my_color}{myself}<reset>.")]] )
+enableKey( 'Movement' )
+disableKey( 'Movement (Offline)' )
+disableAlias( 'Map Sim' )
+enableAlias( 'Total Recall (rr)' )
+
+function startMapSim()
+  disableAlias( 'Total Recall (rr)' )
+  enableAlias( 'Virtual Recall' )
+  disableKey( 'Movement' )
+  enableKey( 'Movement (Offline)' )
+  enableAlias( 'Map Sim' )
+  runLuaFile( 'gizmo/map/map_main.lua' )
+  startExploration()
+end

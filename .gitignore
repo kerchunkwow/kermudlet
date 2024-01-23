@@ -1,7 +1,7 @@
 gizmo/assets
 gizmo/logs
 dd/logs
-gizmo/config/login.lua
+gizmo/session/login.lua
 sandbox/
 .vscode/
 .editorconfig

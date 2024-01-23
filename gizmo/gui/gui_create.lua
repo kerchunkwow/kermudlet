@@ -1,5 +1,3 @@
-cecho( f '\n  <coral>create_gui.lua<dim_grey>: initial functions to build/create Gizmo GUI: info, chat, party console' )
-
 function openOutputWindows()
   local chat_window_name  = "chat"
   local chat_window_title = "Gizmo Chat"
@@ -148,6 +146,7 @@ function createConsoleStyles()
       padding-right:     10px;]] .. CSS_label
 end
 
+-- Delete all the stuff created by createConsoleStyles()
 function deleteConsoleStyles()
   uiHeight        = nil
   font_face       = nil

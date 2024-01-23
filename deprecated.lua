@@ -1,3 +1,16 @@
+-- Group related areas into a contiguous group for labeling purposes
+function getLabelArea()
+  if currentAreaNumber == 21 or currentAreaNumber == 30 or currentAreaNumber == 24 or currentAreaNumber == 22 or currentAreaData == 110 then
+    return 21
+  elseif currentAreaNumber == 89 or currentAreaNumber == 116 or currentAreaNumber == 87 then
+    return 87
+  elseif currentAreaNumber == 108 or currentAreaNumber == 103 or currentAreaNumber == 102 then
+    return 102
+  else
+    return tonumber( currentAreaNumber )
+  end
+end
+
 -- Prototype/beta function for importing Wintin commands from an external file
 function importWintinActions()
   local testActions = {}

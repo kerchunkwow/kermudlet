@@ -1,5 +1,4 @@
 ---@diagnostic disable: cast-local-type
-cecho( f '\n  <coral>status_parse_alt.lua<dim_grey>: alt session prompt parser, alts raise events to update the pcStatus table' )
 
 -- Parse prompt components and trigger an update if anything has changed; ignore maximum values
 function triggerParsePrompt()

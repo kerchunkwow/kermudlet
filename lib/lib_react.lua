@@ -1,5 +1,3 @@
-cecho( f '\n  <steel_blue>lib_react.lua<dim_grey>: Functions related to Mudlet "reactions" i.e., triggers, aliases' )
-
 sureCastTrigger = nil
 
 -- Enable an alias for the specified duration then disable it again; useful for triggers that are only

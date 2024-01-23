@@ -9041,7 +9041,7 @@ local function loadDoorData()
       roomsWithDoors = roomsWithDoors + 1
     end
   end
-  cecho( f "\nLoaded {DOORC}{totalDoors}{R} ({KEYC}{lockedDoors}{R} locked) doors in {NC}{roomsWithDoors}{R} rooms" )
+  cecho( f "\nLoaded {NC}{totalDoors}{R} ({NC}{lockedDoors}{R} locked) doors in {NC}{roomsWithDoors}{R} rooms" )
 end
 
 loadDoorData()
