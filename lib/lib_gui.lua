@@ -1,4 +1,4 @@
--- Standard format/highlight for chat message; pass a window name to route chat there
+-- Standard format/highlight for chat message; defaults to main console if you don't pass a window
 function chatMessage( speaker, channel, message, window )
   local de, sh, ch = "<gainsboro>", "<yellow_green>", "<maroon>"
 
@@ -29,10 +29,40 @@ function openBasicWindow( name, title, fontFace, fontSize )
   _G[name]:clear()
 end
 
+-- Clear all user windows
+function clearScreen()
+  -- Clear the main user/console window
+  clearUserWindow()
+
+  -- For each sub/child window, clear it and then print a newline to "flush" the buffer
+  local userWindows = Geyser.windows
+  for _, window in ipairs( userWindows ) do
+    -- The Geyser.windows list appends 'Container' to window names but still seems to be the shortest/simplest way to get a list of all windows
+    local trimmedName = window:gsub( "Container", "" )
+    clearUserWindow( trimmedName )
+    cecho( trimmedName, "\n" )
+  end
+end
+
+-- Send a generic error message to the main console window
+function gizError( msg )
+  cecho( f "\n\t<dim_grey>[<dark_orange>err<dim_grey>]: {msg}" )
+end
+
+-- List all fonts available in Mudlet.
+function listFonts()
+  local availableFonts = getAvailableFonts()
+
+  ---@diagnostic disable-next-line: param-type-mismatch
+  for k, v in pairs( availableFonts ) do
+    print( k )
+  end
+end
+
 -- Display a list of strings within a formatted "box"; supply a maxLength
 -- to customize width, or let the function guess by finding the longest
 -- string in your list.
-function displayBox( stringList, maxLength, borderColor )
+local function displayBox( stringList, maxLength, borderColor )
   maxLength        = maxLength or getMaxStringLength( stringList )
   local bclr       = borderColor or "<dark_slate_blue>"
   local margin     = "  "
@@ -53,28 +83,8 @@ function displayBox( stringList, maxLength, borderColor )
   cecho( borderLine )
 end
 
--- Clear the main user window, or a sub/child window
-function clearScreen()
-  -- Clear the main user/console window
-  clearUserWindow()
-
-  -- For each sub/child window, clear it and then print a newline to "flush" the buffer
-  local userWindows = Geyser.windows
-  for _, window in ipairs( userWindows ) do
-    -- The Geyser.windows list appends 'Container' to window names but still seems to be the shortest/simplest way to get a list of all windows
-    local trimmedName = window:gsub( "Container", "" )
-    clearUserWindow( trimmedName )
-    cecho( trimmedName, "\n" )
-  end
-end
-
--- Generic error message formatter
-function gizErr( msg )
-  cecho( f "\n{ec('Error','err')}: {msg}" )
-end
-
 -- Given a color (r, g, b), return a new color scaled to be d% lighter or darker
-function getModifiedColor( r, g, b, d )
+local function getModifiedColor( r, g, b, d )
   -- Ensure d is clamped between -100 and 100
   d = clamp( d, -100, 100 )
 
@@ -87,14 +97,4 @@ function getModifiedColor( r, g, b, d )
   local newB = math.floor( clamp( b * scale, 0, 255 ) + 0.5 )
 
   return newR, newG, newB
-end
-
--- List all fonts available in Mudlet.
-function listFonts()
-  local availableFonts = getAvailableFonts()
-
-  ---@diagnostic disable-next-line: param-type-mismatch
-  for k, v in pairs( availableFonts ) do
-    print( k )
-  end
 end

@@ -99,19 +99,3 @@ function printVariables()
     end
   end
 end
-
--- Ensure all changes to global external functions are pulled into Mudlet by undefining all functions before a reload
-local function unfunctionAll()
-  for _, funcName in ipairs( allFunctions ) do
-    if type( _G[funcName] ) == "function" then
-      _G[funcName] = nil
-    end
-  end
-  allFunctions = {}
-end
-
--- Load all the sub-libraries
-runLuaFile( 'lib/lib_gui.lua' )
-runLuaFile( 'lib/lib_react.lua' )
-runLuaFile( 'lib/lib_string.lua' )
-runLuaFile( 'lib/lib_wintin.lua' )

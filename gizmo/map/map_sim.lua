@@ -3,7 +3,7 @@
 
 -- Override doWintin when simulating offline map so commands are echoed instead of sent
 function doWintin( wintinString )
-  local commands = expandWintin( wintinString )
+  local commands = expandWintinString( wintinString )
   for _, command in ipairs( commands ) do
     nextCmd( command )
   end

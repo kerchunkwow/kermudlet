@@ -1,18 +1,20 @@
 -- From a list of raw directions, create a Wintin-style command string
 -- e.g., { "n", "n", "n", "u", "u" } = "#3 n;#2 u"
 -- [TODO] Add support for both short/long direction format, ordinal directions, etc.
-function createWintin( directionList )
-  if not directionList or #directionList == 0 then
+function createWintinString( cmdList )
+  if not cmdList or #cmdList == 0 then
+    gizError( "Empty command list in createWintinString()" )
     return ""
   end
   local wintinCommands = {}
   local currentDirection = nil
   local count = 0
 
-  for _, direction in ipairs( directionList ) do
+  for _, direction in ipairs( cmdList ) do
     -- Convert directions to their "short" versions before adding to the path
     direction = SDIR[direction]
     -- [TODO] This should really just handle any "non-direction" item in a list
+    -- [TODO] Everywhere door commands are used/referenced, we need to update w/ direction like 'open door north'
     if direction:match( "^open [%w]+" ) or direction:match( "^close [%w]+" ) or direction:match( "^unlock [%w]+" ) then
       if currentDirection then
         table.insert( wintinCommands, (count > 1 and "#" .. count .. " " or "") .. currentDirection )
@@ -38,9 +40,9 @@ function createWintin( directionList )
   return table.concat( wintinCommands, ";" )
 end
 
--- Expand #WINTIN-style command strings
+-- Create a list of individual commands by translating/expanding a Wintin-style string
 -- e.g., "#3 n;#2 u" = { "n", "n", "n", "u", "u" }
-function expandWintin( wintinString )
+function expandWintinString( wintinString )
   local commands = {}
   display( wintinString )
   -- Break on semi-colons
@@ -57,11 +59,13 @@ function expandWintin( wintinString )
   return commands
 end
 
--- Use expandWintin to execute WINTIN-style command lists
+-- Use expandWintinString to execute WINTIN-style command lists
 -- Kind of just a generic "do command list" function
+-- [TODO] Improve/clarify how this and similar functions interact with the command queue;
+-- i.e., need a system to determine which commands should be queued vs. executed immediately
 function doWintin( wintinString, echo )
   echo = echo or true
-  local commands = expandWintin( wintinString )
+  local commands = expandWintinString( wintinString )
   for _, command in ipairs( commands ) do
     send( command, echo )
   end

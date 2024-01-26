@@ -3,47 +3,47 @@ function trim( s )
   return s:match( "^%s*(.-)%s*$" )
 end
 
--- Given a large number as number, return a string with commas for improved readability
+-- Given a large number as str, return an abbreviated version like '1.2B'
+function abbreviateNumber( numberString )
+  local str = string.gsub( numberString, ",", "" )
+  str = trim( str )
+  local num = tonumber( str )
+
+  -- Truncuate based on 10 power and add matching label
+  if num >= 10 ^ 9 then
+    return string.format( "%.1fB", num / 10 ^ 9 )
+  elseif num >= 10 ^ 6 then
+    return string.format( "%.1fM", num / 10 ^ 6 )
+  elseif num >= 10 ^ 3 then
+    return string.format( "%.1fK", num / 10 ^ 3 )
+  else
+    return tostring( num )
+  end
+end
+
+-- Given a large number as n, return a comma-delimited string like '1,234,567'
 function expandNumber( n )
-  local result       = ""
+  local commaNumber  = ""
   local counter      = 0
   local numberString = tostring( math.floor( n ) )
 
   for i = #numberString, 1, -1 do
     counter = counter + 1
-    result = string.sub( numberString, i, i ) .. result
+    commaNumber = string.sub( numberString, i, i ) .. commaNumber
 
     if counter % 3 == 0 and i ~= 1 then
-      result = "," .. result
+      commaNumber = "," .. commaNumber
     end
   end
-  return result
+  return commaNumber
 end
 
--- Output number chars in a color; useful e.g., to add padding to formatted output by printing
+-- Output number char(s) in a color; useful e.g., to add padding to formatted output by printing
 -- a series of <black> characters.
 function fill( number, char, color )
   if not color then color = "<black>" end
   if not char then char = "." end
   return f "{color}" .. string.rep( char, number ) .. "<reset>"
-end
-
--- Use with cecho etc. to colorize output without massively long f-strings
-function ec( s, c )
-  local colors = {
-    err  = "orange_red",   -- Error
-    dbg  = "dodger_blue",  -- Debug
-    val  = "blue_violet",  -- Value
-    var  = "dark_orange",  -- Variable Name
-    func = "green_yellow", -- Function Name
-    info = "sea_green",    -- Info/Data
-  }
-  local sc = colors[c] or "ivory"
-  if c ~= 'func' then
-    return "<" .. sc .. ">" .. s .. "<reset>"
-  else
-    return "<" .. sc .. ">" .. s .. "<reset>()"
-  end
 end
 
 -- Returns the length of the longest string in a list
@@ -69,24 +69,6 @@ function split( str, delimiter )
   table.insert( substrings, string.sub( str, from ) )
 
   return substrings
-end
-
--- Given a large number as a string, return a abbreviated version like '1.2B'
-function abbreviateNumber( numberString )
-  local str = string.gsub( numberString, ",", "" )
-  str = trim( str )
-  local num = tonumber( str )
-
-  -- Truncuate based on 10 power and add matching label
-  if num >= 10 ^ 9 then
-    return string.format( "%.1fB", num / 10 ^ 9 )
-  elseif num >= 10 ^ 6 then
-    return string.format( "%.1fM", num / 10 ^ 6 )
-  elseif num >= 10 ^ 3 then
-    return string.format( "%.1fK", num / 10 ^ 3 )
-  else
-    return tostring( num )
-  end
 end
 
 -- Given a raw string, return a regex that would match that string if it appears

@@ -52,7 +52,7 @@ function getFullDirs( srcID, dstID )
       rm = tonumber( speedWalkPath[d] )
     end
     -- Convert the path to a Wintin-compatible command string
-    fullPathString = createWintin( fullPath )
+    fullPathString = createWintinString( fullPath )
     return fullPathString
   end
   cecho( f "\n<firebrick>Failed to find a path between {srcID} and {dstID}<reset>" )

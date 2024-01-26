@@ -1,3 +1,21 @@
+-- Use with cecho etc. to colorize output without massively long f-strings
+function ec( s, c )
+  local colors = {
+    err  = "orange_red",   -- Error
+    dbg  = "dodger_blue",  -- Debug
+    val  = "blue_violet",  -- Value
+    var  = "dark_orange",  -- Variable Name
+    func = "green_yellow", -- Function Name
+    info = "sea_green",    -- Info/Data
+  }
+  local sc = colors[c] or "ivory"
+  if c ~= 'func' then
+    return "<" .. sc .. ">" .. s .. "<reset>"
+  else
+    return "<" .. sc .. ">" .. s .. "<reset>()"
+  end
+end
+
 -- Some rooms are currently unmappable (i.e., I couldn't reach them on my IMM.)
 ignoredRooms = {
   [0] = true,
