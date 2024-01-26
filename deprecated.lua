@@ -1,3 +1,16 @@
+-- Some rooms are currently unmappable (i.e., I couldn't reach them on my IMM.)
+ignoredRooms = {
+  [0] = true,
+  [8284] = true,
+  [6275] = true,
+  [2276] = true,
+  [2223] = true,
+  [1290] = true,
+  [979] = true,
+  [1284] = true, -- Alchemist's Shoppe after an explosion?
+  [1285] = true, -- Temple Avenue outside the Alchemist's Shoppe after an explosion?
+}
+
 -- Group related areas into a contiguous group for labeling purposes
 function getLabelArea()
   if currentAreaNumber == 21 or currentAreaNumber == 30 or currentAreaNumber == 24 or currentAreaNumber == 22 or currentAreaData == 110 then
@@ -581,18 +594,6 @@ function getPathAlias()
   end
 end
 
--- Some rooms are currently unmappable (i.e., I couldn't reach them on my IMM.)
-ignoredRooms = {
-  [0] = true,
-  [8284] = true,
-  [6275] = true,
-  [2276] = true,
-  [2223] = true,
-  [1290] = true,
-  [979] = true,
-  [1284] = true, -- Alchemist's Shoppe after an explosion?
-  [1285] = true, -- Temple Avenue outside the Alchemist's Shoppe after an explosion?
-}
 -- Iterate over all rooms in the map; for any room with an up/down exit, add a gradient highlight circle;
 -- uses getModifiedColor() to create a highlight based off the room's current color (terrain type)
 function highlightStairs()

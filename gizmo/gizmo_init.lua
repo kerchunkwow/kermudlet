@@ -2,28 +2,29 @@ session = getProfileTabNumber()
 
 -- Common to all sessions
 local commonScripts = {
-  "gizmo/react/react_trigger.lua",
-  "gizmo/react/react_alias.lua",
-  "gizmo/session/session_events.lua",
-  "gizmo/session/session_common.lua",
-  "gizmo/eq/eq_db.lua",
-  "gizmo/status/status_affect.lua",
+  'gizmo/react/react_trigger.lua',
+  'gizmo/react/react_alias.lua',
+  'gizmo/session/session_events.lua',
+  'gizmo/session/session_common.lua',
+  'gizmo/eq/eq_db.lua',
+  'gizmo/status/status_affect.lua',
 }
 
 -- Specific to the main session
 local mainScripts = {
-  "gizmo/session/session_main.lua",
-  "gizmo/gui/gui_create.lua",
-  "gizmo/gui/gui.lua",
-  "gizmo/status/status_update.lua",
-  "gizmo/status/status_parse_main.lua",
-  "gizmo/eq/eq_inventory.lua",
+  'gizmo/session/session_main.lua',
+  'gizmo/gui/gui_create.lua',
+  'gizmo/gui/gui.lua',
+  'gizmo/status/status_update.lua',
+  'gizmo/status/status_parse_main.lua',
+  'gizmo/eq/eq_inventory.lua',
+  'gizmo/map/map_main.lua',
 }
 
 -- Specific to alt sessions
 local altScripts = {
-  "gizmo/session/session_alt.lua",
-  "gizmo/status/status_parse_alt.lua",
+  'gizmo/session/session_alt.lua',
+  'gizmo/status/status_parse_alt.lua',
 }
 
 runLuaFiles( commonScripts )
@@ -62,11 +63,11 @@ disableAlias( 'Map Sim' )
 enableAlias( 'Total Recall (rr)' )
 
 function startMapSim()
+  runLuaFile( 'gizmo/map/map_sim.lua' )
   disableAlias( 'Total Recall (rr)' )
   enableAlias( 'Virtual Recall' )
-  disableKey( 'Movement' )
-  enableKey( 'Movement (Offline)' )
+  --disableKey( 'Movement' )
+  --enableKey( 'Movement (Offline)' )
   enableAlias( 'Map Sim' )
-  runLuaFile( 'gizmo/map/map_main.lua' )
   startExploration()
 end

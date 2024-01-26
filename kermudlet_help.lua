@@ -1,4 +1,5 @@
 cecho( f "\n\nGet help with <magenta>#help<reset>\n" )
+cecho( f "\n\nFor offline Map only, type <yellow_green>mapsim<reset>\n" )
 
 function getHelp( topic )
   if not topic then

@@ -3,40 +3,6 @@ function trim( s )
   return s:match( "^%s*(.-)%s*$" )
 end
 
--- Get a list of substrings by splitting a string at delimeter
-function split( str, delimiter )
-  local substrings = {}
-  local from = 1
-  local delimFrom, delimTo = string.find( str, delimiter, from )
-
-  while delimFrom do
-    table.insert( substrings, string.sub( str, from, delimFrom - 1 ) )
-    from = delimTo + 1
-    delimFrom, delimTo = string.find( str, delimiter, from )
-  end
-  table.insert( substrings, string.sub( str, from ) )
-
-  return substrings
-end
-
--- Given a large number as a string, return a abbreviated version like '1.2B'
-function abbreviateNumber( numberString )
-  local str = string.gsub( numberString, ",", "" )
-  str = trim( str )
-  local num = tonumber( str )
-
-  -- Truncuate based on 10 power and add matching label
-  if num >= 10 ^ 9 then
-    return string.format( "%.1fB", num / 10 ^ 9 )
-  elseif num >= 10 ^ 6 then
-    return string.format( "%.1fM", num / 10 ^ 6 )
-  elseif num >= 10 ^ 3 then
-    return string.format( "%.1fK", num / 10 ^ 3 )
-  else
-    return tostring( num )
-  end
-end
-
 -- Given a large number as number, return a string with commas for improved readability
 function expandNumber( n )
   local result       = ""
@@ -89,8 +55,42 @@ function getMaxStringLength( stringList )
   return maxLength
 end
 
+-- Get a list of substrings by splitting a string at delimeter
+function split( str, delimiter )
+  local substrings = {}
+  local from = 1
+  local delimFrom, delimTo = string.find( str, delimiter, from )
+
+  while delimFrom do
+    table.insert( substrings, string.sub( str, from, delimFrom - 1 ) )
+    from = delimTo + 1
+    delimFrom, delimTo = string.find( str, delimiter, from )
+  end
+  table.insert( substrings, string.sub( str, from ) )
+
+  return substrings
+end
+
+-- Given a large number as a string, return a abbreviated version like '1.2B'
+function abbreviateNumber( numberString )
+  local str = string.gsub( numberString, ",", "" )
+  str = trim( str )
+  local num = tonumber( str )
+
+  -- Truncuate based on 10 power and add matching label
+  if num >= 10 ^ 9 then
+    return string.format( "%.1fB", num / 10 ^ 9 )
+  elseif num >= 10 ^ 6 then
+    return string.format( "%.1fM", num / 10 ^ 6 )
+  elseif num >= 10 ^ 3 then
+    return string.format( "%.1fK", num / 10 ^ 3 )
+  else
+    return tostring( num )
+  end
+end
+
 -- Given a raw string, return a regex that would match that string if it appears
--- as a standalone line of output.
+-- as a standalone line of output. Useful for dynamically creating triggers.
 function createLineRegex( rawString )
   -- Escape Perl regex tokens
   local escString = rawString:gsub( "([%(%)%.%%%+%-%*%?%[%]%^%$])", "\\%1" )

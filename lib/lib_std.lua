@@ -43,16 +43,6 @@ function runLuaFiles( files )
   end
 end
 
--- Ensure all changes to global external functions are pulled into Mudlet by undefining all functions before a reload
-function unfunctionAll()
-  for _, funcName in ipairs( allFunctions ) do
-    if type( _G[funcName] ) == "function" then
-      _G[funcName] = nil
-    end
-  end
-  allFunctions = {}
-end
-
 -- Function to check if a value is in a list or table
 function contains( table, value, usePairs )
   if usePairs then
@@ -74,6 +64,11 @@ end
 -- Ensure a value remains within a fixed range
 function clamp( value, min, max )
   return math.max( min, math.min( max, value ) )
+end
+
+-- Get a random FP value between lower and upper bounds
+function randomFloat( lower, upper )
+  return lower + math.random() * (upper - lower)
 end
 
 -- Round n to the nearest s
@@ -103,6 +98,16 @@ function printVariables()
       cecho( f "\n{nameStr} ({typeStr}) ==\n{valStr}\n-----" )
     end
   end
+end
+
+-- Ensure all changes to global external functions are pulled into Mudlet by undefining all functions before a reload
+local function unfunctionAll()
+  for _, funcName in ipairs( allFunctions ) do
+    if type( _G[funcName] ) == "function" then
+      _G[funcName] = nil
+    end
+  end
+  allFunctions = {}
 end
 
 -- Load all the sub-libraries

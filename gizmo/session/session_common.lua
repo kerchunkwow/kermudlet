@@ -178,6 +178,8 @@ backup_mira     = false
 
 gtank           = "Kevin"
 
+itemQueryMode   = 0
+
 -- Initial trigger states
 enableTrigger( "PC Login" )
 enableTrigger( "fountain" )

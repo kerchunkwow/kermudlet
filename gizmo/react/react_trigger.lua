@@ -71,11 +71,12 @@ end
 -- A room name has been captured; synchronize the map and update the status table
 function triggerCaptureRoom( room )
   if session == 1 then
-    -- Synchronize the map using the table of unique room names
-    --local mapRoom = uniqueRooms[trim( tostring( room ) )]
-    --if mapRoom then
-    --  updatePlayerLocation( mapRoom )
-    --end
+    -- if isUnique and isUnique( room ) and mapQueue.isEmpty() then
+    --   -- If our currentRoomNumber is out of synch, update our map location to reset it
+    --   if currentRoomNumber ~= uniqueRooms[room] then
+    --     updatePlayerLocation( uniqueRooms[room] )
+    --   end
+    -- end
     pcStatusRoom( 1, room )
   else
     raiseGlobalEvent( "event_pcStatus_room", session, room )
@@ -149,12 +150,6 @@ function triggerGather()
     gathered[resource] = gathered[resource] + 1
   else
     gathered[resource] = 1
-  end
-end
-
-function repeatSend( cmd_string, count )
-  for c = 1, count do
-    send( cmd_string, false )
   end
 end
 

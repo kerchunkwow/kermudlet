@@ -1,5 +1,3 @@
-cecho( f '\n\t<dark_violet>session_alt.lua<dim_grey>: define global tables & variables exclusive to alts' )
-
 pc_last_status = {}
 function resetLastStatus()
   pc_last_status["currentHP"]    = -1
@@ -11,8 +9,18 @@ end
 
 resetLastStatus()
 
+enableTrigger( "Alt Gags" )
+
 disableTrigger( "Group XP" )
-disableTrigger( "gather" )
+
 disableTrigger( "Tank Condition (automira)" )
 disableTrigger( "Main Format" )
-enableTrigger( "Alt Gags" )
+disableTrigger( "gather" )
+disableTrigger( 'Locate Resin' )
+disableTrigger( 'Exits Line' )
+
+-- Aliases that Alts don't need (and might not work)
+disableAlias( 'Clone Gear (doclone)' )
+disableAlias( 'Roll Dice (roll)' )
+disableAlias( 'Nandor Gear Swap (nanswap)' )
+disableAlias( 'Play Gizmo (giz)' )

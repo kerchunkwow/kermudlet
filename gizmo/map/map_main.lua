@@ -3,13 +3,10 @@ runLuaFile( "gizmo/map/map_ux.lua" )
 runLuaFile( "gizmo/map/data/map_dirs.lua" )
 runLuaFile( "gizmo/map/data/map_doors.lua" )
 runLuaFile( "gizmo/map/data/map_unique.lua" )
+runLuaFile( "gizmo/map/map_queue.lua" )
 culledExits = {}
 table.load( f '{homeDirectory}gizmo/map/data/culledExits.lua', culledExits )
-
--- Print a message w/ a tag denoting it as coming from our Mapper script
-function mapInfo( message )
-  cecho( f "\n  [<peru>M<reset>] {message}" )
-end
+defineCustomEnvColors()
 
 -- Follow a list of directions; also used by the click-to-walk functionality from the Mapper
 function doSpeedWalk()
@@ -20,6 +17,8 @@ function doSpeedWalk()
 end
 
 -- Get a complete Wintin-compatible path between two rooms including door commands
+-- [TODO] Translating this to a Wintin-string is really only for convenience of output/sharing;
+-- for efficiency we should just use a list of raw commands for the core functionality
 function getFullDirs( srcID, dstID )
   -- Clear Mudlet's pathing globals
   speedWalkDir = nil
@@ -60,6 +59,7 @@ function getFullDirs( srcID, dstID )
   return nil
 end
 
+-- "Look" at an exit to get additional information about its status and the destination room
 function inspectExit( id, direction )
   local dir = LDIR[direction]
   local exits = getRoomExits( id )
@@ -77,7 +77,9 @@ function inspectExit( id, direction )
   end
 end
 
--- Virtually traverse an exit from the players' current location to an adjoining room
+-- Virtually traverse an exit from the players' current location to an adjoining room;
+-- This is the primary function used to "follow" the PCs position in the Map; it is synchronized
+-- with the MUD through the use of the mapQueue
 function moveExit( direction )
   -- Make sure direction is long-version like 'north' to align with getRoomExits()
   local dir = LDIR[direction]
@@ -90,115 +92,10 @@ function moveExit( direction )
   local dst = tonumber( exits[dir] )
   if roomExists( dst ) then
     updatePlayerLocation( dst, direction )
-    displayRoom()
     return true
   end
   cecho( "\n<dim_grey>Alas, you cannot go that way.<reset>" )
   return false
-end
-
--- Simulate a 'scroll of recall'; magical item in game that returns the player to the starting room
-function virtualRecall()
-  cecho( f "\n\n<orchid>You recite a <deep_pink>scroll of recall<orchid>.<reset>\n" )
-  updatePlayerLocation( 1121 )
-  displayRoom()
-end
-
--- Get a virtualized "room" w/ name, description, and supporting data
-function getRoomString( id, detail )
-  detail = detail or 1
-  local specTag = nil
-  specTag = ""
-  local roomString = nil
-  local nc = MAP_COLOR["number"]
-  local rc = nil
-  local roomName = getRoomName( id )
-  local roomSpec = tonumber( getRoomUserData( id, "roomSpec" ) )
-  local roomType = getRoomUserData( id, "roomType" )
-
-  if uniqueRooms[roomName] then
-    rc = MAP_COLOR['roomNameU']
-  else
-    rc = MAP_COLOR['roomName']
-  end
-  -- Append specTag if roomSpec is available
-  if roomSpec and roomSpec > 0 then
-    specTag = f " ~<ansi_light_yellow>{roomSpec}<reset>~"
-  end
-  -- Detail 1: Just the name
-  if detail == 1 then
-    roomString = f "{rc}{roomName}<reset>{specTag}"
-    return roomString
-  end
-  -- Add number and type for detail level 2
-  local tc = MAP_COLOR[roomType] or MAP_COLOR["mapui"]
-  if detail == 2 then
-    roomString = f "{rc}{roomName}<reset> [{tc}{roomType}<reset>] ({nc}{id}<reset>){specTag}"
-    return roomString
-  end
-  -- Add map coordinates at level 3
-  local uc = MAP_COLOR["mapui"]
-  local cX, cY, cZ = getRoomCoordinates( id )
-  local cString = f "{uc}{cX}<reset>, {uc}{cY}<reset>, {uc}{cZ}<reset>"
-  roomString = f "{rc}{roomName}<reset> [{tc}{roomType}<reset>] ({nc}{id}<reset>) ({cString}){specTag}"
-  return roomString
-end
-
-function getDoorString( word, key )
-  -- Double declaration because VSCode is confused by f-string interpolation
-  local doorString, keyString, wordString = nil, nil, nil
-  doorString, keyString, wordString = "", "", ""
-  if word then wordString = f "<light_goldenrod>{word}<reset>" end
-  if key then keyString = f " (<lawn_green>{key}<reset>)" end
-  doorString = f " <dim_grey>past a {wordString}{keyString}"
-  return doorString
-end
-
-function displayRoom( brief )
-  brief = brief or true
-  local rd = MAP_COLOR["roomDesc"]
-  cecho( f "\n\n{getRoomString(currentRoomNumber, 1)}" )
-  if not brief then
-    local desc = getRoomUserData( currentRoomNumber, "roomDescription" )
-    cecho( f "\n{rd}{desc}<reset>" )
-  end
-  local rSpec = tonumber( getRoomUserData( currentRoomNumber, "roomSpec" ) )
-  if rSpec and rSpec > 0 then
-    cecho( f "\n\tThis room has a ~<ansi_light_yellow>special procedure<reset>~.\n" )
-  end
-  --displayExits( currentRoomNumber )
-  displayExits( currentRoomNumber )
-end
-
-function displayExits( id )
-  local isFirstExit = true
-  local exitData = getRoomExits( id )
-  local sortedExits = {}
-  local exitString = ""
-  local dc = MAP_COLOR["exitDir"]
-
-  for dir, to in pairs( exitData ) do
-    table.insert( sortedExits, {dir = dir, to = to} )
-  end
-  table.sort( sortedExits, function ( a, b )
-    local dirA = DIRECTIONS[a.dir]
-    local dirB = DIRECTIONS[b.dir]
-    return dirA < dirB
-  end )
-  for _, exit in ipairs( sortedExits ) do
-    local dir = exit.dir
-    local to = exit.to
-    local tc = getExitColor( to, dir )
-    --local nextExit = f "{dc}{dir}<reset> ({tc}{to}<reset>)"
-    local nextExit = f "{tc}{dir}<reset>"
-    if isFirstExit then
-      isFirstExit = false
-      exitString = f "<dim_grey>Exits:  [" .. nextExit .. f "<dim_grey>]<reset>"
-    else
-      exitString = exitString .. f " <dim_grey>[<reset>" .. nextExit .. f "<dim_grey>]<reset>"
-    end
-  end
-  cecho( f "\n   {exitString}" )
 end
 
 function updatePlayerLocation( id, dir )
@@ -232,12 +129,8 @@ function setCurrentArea( id )
   end
   currentAreaNumber = id
   currentAreaName   = getRoomAreaName( id )
-  cecho( f "\n<dim_grey>  Entering {areaTag()}" )
+  cecho( f "\n<dim_grey>  Entering {getAreaTag()}" )
   setMapZoom( 28 )
-end
-
-function areaTag()
-  return f "<medium_violet_red>{currentAreaName}<reset> [<maroon>{currentAreaNumber}<reset>]"
 end
 
 -- "Cull" or remove an exit from the map in the current room (useful for suppressing redundant exits, loops, etc.)
@@ -254,144 +147,47 @@ function cullExit( dir )
   updateMap()
 end
 
--- For now, initialize our location as Market Square [1121]
-function startExploration()
-  --openMapWidget()
-  -- Set the starting Room to Market Square and initilize coordinates
-  mX, mY, mZ = 0, 0, 0
-  updatePlayerLocation( 1121 )
-  displayRoom()
-end
-
--- Customize label style based on type categories
-function getLabelStyle( labelType )
-  if labelType == "area" then
-    return 199, 21, 133, 10
-  elseif labelType == "room" then
-    return 65, 105, 225, 8
-  elseif labelType == "note" then
-    return 189, 183, 107, 8
-  elseif labelType == "dir" then
-    return 64, 224, 208, 8
-  elseif labelType == "key" then
-    return 127, 255, 0, 8
-  elseif labelType == "warn" then
-    return 255, 99, 71, 10
-  elseif labelType == "proc" then
-    return 85, 25, 110, 8
-  end
-  return nil, nil, nil, nil
-end
-
-function addNewlineToRoomLabels( roomName )
-  if #roomName <= 18 then -- Threshold for room name length
-    return roomName
-  end
-  local midpoint = math.floor( #roomName / 2 )
-  local spaceBefore = roomName:sub( 1, midpoint ):match( ".*%s()" )
-  local spaceAfter = roomName:sub( midpoint + 1 ):match( "%s()" )
-
-  if not spaceBefore and not spaceAfter then
-    return roomName -- No space found, return original
-  end
-  local newlinePos
-  if spaceBefore then
-    newlinePos = spaceBefore
-  else
-    newlinePos = midpoint + spaceAfter
-  end
-  local firstLine = roomName:sub( 1, newlinePos - 1 )
-  local secondLine = roomName:sub( newlinePos )
-
-  -- Calculate padding to center-justify
-  local lineLengthDiff = #firstLine - #secondLine
-  if lineLengthDiff < 0 then -- The first line is shorter
-    firstLine = string.rep( " ", math.floor( math.abs( lineLengthDiff ) / 2 ) ) .. firstLine
-  else                       -- The second line is shorter
-    secondLine = string.rep( " ", math.floor( lineLengthDiff / 2 ) ) .. secondLine
-  end
-  return firstLine .. "\n" .. secondLine
-end
-
-function defineCustomEnvColors()
-  roomColors = nil
-  customColorsDefined = true
-  setCustomEnvColor( COLOR_DEATH, 255, 99, 71, 255 )     -- <tomato>
-  setCustomEnvColor( COLOR_CLUB, 70, 40, 115, 255 )      -- <medium_slate_blue>
-  setCustomEnvColor( COLOR_INSIDE, 98, 62, 30, 255 )     -- custom rusty-brown
-  setCustomEnvColor( COLOR_FOREST, 50, 65, 30, 255 )     -- custom dark green
-  setCustomEnvColor( COLOR_MOUNTAINS, 120, 90, 90, 255 ) -- custom rosy-grey
-  setCustomEnvColor( COLOR_CITY, 98, 88, 98, 255 )       -- dim purple/grey
-  setCustomEnvColor( COLOR_WATER, 70, 130, 180, 255 )    -- <steel_blue>
-  setCustomEnvColor( COLOR_FIELD, 107, 142, 35, 255 )    -- <olive_drab>
-  setCustomEnvColor( COLOR_HILLS, 85, 105, 45, 255 )     -- custom green/brown
-  setCustomEnvColor( COLOR_DEEPWATER, 25, 25, 110, 255 ) -- custom navy
-  setCustomEnvColor( COLOR_PROC, 40, 100, 100, 255 )     -- custom dark cyan
-  setCustomEnvColor( COLOR_OVERLAP, 250, 0, 250, 255 )   -- not used
-  setCustomEnvColor( COLOR_SHOP, 50, 50, 20, 255 )
-  roomColors = getCustomEnvColorTable()
-  updateMap()
-end
-
-defineCustomEnvColors()
-
-function styleAllRooms()
+-- Find Rooms whose names are duplicated but are unique within an Area (i.e., 'area-unique')
+local function getAreaUniques()
+  local areaUniques = 0
   local allRooms = getRooms()
+  -- Keep track of rooms that have already been identified as area-unique
+  local uniqueRoomTracker = {}
+
   for id, name in pairs( allRooms ) do
-    setRoomStyle( id )
-  end
-end
+    local roomName = getRoomName( id )
 
--- Set the color of the current Room on the map based on terrain type or attributes
-function setRoomStyle( id )
-  --local id = currentRoomNumber
-  local roomFlags = getRoomUserData( id, "roomFlags" )
-  local roomSpec = tonumber( getRoomUserData( id, "roomSpec" ) )
-  local roomType = getRoomUserData( id, "roomType" )
-  -- Check if 'DEATH' is present in roomFlags
-  if (roomFlags and string.find( roomFlags, "DEATH" )) then
-    unHighlightRoom( id )
-    setRoomEnv( id, COLOR_DEATH )
-    setRoomChar( id, "💀 " )
-    lockRoom( id, true ) -- Lock this room so it won't ever be used for speedwalking
-  elseif roomSpec > 0 then
-    unHighlightRoom( id )
-    setRoomEnv( id, COLOR_PROC )
-    setRoomChar( id, "📁 " )
-    if roomFlags and string.find( roomFlags, "CLUB" ) then
-      cecho( f "\n\n<deep_pink>WARNING: {id} with PROC flag and CLUB flag<reset>\n\n" )
-    end
-  elseif roomFlags and string.find( roomFlags, "CLUB" ) then
-    unHighlightRoom( id )
-    setRoomEnv( id, COLOR_CLUB )
-    setRoomChar( id, "💤" )
-  else
-    -- Check roomType and set color accordingly
-    local roomTypeToColor = {
-      ["Inside"]    = COLOR_INSIDE,
-      ["Forest"]    = COLOR_FOREST,
-      ["Mountains"] = COLOR_MOUNTAINS,
-      ["City"]      = COLOR_CITY,
-      ["Water"]     = COLOR_WATER,
-      ["Field"]     = COLOR_FIELD,
-      ["Hills"]     = COLOR_HILLS,
-      ["Deepwater"] = COLOR_DEEPWATER
-    }
-
-    local color = roomTypeToColor[roomType]
-    setRoomEnv( id, color )
-  end
-  updateMap()
-end
-
--- Redefine this when simulating the map to send "fake" commands and movement aliases
-function doWintin( wintinString )
-  local commands = expandWintin( wintinString )
-  for _, command in ipairs( commands ) do
-    if #command == 1 then
-      expandAlias( command )
-    elseif #command > 1 then
-      cecho( f "\n{MAP_COLOR['cmd']}{command}" )
+    -- Only check rooms that haven't already been identified as area-unique
+    if uniqueRoomTracker[roomName] == nil then
+      if not isUnique( roomName ) then
+        -- searchRooms() returns a table of all rooms with the same name
+        local dupeRooms = searchRoom( roomName )
+        local areaUnique = true
+        local dupeArea = nil
+        -- Check each Room in this table to see if any are in a different Area
+        for dupeID, _ in pairs( dupeRooms ) do
+          local nextDupeArea = getRoomArea( dupeID )
+          if not dupeArea then
+            dupeArea = nextDupeArea
+          elseif dupeArea ~= nextDupeArea then
+            areaUnique = false
+            break
+          end
+        end
+        -- If areaUnique is still true; all Rooms were in the same Area
+        if areaUnique then
+          areaUniques = areaUniques + 1
+          uniqueRoomTracker[roomName] = dupeArea
+          local uniqueAreaName = getRoomAreaName( dupeArea )
+          cecho( f "\n<royal_blue>{roomName}<reset> is unique within area <maroon>{uniqueAreaName}<reset>" )
+        else
+          uniqueRoomTracker[roomName] = false -- Mark as non-unique
+        end
+      end
+    elseif uniqueRoomTracker[roomName] ~= false then
+      -- Room is already confirmed unique, increment counter
+      areaUniques = areaUniques + 1
     end
   end
+  cecho( f "\n<dark_orange>{areaUniques}<reset> rooms are unique to a single area." )
 end

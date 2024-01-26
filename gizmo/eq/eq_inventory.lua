@@ -153,8 +153,8 @@ end
 
 function swapGear()
   -- Define the swappable gear sets; the last two items must be 'wield' and 'hold'
-  local dpsGear = {"onyx", "onyx", "cape", "cape", "transparent", "masoch", "flaming", "flaming", "cudgel", "scalpel"}
-  local tankGear = {"one", "emerald", "skin", "skin", "vest", "kings", "fanra", "fanra", "cutlass", "bangle"}
+  local dpsGear = {"onyx", "onyx", "cape", "cape", "platemail", "masoch", "flaming", "flaming", "cudgel", "scalpel"}
+  local tankGear = {"one", "one", "skin", "skin", "vest", "kings", "fanra", "fanra", "cutlass", "bangle"}
   local held, toHold = "", ""
 
   -- These need to be global temporarily so subsequent swap functions can access them

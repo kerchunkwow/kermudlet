@@ -29,16 +29,16 @@ end
 
 -- Feed a line to the client as if it came from the MUD (great for testing triggers).
 -- Suggested alias: ^sim (.*)$
-function simulateOutput()
-  local simString = matches[2]
+function simulateOutput( output )
+  local simString = output or matches[2]
   simString = string.gsub( simString, "%$", "\n" )
   cfeedTriggers( simString )
 end
 
 -- Send a command multiple times (alternative to sendAll?)
-function repeatSend( cmd, count )
+function repeatSend( cmd_string, count )
   for c = 1, count do
-    send( cmd, false )
+    send( cmd_string, false )
   end
 end
 

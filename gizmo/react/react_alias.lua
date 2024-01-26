@@ -1,5 +1,3 @@
-cecho( f '\n  ' )
-
 -- Get the optimal Magic-User for a cast
 function getCasterMU( mana_cost )
   local nad_mn = pcStatus[2] and pcStatus[2]["currentMana"] or 0
@@ -151,6 +149,22 @@ end
 
 -- Create the party console, open chat & info windows
 function aliasPlayGizmo()
-  tempTimer( 0.5, [[openOutputWindows()]] )
-  tempTimer( 1.5, [[createPartyConsole()]] )
+  createGizmoGUI()
+end
+
+function aliasGetPath()
+  local dst = matches[2]
+  local pathString = nil
+  if tonumber( dst ) then
+    pathString = getFullDirs( currentRoomNumber, tonumber( dst ) )
+  end
+  if pathString then
+    cecho( f "<yellow_green>{pathString}" )
+  end
+end
+
+-- Cast the specified spell at a command-line target or myself by default
+function aliasCastBuff( spell )
+  local trg = matches[2] or myself
+  send( f [[cast '{spell}' {trg}]] )
 end

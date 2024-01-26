@@ -71,9 +71,9 @@ function itemQueryAppend( item_name )
     if not string.match( stats, "^[+-]" ) then
       stats = " " .. stats
     end
-    if eqmode == 0 and stats ~= "" then
+    if itemQueryMode == 0 and stats ~= "" then
       display_string = padding .. string.format( "<sea_green>%s<reset>%s", stats, clone_indicator )
-    elseif eqmode == 1 and (stats ~= "" or antis ~= "") then
+    elseif itemQueryMode == 1 and (stats ~= "" or antis ~= "") then
       display_string = padding ..
           string.format( "<sea_green>%s<reset> <firebrick>%s<reset>%s", stats, antis,
             clone_indicator )
@@ -85,4 +85,10 @@ function itemQueryAppend( item_name )
   else
     cecho( "info", string.format( "\nNo item named <medium_orchid>%s<reset>; #add me!", item_name ) )
   end
+end
+
+function toggleItemQueryMode()
+  if not itemQueryMode then itemQueryMode = 0 else itemQueryMode = itemQueryMode + 1 end
+  if itemQueryMode > 1 then itemQueryMode = 0 end
+  cecho( "info", f "\n<orange>itemQueryMode toggled: {itemQueryMode}" )
 end
