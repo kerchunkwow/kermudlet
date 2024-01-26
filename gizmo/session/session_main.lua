@@ -1,3 +1,6 @@
+nadjaClones = nil
+laszloClones = nil
+
 -- A set to keep track of items collected via auto-gathering, like resin
 gathered = {}
 
@@ -13,23 +16,16 @@ hp_monitor = {
   [4] = {25, 20},
 }
 
-nadjaClones = nil
-laszloClones = nil
-
--- Raise to send warning messages to the info window
+-- Raise 'eventWarn' to send warning messages to the info window
 registerAnonymousEventHandler( [[eventWarn]], [[show_warning]] )
 
--- Other sessions use this event to pass their data into the pcStatus table
-
-
+-- Raise these events to update the pcStatus table from alternate sessions
 registerAnonymousEventHandler( [[event_pcStatus_prompt]], [[pcStatusPromptEvent]] )
-
 registerAnonymousEventHandler( [[eventPCStatusAffect]], [[pcStatusAffectEvent]] )
-
-
 registerAnonymousEventHandler( [[event_pcStatus_score]], [[pcStatusScoreEvent]] )
 registerAnonymousEventHandler( [[event_pcStatus_room]], [[pcStatusRoomEvent]] )
 
+-- Initial Trigger & Alias States
 enableTrigger( "Group XP" )
 enableTrigger( "gather" )
 enableTrigger( "Tank Condition (automira)" )
