@@ -84,6 +84,7 @@ currentAreaNumber   = {}
 currentAreaName     = ""
 currentRoomData     = {}
 currentRoomNumber   = -1
+currentRoomName     = nil
 currentAreaNumber   = -1
 roomToAreaMap       = {}
 worldData           = {}
