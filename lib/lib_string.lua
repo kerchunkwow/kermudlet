@@ -3,24 +3,6 @@ function trim( s )
   return s:match( "^%s*(.-)%s*$" )
 end
 
--- Given a large number as str, return an abbreviated version like '1.2B'
-function abbreviateNumber( numberString )
-  local str = string.gsub( numberString, ",", "" )
-  str = trim( str )
-  local num = tonumber( str )
-
-  -- Truncuate based on 10 power and add matching label
-  if num >= 10 ^ 9 then
-    return string.format( "%.1fB", num / 10 ^ 9 )
-  elseif num >= 10 ^ 6 then
-    return string.format( "%.1fM", num / 10 ^ 6 )
-  elseif num >= 10 ^ 3 then
-    return string.format( "%.1fK", num / 10 ^ 3 )
-  else
-    return tostring( num )
-  end
-end
-
 -- Given a large number as n, return a comma-delimited string like '1,234,567'
 function expandNumber( n )
   local commaNumber  = ""
@@ -71,9 +53,27 @@ function split( str, delimiter )
   return substrings
 end
 
+-- Given a large number as str, return an abbreviated version like '1.2B'
+local function abbreviateNumber( numberString )
+  local str = string.gsub( numberString, ",", "" )
+  str = trim( str )
+  local num = tonumber( str )
+
+  -- Truncuate based on 10 power and add matching label
+  if num >= 10 ^ 9 then
+    return string.format( "%.1fB", num / 10 ^ 9 )
+  elseif num >= 10 ^ 6 then
+    return string.format( "%.1fM", num / 10 ^ 6 )
+  elseif num >= 10 ^ 3 then
+    return string.format( "%.1fK", num / 10 ^ 3 )
+  else
+    return tostring( num )
+  end
+end
+
 -- Given a raw string, return a regex that would match that string if it appears
 -- as a standalone line of output. Useful for dynamically creating triggers.
-function createLineRegex( rawString )
+local function createLineRegex( rawString )
   -- Escape Perl regex tokens
   local escString = rawString:gsub( "([%(%)%.%%%+%-%*%?%[%]%^%$])", "\\%1" )
 
@@ -85,7 +85,7 @@ function createLineRegex( rawString )
 end
 
 -- Guess a string is regex if it starts with ^, ends with $, or contains a backslash
-function isRegex( str )
+local function isRegex( str )
   if string.sub( str, 1, 1 ) == '^' then
     return true
   end

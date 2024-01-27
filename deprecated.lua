@@ -1,3 +1,178 @@
+-- Coordinates to track the "physical" location of the room relative to the starting point of the Area so Mudlet can draw it
+mX, mY, mZ          = 0, 0, 0
+
+-- Virtually traverse an exit from the players' current location to an adjoining room;
+-- This is the primary function used to "follow" the PCs position in the Map; it is synchronized
+-- with the MUD through the use of the mapQueue
+function moveExit( direction )
+  -- Make sure direction is long-version like 'north' to align with getRoomExits()
+  local dir = LDIR[direction]
+  local exits = getRoomExits( currentRoomNumber )
+
+  if not exits[dir] then
+    cecho( "\n<dim_grey>Alas, you cannot go that way.<reset>" )
+    return false
+  end
+  local dst = tonumber( exits[dir] )
+  if roomExists( dst ) then
+    updatePlayerLocation( dst, direction )
+    return true
+  end
+  cecho( "\n<dim_grey>Alas, you cannot go that way.<reset>" )
+  return false
+end
+v
+function laswield()
+  expandAlias( 'las rem ring', false )
+  expandAlias( 'las rem leg', false )
+  expandAlias( 'las rem gloves', false )
+  expandAlias( 'las get sky bag', false )
+  expandAlias( 'las get gauntlets bag', false )
+  expandAlias( 'las get bionic bag', false )
+  expandAlias( 'las wear sky', false )
+  expandAlias( 'las wear gauntlets', false )
+  expandAlias( 'las wear bionic', false )
+  expandAlias( 'las wield spirit', false )
+  expandAlias( 'las rem sky', false )
+  expandAlias( 'las rem gauntlets', false )
+  expandAlias( 'las rem bionic', false )
+  expandAlias( 'las give sky nandor', false )
+  expandAlias( 'las give gauntlets nandor', false )
+  expandAlias( 'las give bionic nadja', false )
+  expandAlias( 'las wear gloves', false )
+  expandAlias( 'las wear ring', false )
+  expandAlias( 'las wear leg', false )
+end
+
+function nanwield()
+  expandAlias( 'nan rem onyx', false )
+  expandAlias( 'nan wear gauntlets', false )
+  expandAlias( 'nan wear sky', false )
+  expandAlias( 'nan wield cudgel', false )
+  expandAlias( 'nan hold scalpel', false )
+  expandAlias( 'nan rem sky', false )
+  expandAlias( 'nan rem gauntlets', false )
+  expandAlias( 'nan give sky nadja', false )
+  expandAlias( 'nan give gauntlets nadja', false )
+  expandAlias( 'nan wear onyx', false )
+  expandAlias( 'nan wear gloves', false )
+end
+-- Called repeatedly to iterate each list of cloning assignments until complete
+function doClone()
+  -- First/last call condition
+  if not nadjaClones then
+    startClone()
+  elseif #nadjaClones == 0 and #laszloClones == 0 then
+    endClone()
+  end
+  -- If Nadja has clone mana, try the next clone
+  if pcStatus[2]["currentMana"] > 100 and nadjaClones and #nadjaClones > 0 then
+    -- Stand up & attempt to clone after setting a fresh success trigger
+    expandAlias( "nad stand" )
+    if nadCloneTrigger then killTrigger( nadCloneTrigger ) end
+    nadCloneTrigger = tempTrigger( "Nadja creates a duplicate", [[table.remove( nadjaClones, 1 )]] )
+    local nextClone = nadjaClones[1]
+    expandAlias( f [[nad cast 'clone' {nextClone}]] )
+  elseif pcStatus[2]["currentMana"] < 100 and #nadjaClones > 0 then
+    expandAlias( "nad rest" )
+  end
+  -- Repeat for Laszlo
+  if pcStatus[3]["currentMana"] > 100 and laszloClones and #laszloClones > 0 then
+    expandAlias( "las stand" )
+    if lasCloneTrigger then killTrigger( lasCloneTrigger ) end
+    lasCloneTrigger = tempTrigger( "Laszlo creates a duplicate", [[table.remove( laszloClones, 1 )]] )
+    local nextClone = laszloClones[1]
+    expandAlias( f [[las cast 'clone' {nextClone}]] )
+  elseif pcStatus[3]["currentMana"] < 100 and #laszloClones > 0 then
+    expandAlias( "las rest" )
+  end
+end
+
+function endClone()
+  if lasCloneTrigger then killTrigger( lasCloneTrigger ) end
+  if nadCloneTrigger then killTrigger( nadCloneTrigger ) end
+  if nadjaClones then nadjaClones = nil end
+  if laszloClones then laszloClones = nil end
+  expandAlias( 'col get staff', false )
+  expandAlias( 'col get halo', false )
+  expandAlias( 'col get cuffs', false )
+  expandAlias( 'col hold staff', false )
+  expandAlias( 'col wear halo', false )
+  expandAlias( 'col wear cuffs', false )
+
+  expandAlias( 'las get staff', false )
+  expandAlias( 'las get cuffs', false )
+  expandAlias( 'las hold staff', false )
+  expandAlias( 'las wear cuffs', false )
+  expandAlias( 'las wear crocodile', false )
+
+  expandAlias( 'nan get staff', false )
+  expandAlias( 'nan get crocodile', false )
+  expandAlias( 'nan hold staff', false )
+  expandAlias( 'nan wear crocodile', false )
+
+  expandAlias( 'nad hold staff', false )
+  expandAlias( 'nad wear cuffs', false )
+
+  expandAlias( "las give halo nandor", false )
+  tempTimer( 1, [[expandAlias( "nan wear halo", false )]] )
+
+  expandAlias( 'all save', false )
+end
+
+-- Prepare cloning sequence with gear assignments
+function startClone()
+  nadjaClones = {'cuffs', 'skin'}
+  laszloClones = {'halo'}
+
+  expandAlias( "nan rem halo", false )
+  expandAlias( "nan give halo laszlo", false )
+  send( 'get skin stocking', false )
+  send( 'give skin nadja', false )
+
+  -- And remove the items to clone
+  expandAlias( 'nad rem cuffs', false )
+end
+
+function nadwield()
+  expandAlias( 'nad rem ring', false )
+  expandAlias( 'nad rem gloves', false )
+  expandAlias( 'nad rem leg', false )
+  expandAlias( 'nad wear sky', false )
+  expandAlias( 'nad wear gauntlets', false )
+  expandAlias( 'nad wear bionic', false )
+  expandAlias( 'nad wield spirit', false )
+  expandAlias( 'nad hold malachite', false )
+  expandAlias( 'nad rem sky', false )
+  expandAlias( 'nad rem gauntlets', false )
+  expandAlias( 'nad rem bionic', false )
+  expandAlias( 'nad give sky colin', false )
+  expandAlias( 'nad give gauntlets colin', false )
+  expandAlias( 'nad give bionic colin', false )
+  expandAlias( 'nad wear ring', false )
+  expandAlias( 'nad wear gloves', false )
+  expandAlias( 'nad wear leg', false )
+end
+
+function colwield()
+  expandAlias( 'col rem ring', false )
+  expandAlias( 'col rem greaves', false )
+  expandAlias( 'col wear sky', false )
+  expandAlias( 'col wear bionic', false )
+  expandAlias( 'col wear gauntlets', false )
+  expandAlias( 'col wield hammer', false )
+  expandAlias( 'col hold malachite', false )
+  expandAlias( 'col rem sky', false )
+  expandAlias( 'col rem gauntlets', false )
+  expandAlias( 'col rem bionic', false )
+  expandAlias( 'col give sky laszlo', false )
+  expandAlias( 'col give gauntlets laszlo', false )
+  expandAlias( 'col give bionic laszlo', false )
+  expandAlias( 'col wear onyx', false )
+  expandAlias( 'col wear greaves', false )
+end
+
+
 -- Use with cecho etc. to colorize output without massively long f-strings
 function ec( s, c )
   local colors = {

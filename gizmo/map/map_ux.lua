@@ -127,8 +127,8 @@ function displayExits( id )
       exitString = exitString .. f " <dim_grey>[<reset>" .. nextExit .. f "<dim_grey>]<reset>"
     end
   end
-  --cecho( f "{exitString}" )
-  simulateOutput( f "   {exitString}" )
+  cecho( f "\n   {exitString}" )
+  --simulateOutput( f "   {exitString}" )
 end
 
 -- Select one of the predefined colors to display an Exit based on Door and Destination status

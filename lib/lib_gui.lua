@@ -10,25 +10,6 @@ function chatMessage( speaker, channel, message, window )
   end
 end
 
--- Create and/or open a basic user window into which you can echo output; uses _G to
--- store the object in a variable of the same name
-function openBasicWindow( name, title, fontFace, fontSize )
-  _G[name] = Geyser.UserWindow:new( {
-    name          = name,
-    titleText     = title,
-    font          = fontFace,
-    fontSize      = fontSize,
-    wrapAt        = 80,
-    scrollBar     = false,
-    restoreLayout = true,
-  } )
-
-  _G[name]:disableScrollBar()
-  _G[name]:disableHorizontalScrollBar()
-  _G[name]:disableCommandLine()
-  _G[name]:clear()
-end
-
 -- Clear all user windows
 function clearScreen()
   -- Clear the main user/console window
@@ -49,8 +30,27 @@ function gizError( msg )
   cecho( f "\n\t<dim_grey>[<dark_orange>err<dim_grey>]: {msg}" )
 end
 
+-- Create and/or open a basic user window into which you can echo output; uses _G to
+-- store the object in a variable of the same name
+local function openBasicWindow( name, title, fontFace, fontSize )
+  _G[name] = Geyser.UserWindow:new( {
+    name          = name,
+    titleText     = title,
+    font          = fontFace,
+    fontSize      = fontSize,
+    wrapAt        = 80,
+    scrollBar     = false,
+    restoreLayout = true,
+  } )
+
+  _G[name]:disableScrollBar()
+  _G[name]:disableHorizontalScrollBar()
+  _G[name]:disableCommandLine()
+  _G[name]:clear()
+end
+
 -- List all fonts available in Mudlet.
-function listFonts()
+local function listFonts()
   local availableFonts = getAvailableFonts()
 
   ---@diagnostic disable-next-line: param-type-mismatch

@@ -1,5 +1,7 @@
 session = getProfileTabNumber()
 
+runLuaFile( 'gizmo/client_config.lua' )
+
 -- Common to all sessions
 local commonScripts = {
   'gizmo/react/react_trigger.lua',
@@ -8,6 +10,7 @@ local commonScripts = {
   'gizmo/session/session_common.lua',
   'gizmo/eq/eq_db.lua',
   'gizmo/status/status_affect.lua',
+  'gizmo/map/map_main.lua',
 }
 
 -- Specific to the main session
@@ -18,7 +21,6 @@ local mainScripts = {
   'gizmo/status/status_update.lua',
   'gizmo/status/status_parse_main.lua',
   'gizmo/eq/eq_inventory.lua',
-  'gizmo/map/map_main.lua',
 }
 
 -- Specific to alt sessions
@@ -52,7 +54,7 @@ local function createWarningCalls()
 end
 
 if session == 1 and not pcStatus then
-  initPCStatusTable( pc_names )
+  initPCStatusTable( pcNames )
 end
 --Create session-custom warning messages so they don't need to be created on demand
 warning_calls = createWarningCalls()

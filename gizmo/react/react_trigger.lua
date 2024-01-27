@@ -69,22 +69,14 @@ function triggerRouteChat()
 end
 
 -- A room name has been captured; synchronize the map and update the status table
-function triggerCaptureRoom( room )
+function triggerCaptureRoom()
+  local matchedRoom = trim( matches[2] )
   if session == 1 then
-    -- if isUnique and isUnique( room ) and mapQueue.isEmpty() then
-    --   -- If our currentRoomNumber is out of synch, update our map location to reset it
-    --   if currentRoomNumber ~= uniqueRooms[room] then
-    --     updatePlayerLocation( uniqueRooms[room] )
-    --   end
-    -- end
-    pcStatusRoom( 1, room )
+    pcStatusRoom( 1, matchedRoom )
+    if isUnique( matchedRoom ) then setPlayerRoom( uniqueRooms[matchedRoom] ) end
   else
-    raiseGlobalEvent( "event_pcStatus_room", session, room )
+    raiseGlobalEvent( "event_pcStatus_room", session, matchedRoom )
   end
-end
-
-function isAlternate( pc )
-  return alt_pcs[pc]
 end
 
 function autoManaTransfer()
@@ -109,11 +101,7 @@ function triggerHunger()
   createTemporaryTrigger( "no_food_trigger", empty_str, warn_code, 3 )
   createTemporaryTrigger( "have_food_trigger", have_str, eat_code, 3 )
 
-  if session == 1 then
-    send( f "get {food} stocking", false )
-  else
-    send( f "get {food} bag", false )
-  end
+  send( f "get {food} {container}", false )
 end
 
 -- Drink when we're thirsty
@@ -155,17 +143,28 @@ end
 
 function createTemporaryTrigger( trigger_name, pattern, code, duration )
   -- If the trigger already exists, kill it
-  if temporary_triggers[trigger_name] then
-    killTrigger( temporary_triggers[trigger_name] )
+  if temporaryTriggers[trigger_name] then
+    killTrigger( temporaryTriggers[trigger_name] )
   end
   -- Create a new temporary trigger and store its reference in the table
-  temporary_triggers[trigger_name] = tempTrigger( pattern, code, 1 )
+  temporaryTriggers[trigger_name] = tempTrigger( pattern, code, 1 )
 
   -- Schedule the trigger to be killed after the specified duration
   tempTimer( duration, function ()
-    if temporary_triggers[trigger_name] then
-      killTrigger( temporary_triggers[trigger_name] )
-      temporary_triggers[trigger_name] = nil -- Clean up the reference
+    if temporaryTriggers[trigger_name] then
+      killTrigger( temporaryTriggers[trigger_name] )
+      temporaryTriggers[trigger_name] = nil -- Clean up the reference
     end
   end )
+end
+
+function triggerPCActivity()
+  local actor = trim( matches[2] )
+  if isAlternate( actor ) then deleteLine() end
+end
+
+function captureTick()
+  selectString( line, 1 )
+  setFgColor( 102, 205, 170 )
+  resetFormat()
 end

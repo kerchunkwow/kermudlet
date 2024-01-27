@@ -1,12 +1,29 @@
 -- Functions in this class override existing/default functions in order to facilitate
 -- offline map traversal/simulation.
 
+-- Coordinates to track the "physical" location of the room relative to the starting point of the Area so Mudlet can draw it
+mX, mY, mZ = 0, 0, 0
+
 -- Override doWintin when simulating offline map so commands are echoed instead of sent
 function doWintin( wintinString )
   local commands = expandWintinString( wintinString )
   for _, command in ipairs( commands ) do
     nextCmd( command )
   end
+end
+
+-- To simulate realistic offline movement, display the "next" room after a brief
+-- artificial delay.
+function executeCmd( cmd )
+  cecho( f " <ivory>\n{cmd}<reset>" )
+  local cmdDelay = randomFloat( 0.2, 0.3 )
+  if DIRECTIONS[cmd] then
+    local exits = getRoomExits( currentRoomNumber )
+    local longDir = LDIR[cmd]
+    queueDst = tonumber( exits[longDir] )
+    nextCmdTimer = tempTimer( cmdDelay, f [[displayRoom( {queueDst}, true )]] )
+  end
+  nextCmdTimer = tempTimer( cmdDelay, [[simulateOutput('\nOk.\n')]] )
 end
 
 -- Override moveExit while offline to simulate movement and display virtual rooms
@@ -32,7 +49,7 @@ end
 -- Simulate a 'scroll of recall'; magical item in game that returns the player to the starting room
 function virtualRecall()
   cecho( f "\n\n<orchid>You recite a <deep_pink>scroll of recall<orchid>.<reset>\n" )
-  updatePlayerLocation( 1121 )
+  setPlayerRoom( 1121 )
   displayRoom( 1121, true )
 end
 
@@ -41,7 +58,7 @@ function startExploration()
   --openMapWidget()
   -- Set the starting Room to Market Square and initilize coordinates
   mX, mY, mZ = 0, 0, 0
-  updatePlayerLocation( 1121 )
+  setPlayerRoom( 1121 )
   displayRoom( 1121, true )
 end
 

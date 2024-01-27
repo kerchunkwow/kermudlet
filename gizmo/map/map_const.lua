@@ -62,6 +62,7 @@ SDIR                = {
   u     = "u",
   d     = "d"
 }
+
 -- Map exit directions to internal IDs used by the Mudlet Mapper API
 EXIT_MAP            = EXIT_MAP or {
   north = 1,
@@ -88,13 +89,9 @@ roomToAreaMap       = {}
 worldData           = {}
 culledExits         = {}
 
--- Coordinates to track the "physical" location of the room relative to the starting point of the Area so Mudlet can draw it
-mX, mY, mZ          = 0, 0, 0
-
 lastRoomNumber      = -1
 lastAreaNumber      = -1
 lastAreaName        = ""
-lastDir             = ""
 lastKey             = -1
 
 customColorsDefined = false

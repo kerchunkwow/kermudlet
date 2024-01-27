@@ -1,5 +1,3 @@
-sureCastTrigger = nil
-
 -- Enable an alias for the specified duration then disable it again; useful for triggers that are only
 -- needed in niche circumstances like then viewing your 'eq' or interacting with a shopkeeper
 function tempEnableTrigger( trigger, duration )
@@ -14,19 +12,6 @@ function tempDisableTrigger( trigger, duration )
   tempTimer( duration, f [[enableTrigger( "{trigger}" )]] )
 end
 
--- "Nuclear option" that kills all temporary timers and triggers; will probably interfere with
--- third party packages if you have any.
-function killAllTemps()
-  local topTrigger = tempTrigger( "dummy", function () end )
-  local topTimer = tempTimer( 0, function () end )
-  for i = 1, topTrigger do
-    killTrigger( i )
-  end
-  for j = 1, topTimer do
-    killTimer( j )
-  end
-end
-
 -- Feed a line to the client as if it came from the MUD (great for testing triggers).
 -- Suggested alias: ^sim (.*)$
 function simulateOutput( output )
@@ -35,16 +20,26 @@ function simulateOutput( output )
   cfeedTriggers( simString )
 end
 
--- Send a command multiple times (alternative to sendAll?)
-function repeatSend( cmd_string, count )
-  for c = 1, count do
-    send( cmd_string, false )
+-- Use a temporary trigger to recast on lost concentration
+function sureCast( spell, target )
+  local castCode
+
+  if sureCastTrigger then killTrigger( sureCastTrigger ) end
+  tempTimer( 5, function () killTrigger( sureCastTrigger ) end )
+
+  if target then
+    castCode = f [[send("cast '{spell}' {target}")]]
+    send( f "cast '{spell}' {target}" )
+  else
+    castCode = f [[send("cast '{spell}'")]]
+    send( f "cast '{spell}'" )
   end
+  sureCastTrigger = tempRegexTrigger( "^You lost your concentration!$", castCode, 1 )
 end
 
 -- Make a temporary alias from the command line with
 -- #alias p=pattern c=code; use *'s for wildcards
-function makeAlias( aliasString )
+local function makeAlias( aliasString )
   -- Table to hold temporary alias IDs in case you want to kill 'em'
   if not tempAliases then
     tempAliases = {}
@@ -72,19 +67,22 @@ function makeAlias( aliasString )
   cecho( f "\nCreated alias: {pattern} to execute code: {code} (#{#tempAliases} active temps)" )
 end
 
--- Use a temporary trigger to recast on lost concentration
-function sureCast( spell, target )
-  local castCode
-
-  if sureCastTrigger then killTrigger( sureCastTrigger ) end
-  tempTimer( 5, function () killTrigger( sureCastTrigger ) end )
-
-  if target then
-    castCode = f [[send("cast '{spell}' {target}")]]
-    send( f "cast '{spell}' {target}" )
-  else
-    castCode = f [[send("cast '{spell}'")]]
-    send( f "cast '{spell}'" )
+-- Send a command multiple times (alternative to sendAll?)
+local function repeatSend( cmd_string, count )
+  for c = 1, count do
+    send( cmd_string, false )
   end
-  sureCastTrigger = tempRegexTrigger( "^You lost your concentration!$", castCode, 1 )
+end
+
+-- "Nuclear option" that kills all temporary timers and triggers; will probably interfere with
+-- third party packages if you have any.
+local function killAllTemps()
+  local topTrigger = tempTrigger( "dummy", function () end )
+  local topTimer = tempTimer( 0, function () end )
+  for i = 1, topTrigger do
+    killTrigger( i )
+  end
+  for j = 1, topTimer do
+    killTimer( j )
+  end
 end

@@ -62,7 +62,7 @@ function aliasSmartHeal()
 
   -- Someone in party is <= 80%, deal with them first
   if wounded_percent <= 90 then
-    local victim  = pc_names[wounded]
+    local victim  = pcNames[wounded]
     local deficit = pcStatus[wounded]["maxHP"] - pcStatus[wounded]["currentHP"]
 
     -- If they're missing <= 50hp, use cure critic to conserve mana
@@ -167,4 +167,13 @@ end
 function aliasCastBuff( spell )
   local trg = matches[2] or myself
   send( f [[cast '{spell}' {trg}]] )
+end
+
+-- Called by alias 'rr' to attempt a full recall & send a critical warning if no scrolls are available
+function aliasReciteRecall()
+  local eventMethod = session == 1 and 'raiseEvent' or 'raiseGlobalEvent'
+  local noRecallCode = f "{eventMethod}( 'eventWarn', {session}, 'norecall' )"
+  tempTrigger( "does not contain", noRecallCode, 1 )
+  send( f 'get recall {container}' )
+  send( 'recite recall' )
 end

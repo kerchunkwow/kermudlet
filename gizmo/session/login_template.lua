@@ -1,5 +1,5 @@
 -- Copy as gizmo/session/login.lua and edit to match your party
-local first, second, third, fourth = 'Colin', 'Nandor', 'Laszlo', 'Nadja'
+local first, second, third, fourth = pcNames[1], pcNames[2], pcNames[3], pcNames[4]
 local password = 'yourpassword'
 
 -- Temporary triggers to log each of your PCs in and proceed through to Reception

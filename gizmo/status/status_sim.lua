@@ -100,11 +100,11 @@ function generate_sim_stats()
 
     -- 80% of the time, sim as in-combat
     if math.random() < 0.80 then
-      trg = combat_conditions[math.random( 1, #combat_conditions )]
+      trg = combatConditions[math.random( 1, #combatConditions )]
 
       -- 75% of in-combat sim w/ tank
       if math.random() < 0.75 then
-        tnk = combat_conditions[math.random( 1, #combat_conditions )]
+        tnk = combatConditions[math.random( 1, #combatConditions )]
       end
     end
     pcStatus[pc] = {

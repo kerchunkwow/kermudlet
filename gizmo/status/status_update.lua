@@ -105,7 +105,7 @@ function pcStatusRoom( pc, room )
 end
 
 -- Create and default a table to hold status info for each pc
-function initPCStatusTable( pc_names )
+function initPCStatusTable( pcNames )
   pcStatus = {}
 
   for pc = 1, 4 do
@@ -137,7 +137,7 @@ function initPCStatusTable( pc_names )
   end
 end
 
-function initPCLastStatus( pc_names )
+local function initPCLastStatus( pcNames )
   pc_last_status = {
 
     currentHP    = 0,
@@ -149,7 +149,7 @@ function initPCLastStatus( pc_names )
   }
 end
 
-function printPCStatusTable()
+local function printPCStatusTable()
   for pc = 1, 4 do
     local tnk = pcStatus[pc].tank or ""
     local trg = pcStatus[pc].trg or ""

@@ -105,8 +105,6 @@ function createGizmoGUI()
       ["lbl_bd"] = "#707070",
     }
 
-    nameLabel    = {"Colin", "Nadja", "Laszlo", "Nandor"}
-
     gauge_border = [[
         border-width:  1px;
         border-style:  solid;
@@ -254,8 +252,8 @@ function createGizmoGUI()
 
       hpGauge[pc]:setValue( 444, 444, "100%" )
 
-      -- Call hp_clicked( pc_name ) when clicking the hp gauge
-      setLabelClickCallback( hpGauge[pc].text.name, "hp_clicked", pc, pc_names[pc] )
+      -- Call healthClicked( pc_name ) when clicking the hp gauge
+      setLabelClickCallback( hpGauge[pc].text.name, "healthClicked", pc, pcNames[pc] )
 
       -- MN Gauge
       manaGauge[pc] = Geyser.Gauge:new( {
@@ -298,8 +296,8 @@ function createGizmoGUI()
 
       movesGauge[pc]:setValue( 420, 500, "420" )
 
-      -- Call mv_clicked( pc_name ) when clicking the move gauge
-      setLabelClickCallback( movesGauge[pc].text.name, "mv_clicked", pc, pc_names[pc] )
+      -- Call movesClicked( pc_name ) when clicking the move gauge
+      setLabelClickCallback( movesGauge[pc].text.name, "movesClicked", pc, pcNames[pc] )
 
       nameLabel[pc] = Geyser.Label:new( {
 
@@ -333,8 +331,8 @@ function createGizmoGUI()
       nameLabel[pc]:setFormat( font_format["label"] )
       nameLabel[pc]:setStyleSheet( CSS_label_pc )
 
-      local pc_name = pc_names[pc]
-      nameLabel[pc]:echo( pc_name )
+      local pcName = pcNames[pc]
+      nameLabel[pc]:echo( pcName )
 
       -- Custom 'fury' icon for top pc
       if pc == 1 then
@@ -371,8 +369,8 @@ function createGizmoGUI()
 
       roomLabel[pc]:echo( my_room )
 
-      -- Call room_clicked( pc_name ) when double-clicking the room label
-      setLabelDoubleClickCallback( roomLabel[pc].name, "room_clicked", pc_names[pc] )
+      -- Call roomClicked( pc_name ) when double-clicking the room label
+      setLabelDoubleClickCallback( roomLabel[pc].name, "roomClicked", pcNames[pc] )
 
       combatIcons[pc] = Geyser.Label:new( {
         name = "combat_icon_" .. pc,
@@ -383,8 +381,8 @@ function createGizmoGUI()
       }, party_console )
 
 
-      -- Call combat_clicked( pc_name ) when clicking the combat icon
-      setLabelClickCallback( combatIcons[pc].name, "combat_clicked", pc, pc_names[pc] )
+      -- Call combatClicked( pc_name ) when clicking the combat icon
+      setLabelClickCallback( combatIcons[pc].name, "combatClicked", pc, pcNames[pc] )
 
       if pc == 4 then
         combatIcons[pc]:setBackgroundImage( [[C:/Dev/mud/mudlet/gizmo/assets/img/targeted.png]] )
@@ -398,8 +396,8 @@ function createGizmoGUI()
 
   openOutputWindows()
   createPartyConsole()
-
 end
+
 -- Work in progress to develop a console similar to the party status window to report
 -- on group member status
 local function createGroupConsole()

@@ -3,17 +3,17 @@
 
 cmdQueue   = {first = 0, last = -1}
 
--- Hold the last move for validation
+-- Hold the last command for validation
 cmdPending = nil
 
--- Add a new move to the queue
+-- Add a new command to the queue
 function cmdQueue.push( cmd )
   local last     = cmdQueue.last + 1
   cmdQueue.last  = last
   cmdQueue[last] = cmd
 end
 
--- Pop the next move from the queue
+-- Pop the next command from the queue
 function cmdQueue.pop()
   local first     = cmdQueue.first
   local cmd       = cmdQueue[first]
@@ -29,36 +29,42 @@ end
 
 -- "Request" to execute or queue a command
 function nextCmd( cmd )
-  -- If a move command is pending validation or moves are queued, queue this move
+  -- If we don't have a room number, the map isn't ready to handle the command queue yet
+  -- [TODO] This is kind of a brute force hack need to figure out why the map is not setting/maintaining these values
+  if not currentRoomNumber or currentRoomNumber <= 0 or not currentAreaNumber or currentAreaNumber <= 0 then
+    send( cmd, false )
+  end
+  -- If a move command is pending validation or commands are queued, queue this command
   if cmdPending or not cmdQueue.isEmpty() then
     cmdQueue.push( cmd )
   else
-    -- Otherwise, execute the move immediately
+    -- Otherwise, execute the command immediately
     cmdPending = cmd
     executeCmd( cmd )
   end
 end
 
--- To simulate realistic offline movement, display the "next" room after a brief
--- artificial delay.
+-- Execute a queueable commad
 function executeCmd( cmd )
-  cecho( f " <ivory>\n{cmd}<reset>" )
-  local cmdDelay = randomFloat( 0.2, 0.3 )
   if DIRECTIONS[cmd] then
     local exits = getRoomExits( currentRoomNumber )
     local longDir = LDIR[cmd]
+    if not exits[longDir] then
+      cecho( "\n<dim_grey>Alas, you cannot go that way.<reset>" )
+      cmdPending = nil
+      return false
+    end
     queueDst = tonumber( exits[longDir] )
-    nextCmdTimer = tempTimer( cmdDelay, f [[displayRoom( {queueDst}, true )]] )
-  else
-    nextCmdTimer = tempTimer( cmdDelay, [[simulateOutput('\nOk.\n')]] )
   end
+  send( cmd, false )
+  return true
 end
 
 -- Triggered off of output from the MUD, validate that the last move worked
 function validateCmd( type )
   if type == 'move' then
     -- Once a move has been validated, update the player's location on the map
-    updatePlayerLocation( queueDst, cmdPending )
+    setPlayerRoom( queueDst )
   end
   cmdPending = nil
   queueDst = nil

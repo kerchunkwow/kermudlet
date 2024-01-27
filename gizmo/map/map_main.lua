@@ -77,60 +77,23 @@ function inspectExit( id, direction )
   end
 end
 
--- Virtually traverse an exit from the players' current location to an adjoining room;
--- This is the primary function used to "follow" the PCs position in the Map; it is synchronized
--- with the MUD through the use of the mapQueue
-function moveExit( direction )
-  -- Make sure direction is long-version like 'north' to align with getRoomExits()
-  local dir = LDIR[direction]
-  local exits = getRoomExits( currentRoomNumber )
-
-  if not exits[dir] then
-    cecho( "\n<dim_grey>Alas, you cannot go that way.<reset>" )
-    return false
+function setPlayerRoom( id )
+  local newRoomNumber = tonumber( id )
+  -- Ignore attempts to move to the room we're already in
+  if newRoomNumber == currentRoomNumber then return end
+  if roomExists( id ) then
+    local roomArea = getRoomArea( id )
+    if roomArea ~= currentAreaNumber then
+      currentAreaNumber = roomArea
+      currentAreaName   = getRoomAreaName( currentAreaNumber )
+      cecho( f "\n<dim_grey>  Entering {getAreaTag()}" )
+      setMapZoom( 28 )
+    end
+    currentRoomNumber = id
+    currentRoomName   = getRoomName( currentRoomNumber )
+    roomExits         = getRoomExits( currentRoomNumber )
+    centerview( currentRoomNumber )
   end
-  local dst = tonumber( exits[dir] )
-  if roomExists( dst ) then
-    updatePlayerLocation( dst, direction )
-    return true
-  end
-  cecho( "\n<dim_grey>Alas, you cannot go that way.<reset>" )
-  return false
-end
-
-function updatePlayerLocation( id, dir )
-  -- Store data about where we "came from" to get here
-  if dir then
-    lastDir = dir
-  end
-  setCurrentRoom( id )
-  mX, mY, mZ = getRoomCoordinates( currentRoomNumber )
-  centerview( currentRoomNumber )
-end
-
-function setCurrentRoom( id )
-  local roomNumber = tonumber( id )
-  local roomArea = getRoomArea( roomNumber )
-  roomArea = tonumber( roomArea )
-  -- If this is the first Area or the id is outside the current Area, update Area before Room
-  if currentAreaNumber ~= roomArea then
-    setCurrentArea( roomArea )
-  end
-  currentRoomNumber = roomNumber
-  currentRoomName   = getRoomName( currentRoomNumber )
-  roomExits         = getRoomExits( currentRoomNumber )
-end
-
-function setCurrentArea( id )
-  -- If we're leaving an Area, store information and report on the transition
-  if currentAreaNumber > 0 then
-    lastAreaNumber = currentAreaNumber
-    lastAreaName   = currentAreaName
-  end
-  currentAreaNumber = id
-  currentAreaName   = getRoomAreaName( id )
-  cecho( f "\n<dim_grey>  Entering {getAreaTag()}" )
-  setMapZoom( 28 )
 end
 
 -- "Cull" or remove an exit from the map in the current room (useful for suppressing redundant exits, loops, etc.)

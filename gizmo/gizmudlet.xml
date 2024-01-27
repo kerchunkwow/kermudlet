@@ -1526,7 +1526,7 @@ end</script>
   elseif newLeader == "Billy" then
     expandAlias( 'stank Blain', false )
   end
-  expandAlias( 'amira awful', false )  
+  expandAlias( 'amira awful', false )
 end
 </script>
 				<triggerType>0</triggerType>

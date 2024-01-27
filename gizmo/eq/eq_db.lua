@@ -25,7 +25,7 @@ function itemQueryAppend( item_name )
   item_name = trimName( item_name )
 
   -- Check if the item is in the ignored list and return immediately if it is
-  if ignored_items[item_name] then
+  if ignoredItems[item_name] then
     return
   end
   -- Connect to local item db

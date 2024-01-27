@@ -67,7 +67,7 @@ function doWintin( wintinString, echo )
   echo = echo or true
   local commands = expandWintinString( wintinString )
   for _, command in ipairs( commands ) do
-    send( command, echo )
+    nextCmd( command, echo )
   end
 end
 
