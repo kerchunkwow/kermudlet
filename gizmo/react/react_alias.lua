@@ -170,10 +170,10 @@ function aliasCastBuff( spell )
 end
 
 -- Called by alias 'rr' to attempt a full recall & send a critical warning if no scrolls are available
-function aliasReciteRecall()
+function aliasReciteRecalls()
   local eventMethod = session == 1 and 'raiseEvent' or 'raiseGlobalEvent'
   local noRecallCode = f "{eventMethod}( 'eventWarn', {session}, 'norecall' )"
-  tempTrigger( "does not contain", noRecallCode, 1 )
+  createTemporaryTrigger( "norecalls", "does not contain", noRecallCode, 20 )
   send( f 'get recall {container}' )
   send( 'recite recall' )
 end

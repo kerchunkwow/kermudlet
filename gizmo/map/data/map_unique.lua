@@ -1,9 +1,10 @@
 function isUnique( roomName )
-  return uniqueRooms[roomName]
+  return UNIQUE_ROOMS[roomName]
 end
 
+-- Create a static table of every room that has a unique name and can therefore be mapped 1:1 to an ID
 local function loadUniqueRooms()
-  uniqueRooms = {
+  UNIQUE_ROOMS = {
     ["4th house"]                                                             = 2002,
     ["A Back Room in the Surveyor's Shop"]                                    = 1576,
     ["A Barn"]                                                                = 351,
@@ -2522,7 +2523,7 @@ local function loadUniqueRooms()
 
   local uRoomCount = 0
 
-  for _, room in pairs( uniqueRooms ) do
+  for _, room in pairs( UNIQUE_ROOMS ) do
     uRoomCount = uRoomCount + 1
   end
   cecho( f "\nLoaded {NC}{uRoomCount}{R} unique rooms" )

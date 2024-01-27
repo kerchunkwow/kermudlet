@@ -1,5 +1,4 @@
--- Coordinates to track the "physical" location of the room relative to the starting point of the Area so Mudlet can draw it
-mX, mY, mZ          = 0, 0, 0
+
 
 -- Virtually traverse an exit from the players' current location to an adjoining room;
 -- This is the primary function used to "follow" the PCs position in the Map; it is synchronized

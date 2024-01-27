@@ -78,6 +78,10 @@ function inspectExit( id, direction )
 end
 
 function setPlayerRoom( id )
+  local resynch = false
+  if not currentRoomNumber or currentRoomNumber <= 0 then
+    resynch = true
+  end
   local newRoomNumber = tonumber( id )
   -- Ignore attempts to move to the room we're already in
   if newRoomNumber == currentRoomNumber then return end
@@ -93,6 +97,10 @@ function setPlayerRoom( id )
     currentRoomName   = getRoomName( currentRoomNumber )
     roomExits         = getRoomExits( currentRoomNumber )
     centerview( currentRoomNumber )
+    -- For now, report when the map needs to be resynchronized just so we can keep an eye on how often it's necessary
+    if session == 1 and resynch then
+      cecho( "info", f "\nMap synchronized at {getRoomString( currentRoomNumber, 2 )}" )
+    end
   end
 end
 

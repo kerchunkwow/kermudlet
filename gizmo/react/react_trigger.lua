@@ -73,7 +73,7 @@ function triggerCaptureRoom()
   local matchedRoom = trim( matches[2] )
   if session == 1 then
     pcStatusRoom( 1, matchedRoom )
-    if isUnique( matchedRoom ) then setPlayerRoom( uniqueRooms[matchedRoom] ) end
+    if isUnique( matchedRoom ) and matchedRoom ~= currentRoomName then setPlayerRoom( UNIQUE_ROOMS[matchedRoom] ) end
   else
     raiseGlobalEvent( "event_pcStatus_room", session, matchedRoom )
   end
@@ -141,6 +141,7 @@ function triggerGather()
   end
 end
 
+-- Create a one-time temporary trigger that also expires after a certain period of time
 function createTemporaryTrigger( trigger_name, pattern, code, duration )
   -- If the trigger already exists, kill it
   if temporaryTriggers[trigger_name] then
@@ -163,6 +164,7 @@ function triggerPCActivity()
   if isAlternate( actor ) then deleteLine() end
 end
 
+-- Build out from here to create a tick-tracker that keeps tracking of and reports on tick status
 function captureTick()
   selectString( line, 1 )
   setFgColor( 102, 205, 170 )

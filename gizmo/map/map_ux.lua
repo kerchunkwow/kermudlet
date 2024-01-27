@@ -58,7 +58,7 @@ function getRoomString( id, detail )
   local roomSpec = tonumber( getRoomUserData( id, "roomSpec" ) )
   local roomType = getRoomUserData( id, "roomType" )
 
-  if uniqueRooms[roomName] then
+  if UNIQUE_ROOMS[roomName] then
     rc = MAP_COLOR['roomNameU']
   else
     rc = MAP_COLOR['roomName']
