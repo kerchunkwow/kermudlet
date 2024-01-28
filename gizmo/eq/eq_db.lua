@@ -5,7 +5,7 @@ function trimName( name )
   -- needed; but it does make for shorter names which is nice.
 
   -- Look for these flags
-  local flags = {"%(glowing%)", "%(humming%)", "%(invisible%)", "%(cloned%)"}
+  local flags = {"%(glowing%)", "%(humming%)", "%(invisible%)", "%(cloned%)", "%(lined%)"}
 
   -- Strip them off the end of the name
   for _, flag in ipairs( flags ) do
@@ -38,7 +38,8 @@ function itemQueryAppend( item_name )
     return
   end
   -- Query for the item's stats, antis, and cloneability values
-  local query = string.format( [[SELECT name, stats_str, antis_str, clone FROM simple_item WHERE name = '%s']],
+  local query = string.format(
+    [[SELECT name, stats_str, antis_str, clone, effects_str FROM simple_item WHERE name = '%s']],
     item_name:gsub( "'", "''" ) )
   local cur, qerr = conn:execute( query )
 
@@ -55,28 +56,33 @@ function itemQueryAppend( item_name )
   env:close()
 
   if item then
-    -- Some basic formatting and alignment
-    local padding = string.rep( " ", 44 - true_length )
-    longest_eq = longest_eq or 0
+    -- Some shorthanded color codes
+    local sc      = "<sea_green>"   -- Item stats
+    local ec      = "<ansi_cyan>"   -- Effects
+    local cc      = "<steel_blue>"  -- Cloneability
+    local spc     = "<ansi_yellow>" -- Proc
+    local ac      = "<firebrick>"   -- Antis
+
+    -- Padding for alignment
+    local padding = string.rep( " ", 32 - true_length )
+    longest_eq    = longest_eq or 0
     if #item_name > longest_eq then longest_eq = #item_name end
-    -- Build display string from stats &amp; cloneable flag
-    local display_string = ""
-    local stats = item.stats_str or ""
-    local antis = item.antis_str or ""
-
-    local cloneable = " <dodger_blue>!<reset>"
-    local clone_indicator = item.clone == 1 and cloneable or ""
-
-    -- Add a space if strings don't have a sign (looks nicer, usually weapons)
-    if not string.match( stats, "^[+-]" ) then
-      stats = " " .. stats
-    end
-    if itemQueryMode == 0 and stats ~= "" then
-      display_string = padding .. string.format( "<sea_green>%s<reset>%s", stats, clone_indicator )
+    -- Build display string from stats & cloneable flag
+    local display_string = nil
+    local specTag        = itemHasSpec( item_name ) and f " {spc}ƒ{R}" or ""
+    local cloneTag       = item.clone == 1 and f " {cc}c{R}" or ""
+    local stats          = item.stats_str and f "{sc}{item.stats_str}{R}" or ""
+    -- Add a space if strings don't start with a sign (looks nicer, usually weapons)
+    if not string.match( stats, "^[+-]" ) then stats = " " .. stats end
+    -- Display basic string or add additional details based on query mode
+    if itemQueryMode == 0 then
+      display_string = f "{padding}{stats}{cloneTag}{specTag}"
     elseif itemQueryMode == 1 and (stats ~= "" or antis ~= "") then
-      display_string = padding ..
-          string.format( "<sea_green>%s<reset> <firebrick>%s<reset>%s", stats, antis,
-            clone_indicator )
+      -- Add effects and anti-flags when mode == 1
+      local effects, antis = nil, nil
+      effects              = item.effects_str and f " {ec}{item.effects_str}{R}" or ""
+      antis                = item.antis_str and f " {ac}{item.antis_str}{R}" or ""
+      display_string       = f "{padding}{stats}{cloneTag}{specTag}{effects}{antis}"
     end
     -- Print the final string
     if display_string ~= "" then
@@ -87,8 +93,37 @@ function itemQueryAppend( item_name )
   end
 end
 
-function toggleItemQueryMode()
-  if not itemQueryMode then itemQueryMode = 0 else itemQueryMode = itemQueryMode + 1 end
-  if itemQueryMode > 1 then itemQueryMode = 0 end
-  cecho( "info", f "\n<orange>itemQueryMode toggled: {itemQueryMode}" )
+-- Ugly/inefficient solution for checking when an item has RSPEC (special proc)
+function itemHasSpec( item_name )
+  -- Connect to the database
+  local luasql = require "luasql.sqlite3"
+  local env = luasql.sqlite3()
+  local conn, cerr = env:connect( "C:/Dev/mud/gizmo/data/gizdb.db" )
+
+  if not conn then
+    print( "Connection to the database failed" )
+    return false
+  end
+  -- Prepare and execute the query
+  local query = string.format( [[SELECT full_id FROM item WHERE name = '%s']], item_name:gsub( "'", "''" ) )
+  local cur, qerr = conn:execute( query )
+
+  if not cur then
+    print( "Query execution failed" )
+    conn:close()
+    env:close()
+    return false
+  end
+  -- Fetch the result
+  local result = cur:fetch( {}, "a" )
+  cur:close()
+  conn:close()
+  env:close()
+
+  -- Check for 'RSPEC' in full_id
+  if result and result.full_id and string.find( result.full_id, "RSPEC" ) then
+    return true
+  else
+    return false
+  end
 end

@@ -177,3 +177,10 @@ function aliasReciteRecalls()
   send( f 'get recall {container}' )
   send( 'recite recall' )
 end
+
+-- Cycle through "item query" modes, modifying what level of detail to include in item queries (appended in game)
+function toggleItemQueryMode()
+  if not itemQueryMode then itemQueryMode = 0 else itemQueryMode = itemQueryMode + 1 end
+  if itemQueryMode > 1 then itemQueryMode = 0 end
+  cecho( "info", f "\n<orange>itemQueryMode toggled: {itemQueryMode}" )
+end

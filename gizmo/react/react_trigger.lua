@@ -24,6 +24,7 @@ function checkMiraMana()
   cecho( "info", f "\n<deep_sky_blue>Mana<reset> for <dark_orange>{miras}<reset> <sea_green>miracle(s)<reset> remaining!" )
 end
 
+-- Triggered when an incoming chat message is recognized to highlight and route the message
 function triggerRouteChat()
   deleteLine()
 
@@ -71,9 +72,9 @@ end
 -- A room name has been captured; synchronize the map and update the status table
 function triggerCaptureRoom()
   local matchedRoom = trim( matches[2] )
+  if isUnique( matchedRoom ) and matchedRoom ~= currentRoomName then setPlayerRoom( UNIQUE_ROOMS[matchedRoom] ) end
   if session == 1 then
     pcStatusRoom( 1, matchedRoom )
-    if isUnique( matchedRoom ) and matchedRoom ~= currentRoomName then setPlayerRoom( UNIQUE_ROOMS[matchedRoom] ) end
   else
     raiseGlobalEvent( "event_pcStatus_room", session, matchedRoom )
   end

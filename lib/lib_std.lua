@@ -71,6 +71,19 @@ function randomFloat( lower, upper )
   return lower + math.random() * (upper - lower)
 end
 
+-- Undefine all functions in the global namespace; will probably break the client
+function globalUndefine( dryRun )
+  for k, v in pairs( _G ) do
+    if type( v ) == "function" and k ~= "globalUndefine" then
+      if dryRun then
+        print( "Function to be undefined: " .. k )
+      else
+        _G[k] = nil
+      end
+    end
+  end
+end
+
 -- Round n to the nearest s
 function round( n, s )
   s = s or 0.05
