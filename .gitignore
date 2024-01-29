@@ -6,3 +6,4 @@ gizmo/client_config.lua
 sandbox/
 .vscode/
 .editorconfig
+modifiedScripts.txt
