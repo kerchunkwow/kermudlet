@@ -1,3 +1,6 @@
+addFileWatch( "C:/dev/mud/mudlet/gizmo/react/react_trigger.lua" )
+
+-- Automatically cast 'miracle' on the tank under predefined conditions
 function triggerAutoMira()
   if session ~= 1 then return end
   if pcStatus[1]["currentMana"] < 100 then return end

@@ -2526,7 +2526,6 @@ local function loadUniqueRooms()
   for _, room in pairs( UNIQUE_ROOMS ) do
     uRoomCount = uRoomCount + 1
   end
-  cecho( f "\nLoaded {NC}{uRoomCount}{R} unique rooms" )
 end
 
 loadUniqueRooms()

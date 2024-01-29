@@ -7,3 +7,5 @@ sandbox/
 .vscode/
 .editorconfig
 modifiedScripts.txt
+rename.py
+gizmo/gizmudlet.xml

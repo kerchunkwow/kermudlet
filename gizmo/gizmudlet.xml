@@ -2,9 +2,10 @@
 <!DOCTYPE MudletPackage>
 <MudletPackage version="1.001">
 	<TriggerPackage>
-		<TriggerGroup isActive="no" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+		<TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 			<name>status</name>
-			<script>-- Triggers for capturing &amp; updating data related to PC status such as health, location, and spell affects</script>
+			<script>-- Triggers for capturing &amp; updating data related to PC status such as health, 
+-- location, and spell affects</script>
 			<triggerType>0</triggerType>
 			<conditonLineDelta>0</conditonLineDelta>
 			<mStayOpen>0</mStayOpen>
@@ -267,6 +268,74 @@ local pc_name  = matches[8]</script>
 					</regexCodePropertyList>
 				</Trigger>
 			</TriggerGroup>
+			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+				<name>Tick Messages</name>
+				<script>captureTick()</script>
+				<triggerType>0</triggerType>
+				<conditonLineDelta>0</conditonLineDelta>
+				<mStayOpen>0</mStayOpen>
+				<mCommand></mCommand>
+				<packageName></packageName>
+				<mFgColor>#ff0000</mFgColor>
+				<mBgColor>#000000</mBgColor>
+				<mSoundFile></mSoundFile>
+				<colorTriggerFgColor>#000000</colorTriggerFgColor>
+				<colorTriggerBgColor>#000000</colorTriggerBgColor>
+				<regexCodeList>
+					<string>(?:^|&gt;\s*)The sky is getting cloudy\.$</string>
+					<string>(?:^|&gt;\s*)The sun slowly disappears in the west\.$</string>
+					<string>(?:^|&gt;\s*)The day has begun\.$</string>
+					<string>(?:^|&gt;\s*)The sun rises in the east\.$</string>
+					<string>(?:^|&gt;\s*)The night has begun\.$</string>
+				</regexCodeList>
+				<regexCodePropertyList>
+					<integer>1</integer>
+					<integer>1</integer>
+					<integer>1</integer>
+					<integer>1</integer>
+					<integer>1</integer>
+				</regexCodePropertyList>
+			</Trigger>
+			<TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="yes" isColorTriggerFg="no" isColorTriggerBg="no">
+				<name>Room Capture</name>
+				<script></script>
+				<triggerType>0</triggerType>
+				<conditonLineDelta>0</conditonLineDelta>
+				<mStayOpen>0</mStayOpen>
+				<mCommand></mCommand>
+				<packageName></packageName>
+				<mFgColor>#5100ff</mFgColor>
+				<mBgColor>#000000</mBgColor>
+				<mSoundFile></mSoundFile>
+				<colorTriggerFgColor>#0050fa</colorTriggerFgColor>
+				<colorTriggerBgColor>#000000</colorTriggerBgColor>
+				<regexCodeList>
+					<string>FG10BG2</string>
+				</regexCodeList>
+				<regexCodePropertyList>
+					<integer>6</integer>
+				</regexCodePropertyList>
+				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+					<name>Room Capture</name>
+					<script>triggerCaptureRoom()</script>
+					<triggerType>0</triggerType>
+					<conditonLineDelta>0</conditonLineDelta>
+					<mStayOpen>0</mStayOpen>
+					<mCommand></mCommand>
+					<packageName></packageName>
+					<mFgColor>#ffaa00</mFgColor>
+					<mBgColor>#000000</mBgColor>
+					<mSoundFile></mSoundFile>
+					<colorTriggerFgColor>#000000</colorTriggerFgColor>
+					<colorTriggerBgColor>#000000</colorTriggerBgColor>
+					<regexCodeList>
+						<string>(?:^|&gt; )([\w\s\,\-\']+)$</string>
+					</regexCodeList>
+					<regexCodePropertyList>
+						<integer>1</integer>
+					</regexCodePropertyList>
+				</Trigger>
+			</TriggerGroup>
 		</TriggerGroup>
 		<TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 			<name>Filters &amp; Format</name>
@@ -283,48 +352,6 @@ local pc_name  = matches[8]</script>
 			<colorTriggerBgColor>#000000</colorTriggerBgColor>
 			<regexCodeList />
 			<regexCodePropertyList />
-			<TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-				<name>PC Action</name>
-				<script></script>
-				<triggerType>0</triggerType>
-				<conditonLineDelta>0</conditonLineDelta>
-				<mStayOpen>0</mStayOpen>
-				<mCommand></mCommand>
-				<packageName></packageName>
-				<mFgColor>#ff0000</mFgColor>
-				<mBgColor>#ffff00</mBgColor>
-				<mSoundFile></mSoundFile>
-				<colorTriggerFgColor>#000000</colorTriggerFgColor>
-				<colorTriggerBgColor>#000000</colorTriggerBgColor>
-				<regexCodeList>
-					<string>^(\w+) (.*)$</string>
-				</regexCodeList>
-				<regexCodePropertyList>
-					<integer>1</integer>
-				</regexCodePropertyList>
-				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-					<name>Reduce PC Noise</name>
-					<script>deleteLine()</script>
-					<triggerType>0</triggerType>
-					<conditonLineDelta>0</conditonLineDelta>
-					<mStayOpen>0</mStayOpen>
-					<mCommand></mCommand>
-					<packageName></packageName>
-					<mFgColor>#ff0000</mFgColor>
-					<mBgColor>#ffff00</mBgColor>
-					<mSoundFile></mSoundFile>
-					<colorTriggerFgColor>#000000</colorTriggerFgColor>
-					<colorTriggerBgColor>#000000</colorTriggerBgColor>
-					<regexCodeList>
-						<string>^Billy wields.*$</string>
-						<string>^Billy stops using.*$</string>
-					</regexCodeList>
-					<regexCodePropertyList>
-						<integer>1</integer>
-						<integer>0</integer>
-					</regexCodePropertyList>
-				</Trigger>
-			</TriggerGroup>
 			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 				<name>Soft Mute</name>
 				<script>deleteLine()</script>
@@ -342,17 +369,23 @@ local pc_name  = matches[8]</script>
 					<string>^\.\.\.\.\.\..*$</string>
 					<string>^The Reaper appears and escorts .+ to the afterlife!$</string>
 					<string>^Your blood freezes as you hear .+ death cry\.$</string>
-					<string>^\w+ drinks water from a fountain.$</string>
-					<string>\w+ gets some stuff from .+\.$</string>
-					<string>^You turn your eyes away as you see .+ decapitate the corpse.$</string>
+					<string>(?:^|&gt; )\w+ .*? water from a fountain\.$</string>
+					<string>(?:^|&gt; )\w+ gets some stuff from .+\.$</string>
+					<string>^You turn your eyes away as you see .+ decapitate the corpse\.$</string>
 					<string>^.+'s sword draws light from the surroundings, and darkens the world.$</string>
-					<string>^.*You eat the.*\.$</string>
-					<string>^.*You are full\.$</string>
-					<string>^.+'s sword draws light from the surroundings, and darkens the world.$</string>
-					<string>^Blain gets out his trusty comb.*$</string>
-					<string>^Mac puts Head of.*$</string>
+					<string>(?:^|&gt; ).*You eat the.*\.$</string>
+					<string>(?:^|&gt; ).*You are full\.$</string>
+					<string>(?:^|&gt; )\w+ gets out his trusty comb.*$</string>
+					<string>(?:^|&gt; )There is no more room for it\.$</string>
+					<string>(?:^|&gt; )Your stomach can't contain anymore!$</string>
+					<string>(?:^|&gt; )You drink the water\.$</string>
+					<string>(?:^|&gt; )You do not feel thirsty\.$</string>
+					<string>(?:^|&gt; )You get a .*? from a .*?$</string>
 				</regexCodeList>
 				<regexCodePropertyList>
+					<integer>1</integer>
+					<integer>1</integer>
+					<integer>1</integer>
 					<integer>1</integer>
 					<integer>1</integer>
 					<integer>1</integer>
@@ -414,11 +447,8 @@ local pc_name  = matches[8]</script>
 				</regexCodePropertyList>
 			</Trigger>
 			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-				<name>Muffle Other Alts</name>
-				<script>local actor = matches[2]
-if isAlternate(matches[2]) then
-  deleteLine()
-end</script>
+				<name>Mute Alternates</name>
+				<script>triggerPCActivity()</script>
 				<triggerType>0</triggerType>
 				<conditonLineDelta>0</conditonLineDelta>
 				<mStayOpen>0</mStayOpen>
@@ -430,13 +460,9 @@ end</script>
 				<colorTriggerFgColor>#000000</colorTriggerFgColor>
 				<colorTriggerBgColor>#000000</colorTriggerBgColor>
 				<regexCodeList>
-					<string>^(\w+) sits down and rests\.$</string>
-					<string>^(\w+) has arrived\.$</string>
-					<string>^(\w+) stops resting, and clambers onto .+ feet\.$</string>
+					<string>(?:^|&gt; )(\w+) (?:eats|drinks|fills|gets|puts|has arrived|sits|stops|wields|flies|rides|leaves).*$</string>
 				</regexCodeList>
 				<regexCodePropertyList>
-					<integer>1</integer>
-					<integer>1</integer>
 					<integer>1</integer>
 				</regexCodePropertyList>
 			</Trigger>
@@ -942,7 +968,7 @@ cecho( f"\n&lt;spring_green&gt;{matches[3]} rolls a natural &lt;deep_pink&gt;20&
 				</Trigger>
 			</TriggerGroup>
 		</TriggerGroup>
-		<TriggerGroup isActive="no" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+		<TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 			<name>Basic Reactions</name>
 			<script>-- Triggers for basic PC reactions to common recurring events</script>
 			<triggerType>0</triggerType>
@@ -1131,7 +1157,17 @@ end</script>
 			</Trigger>
 			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 				<name>EoC</name>
-				<script>send( 'get all corpse', false )</script>
+				<script>send( 'get all corpse', false )
+if pummel_timer then killTimer(pummel_timer) end
+expandAlias( "nan abort", false )
+autoManaTransfer()
+
+-- Editing &amp; saving in-game causes sessions to inherit the enabled state; so adding some checks to the less frequent
+-- patterns to re-disable it.
+if session ~= 1 then
+  disableTrigger( "Group XP" )
+  return
+end</script>
 				<triggerType>0</triggerType>
 				<conditonLineDelta>0</conditonLineDelta>
 				<mStayOpen>0</mStayOpen>
@@ -1526,7 +1562,7 @@ end</script>
   elseif newLeader == "Billy" then
     expandAlias( 'stank Blain', false )
   end
-  expandAlias( 'amira awful', false )
+  expandAlias( 'amira awful', false )  
 end
 </script>
 				<triggerType>0</triggerType>
@@ -1562,7 +1598,7 @@ end
 			<colorTriggerBgColor>#000000</colorTriggerBgColor>
 			<regexCodeList />
 			<regexCodePropertyList />
-			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+			<Trigger isActive="no" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 				<name>Locate Resin</name>
 				<script>local roomName = matches[2]
 if isUnique( roomName ) then
@@ -1586,59 +1622,17 @@ end</script>
 					<integer>1</integer>
 				</regexCodePropertyList>
 			</Trigger>
-			<TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="yes" isColorTriggerFg="no" isColorTriggerBg="no">
-				<name>Room Capture</name>
-				<script></script>
+			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+				<name>Validate Move (Exits)</name>
+				<script>if cmdPending then validateCmd( "move" ) end
+displayExits( currentRoomNumber )</script>
 				<triggerType>0</triggerType>
 				<conditonLineDelta>0</conditonLineDelta>
 				<mStayOpen>0</mStayOpen>
 				<mCommand></mCommand>
 				<packageName></packageName>
-				<mFgColor>#5100ff</mFgColor>
+				<mFgColor>#3d3d3d</mFgColor>
 				<mBgColor>#000000</mBgColor>
-				<mSoundFile></mSoundFile>
-				<colorTriggerFgColor>#0050fa</colorTriggerFgColor>
-				<colorTriggerBgColor>#000000</colorTriggerBgColor>
-				<regexCodeList>
-					<string>FG10BG2</string>
-				</regexCodeList>
-				<regexCodePropertyList>
-					<integer>6</integer>
-				</regexCodePropertyList>
-				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-					<name>Room Capture</name>
-					<script>if myRoomName == matches[2] then return end
-myRoomName = trim( matches[2] )
-triggerCaptureRoom( myRoomName )
---creplaceLine( f "{getRoomString( currentRoomNumber, 2 )}" )</script>
-					<triggerType>0</triggerType>
-					<conditonLineDelta>0</conditonLineDelta>
-					<mStayOpen>0</mStayOpen>
-					<mCommand></mCommand>
-					<packageName></packageName>
-					<mFgColor>#784bfa</mFgColor>
-					<mBgColor>#000000</mBgColor>
-					<mSoundFile></mSoundFile>
-					<colorTriggerFgColor>#000000</colorTriggerFgColor>
-					<colorTriggerBgColor>#000000</colorTriggerBgColor>
-					<regexCodeList>
-						<string>(?:^|&gt; )([\w\s\,\-\']+)$</string>
-					</regexCodeList>
-					<regexCodePropertyList>
-						<integer>1</integer>
-					</regexCodePropertyList>
-				</Trigger>
-			</TriggerGroup>
-			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-				<name>Exits Line</name>
-				<script>if cmdPending then validateCmd( "move" ) end</script>
-				<triggerType>0</triggerType>
-				<conditonLineDelta>0</conditonLineDelta>
-				<mStayOpen>0</mStayOpen>
-				<mCommand></mCommand>
-				<packageName></packageName>
-				<mFgColor>#303030</mFgColor>
-				<mBgColor>#00ffff</mBgColor>
 				<mSoundFile></mSoundFile>
 				<colorTriggerFgColor>#000000</colorTriggerFgColor>
 				<colorTriggerBgColor>#000000</colorTriggerBgColor>
@@ -1650,7 +1644,7 @@ triggerCaptureRoom( myRoomName )
 				</regexCodePropertyList>
 			</Trigger>
 			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-				<name>Door Ok</name>
+				<name>Validate Door (Ok)</name>
 				<script>if cmdPending then validateCmd() end</script>
 				<triggerType>0</triggerType>
 				<conditonLineDelta>0</conditonLineDelta>
@@ -1670,7 +1664,7 @@ triggerCaptureRoom( myRoomName )
 				</regexCodePropertyList>
 			</Trigger>
 			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-				<name>Cancel Walk</name>
+				<name>Cancel Queue</name>
 				<script>-- Cancel a walk in progress if something goes wrong.
 clearQueue()</script>
 				<triggerType>0</triggerType>
@@ -1733,7 +1727,7 @@ clearQueue()</script>
 				<script>local item_name = matches[2]
 
 -- Ignore missing EQ and basic items
-if ignored_items[trimName( item_name )] or item_name == "-Nothing" then
+if ignoredItems[trimName( item_name )] or item_name == "-Nothing" then
 
   selectString( matches[2], 1 )
   fg( "slate_gray" )
@@ -1885,7 +1879,7 @@ cecho( "info", f"\n[&lt;slate_gray&gt;Setting mira = &lt;cyan&gt;{miracleConditi
 				<Alias isActive="yes" isFolder="no">
 					<name>kill</name>
 					<script>local currentTarget = matches[2]
-expandAlias( f"nan assault {currentTarget}" )
+expandAlias( f"nan pummel {currentTarget}" )
 expandAlias( "all assist nandor" )
 tempTimer( 2.8, [[expandAlias( 'nan pummel' )]] )</script>
 					<command></command>
@@ -2041,9 +2035,7 @@ send( f"wear {matches[2]}" )</script>
 				</Alias>
 				<Alias isActive="yes" isFolder="no">
 					<name>All Rec Recall (rr)</name>
-					<script>expandAlias( "all recite recall", false )
-expandAlias( "all get recall bag", false )
-expandAlias( "all get recall stocking", false )</script>
+					<script>expandAlias( [[all lua aliasReciteRecalls()]] )</script>
 					<command></command>
 					<packageName></packageName>
 					<regex>^rr$</regex>
@@ -2167,6 +2159,13 @@ end</script>
 			<packageName></packageName>
 			<regex></regex>
 			<Alias isActive="yes" isFolder="no">
+				<name>Reload (reload)</name>
+				<script>reloadProfile() </script>
+				<command></command>
+				<packageName></packageName>
+				<regex>^reload$</regex>
+			</Alias>
+			<Alias isActive="yes" isFolder="no">
 				<name>Play Gizmo (giz)</name>
 				<script>aliasPlayGizmo()</script>
 				<command></command>
@@ -2236,13 +2235,6 @@ runLuaFile( luaFile )</script>
 				<command></command>
 				<packageName></packageName>
 				<regex>^pvars$</regex>
-			</Alias>
-			<Alias isActive="yes" isFolder="no">
-				<name>Reload (reload)</name>
-				<script>runLuaFile(f'kermudlet_init.lua')</script>
-				<command></command>
-				<packageName></packageName>
-				<regex>^reload$</regex>
 			</Alias>
 			<Alias isActive="yes" isFolder="no">
 				<name>Help (help)</name>
@@ -2341,61 +2333,6 @@ displayRoom()</script>
 					<packageName></packageName>
 					<regex>^g (\d+)$</regex>
 				</Alias>
-				<AliasGroup isActive="yes" isFolder="yes">
-					<name>Sim Directions</name>
-					<script></script>
-					<command></command>
-					<packageName></packageName>
-					<regex></regex>
-					<Alias isActive="yes" isFolder="no">
-						<name>n</name>
-						<script>cecho( f "\n{MAP_COLOR['cmd']}north" )
-moveExit("north")</script>
-						<command></command>
-						<packageName></packageName>
-						<regex>^n$</regex>
-					</Alias>
-					<Alias isActive="yes" isFolder="no">
-						<name>s</name>
-						<script>cecho( f "\n{MAP_COLOR['cmd']}south" )
-moveExit("south")</script>
-						<command></command>
-						<packageName></packageName>
-						<regex>^s$</regex>
-					</Alias>
-					<Alias isActive="yes" isFolder="no">
-						<name>e</name>
-						<script>cecho( f "\n{MAP_COLOR['cmd']}east" )
-moveExit("east")</script>
-						<command></command>
-						<packageName></packageName>
-						<regex>^e$</regex>
-					</Alias>
-					<Alias isActive="yes" isFolder="no">
-						<name>w</name>
-						<script>cecho( f "\n{MAP_COLOR['cmd']}west" )
-moveExit("west")</script>
-						<command></command>
-						<packageName></packageName>
-						<regex>^w$</regex>
-					</Alias>
-					<Alias isActive="yes" isFolder="no">
-						<name>u</name>
-						<script>cecho( f "\n{MAP_COLOR['cmd']}up" )
-moveExit("up")</script>
-						<command></command>
-						<packageName></packageName>
-						<regex>^u$</regex>
-					</Alias>
-					<Alias isActive="yes" isFolder="no">
-						<name>d</name>
-						<script>cecho( f "\n{MAP_COLOR['cmd']}down" )
-moveExit("down")</script>
-						<command></command>
-						<packageName></packageName>
-						<regex>^d$</regex>
-					</Alias>
-				</AliasGroup>
 				<Alias isActive="yes" isFolder="no">
 					<name>Virtual Recall</name>
 					<script>virtualRecall()</script>
@@ -2468,7 +2405,7 @@ inspectExit( currentRoomNumber, dir )</script>
 				<packageName></packageName>
 				<regex>^eqm$</regex>
 			</Alias>
-			<Alias isActive="yes" isFolder="no">
+			<Alias isActive="no" isFolder="no">
 				<name>Roll Dice (roll)</name>
 				<script>send( 'get dice stocking', false )
 send( 'dice', false )
@@ -2477,14 +2414,14 @@ send( 'put dice stocking', false )</script>
 				<packageName></packageName>
 				<regex>^roll$</regex>
 			</Alias>
-			<Alias isActive="yes" isFolder="no">
+			<Alias isActive="no" isFolder="no">
 				<name>Nandor Gear Swap (nanswap)</name>
 				<script>swapGear()</script>
 				<command></command>
 				<packageName></packageName>
 				<regex>^nanswap$</regex>
 			</Alias>
-			<Alias isActive="yes" isFolder="no">
+			<Alias isActive="no" isFolder="no">
 				<name>Clone Gear (doclone)</name>
 				<script>doClone()</script>
 				<command></command>
@@ -2527,22 +2464,25 @@ expandAlias( "all eq", false )</script>
 		<Script isActive="yes" isFolder="no">
 			<name>kermudlet_init</name>
 			<packageName></packageName>
-			<script>-- Let Mudlet know we've got our own Map script
-mudlet = mudlet or {}; mudlet.mapper_script = true
-
-homeDirectory = 'C:/dev/mud/mudlet/'
-luasql = require( "luasql.sqlite3" )
-
-function runLuaFile( file )
-  local filePath = f '{homeDirectory}{file}'
-  if lfs.attributes( filePath, "mode" ) == "file" then
-    dofile( filePath )
-  else
-    cecho( f "\n{filePath}&lt;reset&gt; not found." )
+			<script>function reloadProfile()
+  -- Let Mudlet know we've got our own Map script
+  mudlet = mudlet or {}; mudlet.mapper_script = true
+  
+  homeDirectory = 'C:/dev/mud/mudlet/'
+  luasql = require( "luasql.sqlite3" )
+  -- Redefine this in your IDE for syntax checking
+  function runLuaFile( file )
+  local filePath = f'{homeDirectory}{file}'
+    if lfs.attributes( filePath, "mode" ) == "file" then
+      dofile( filePath )
+    else
+      cecho( f "\n{filePath}&lt;reset&gt; not found." )
+    end
   end
+  
+  tempTimer( 0, [[runLuaFile("kermudlet_init.lua")]] )
 end
-
-tempTimer( 0, [[runLuaFile(f"kermudlet_init.lua")]] )</script>
+reloadProfile()</script>
 			<eventHandlerList />
 		</Script>
 	</ScriptPackage>
@@ -2626,62 +2566,6 @@ tempTimer( 0, [[runLuaFile(f"kermudlet_init.lua")]] )</script>
 			<command></command>
 			<keyCode>33554431</keyCode>
 			<keyModifier>0</keyModifier>
-			<KeyGroup isActive="no" isFolder="yes">
-				<name>Movement (Offline)</name>
-				<packageName></packageName>
-				<script>-- Group for offline movement keys (i.e., simulated movement through offline map)</script>
-				<command></command>
-				<keyCode>33554431</keyCode>
-				<keyModifier>0</keyModifier>
-				<Key isActive="yes" isFolder="no">
-					<name>n</name>
-					<packageName></packageName>
-					<script>expandAlias( 'n', false )</script>
-					<command></command>
-					<keyCode>56</keyCode>
-					<keyModifier>536870912</keyModifier>
-				</Key>
-				<Key isActive="yes" isFolder="no">
-					<name>s</name>
-					<packageName></packageName>
-					<script>expandAlias( 's', false )</script>
-					<command></command>
-					<keyCode>50</keyCode>
-					<keyModifier>536870912</keyModifier>
-				</Key>
-				<Key isActive="yes" isFolder="no">
-					<name>e</name>
-					<packageName></packageName>
-					<script>expandAlias( 'e', false )</script>
-					<command></command>
-					<keyCode>54</keyCode>
-					<keyModifier>536870912</keyModifier>
-				</Key>
-				<Key isActive="yes" isFolder="no">
-					<name>w</name>
-					<packageName></packageName>
-					<script>expandAlias( 'w', false )</script>
-					<command></command>
-					<keyCode>52</keyCode>
-					<keyModifier>536870912</keyModifier>
-				</Key>
-				<Key isActive="yes" isFolder="no">
-					<name>u</name>
-					<packageName></packageName>
-					<script>expandAlias( 'u', false )</script>
-					<command></command>
-					<keyCode>55</keyCode>
-					<keyModifier>536870912</keyModifier>
-				</Key>
-				<Key isActive="yes" isFolder="no">
-					<name>d</name>
-					<packageName></packageName>
-					<script>expandAlias( 'd', false )</script>
-					<command></command>
-					<keyCode>49</keyCode>
-					<keyModifier>536870912</keyModifier>
-				</Key>
-			</KeyGroup>
 			<KeyGroup isActive="no" isFolder="yes">
 				<name>Labeling</name>
 				<packageName></packageName>

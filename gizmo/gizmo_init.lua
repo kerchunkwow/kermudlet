@@ -10,6 +10,12 @@ local commonScripts = {
   'gizmo/session/session_common.lua',
   'gizmo/eq/eq_db.lua',
   'gizmo/status/status_affect.lua',
+  'gizmo/map/map_const.lua',
+  'gizmo/map/map_ux.lua',
+  'gizmo/map/data/map_dirs.lua',
+  'gizmo/map/data/map_doors.lua',
+  'gizmo/map/data/map_unique.lua',
+  'gizmo/map/map_queue.lua',
   'gizmo/map/map_main.lua',
 }
 

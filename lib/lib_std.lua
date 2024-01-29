@@ -26,7 +26,6 @@ function runLuaLine()
   runFunc( func() )
 end
 
--- Redefine this here so VSCode recognizes it
 function runLuaFile( file )
   local filePath = f '{homeDirectory}{file}'
   if lfs.attributes( filePath, "mode" ) == "file" then
@@ -39,7 +38,7 @@ end
 -- Use runLuaFile to run a table of Lua files
 function runLuaFiles( files )
   for _, file in ipairs( files ) do
-    runLuaFile( f "{file}" )
+    runLuaFile( file )
   end
 end
 
@@ -69,19 +68,6 @@ end
 -- Get a random FP value between lower and upper bounds
 function randomFloat( lower, upper )
   return lower + math.random() * (upper - lower)
-end
-
--- Undefine all functions in the global namespace; will probably break the client
-function globalUndefine( dryRun )
-  for k, v in pairs( _G ) do
-    if type( v ) == "function" and k ~= "globalUndefine" then
-      if dryRun then
-        print( "Function to be undefined: " .. k )
-      else
-        _G[k] = nil
-      end
-    end
-  end
 end
 
 -- Round n to the nearest s

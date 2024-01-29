@@ -1,9 +1,3 @@
-runLuaFile( "gizmo/map/map_const.lua" )
-runLuaFile( "gizmo/map/map_ux.lua" )
-runLuaFile( "gizmo/map/data/map_dirs.lua" )
-runLuaFile( "gizmo/map/data/map_doors.lua" )
-runLuaFile( "gizmo/map/data/map_unique.lua" )
-runLuaFile( "gizmo/map/map_queue.lua" )
 culledExits = {}
 table.load( f '{homeDirectory}gizmo/map/data/culledExits.lua', culledExits )
 defineCustomEnvColors()
