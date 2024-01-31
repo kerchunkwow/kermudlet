@@ -15,25 +15,25 @@ function triggerParsePrompt()
     in_combat = false
   end
   -- Compare new values to local prior values
-  local needs_update = hpc ~= pc_last_status["currentHP"] or
-      mnc ~= pc_last_status["currentMana"] or
-      mvc ~= pc_last_status["currentMoves"] or
-      tnk ~= pc_last_status["tank"] or
-      trg ~= pc_last_status["target"]
+  local needs_update = hpc ~= pcLastStatus["currentHP"] or
+      mnc ~= pcLastStatus["currentMana"] or
+      mvc ~= pcLastStatus["currentMoves"] or
+      tnk ~= pcLastStatus["tank"] or
+      trg ~= pcLastStatus["target"]
 
   -- Exit early if nothing has changed
   if not needs_update then
     return
   else
     -- If something changed, update the prior-value table
-    pc_last_status["currentHP"]    = hpc
-    pc_last_status["currentMana"]  = mnc
-    pc_last_status["currentMoves"] = mvc
-    pc_last_status["tank"]         = tnk
-    pc_last_status["target"]       = trg
+    pcLastStatus["currentHP"]    = hpc
+    pcLastStatus["currentMana"]  = mnc
+    pcLastStatus["currentMoves"] = mvc
+    pcLastStatus["tank"]         = tnk
+    pcLastStatus["target"]       = trg
 
     -- Then pass the updated values to the main session
-    raiseGlobalEvent( "event_pcStatus_prompt", session, hpc, mnc, mvc, tnk, trg )
+    raiseGlobalEvent( "event_pcStatus_prompt", SESSION, hpc, mnc, mvc, tnk, trg )
   end
 end
 
@@ -61,5 +61,19 @@ function triggerParseScore()
   exl              = tonumber( exl )
   gld              = tonumber( gld )
 
-  raiseGlobalEvent( "event_pcStatus_score", session, dam, maxHP, hit, mnm, arm, mvm, mac, aln, exp, exh, exl, gld )
+  raiseGlobalEvent( "event_pcStatus_score", SESSION, dam, maxHP, hit, mnm, arm, mvm, mac, aln, exp, exh, exl, gld )
 end
+
+-- Alt Sessions maintain a "last status" table locally so they can avoid sending redundant stats without checking
+-- the main pcStatus table; assumption being that checking a local global table is more efficient than using
+-- the event engine to retrieve stats.
+local function initPCLastStatus()
+  if SESSION == 1 then return end
+  pcLastStatus                 = {}
+  pcLastStatus["currentHP"]    = -1
+  pcLastStatus["currentMana"]  = -1
+  pcLastStatus["currentMoves"] = -1
+  pcLastStatus["tank"]         = "nil"
+  pcLastStatus["target"]       = "nil"
+end
+initPCLastStatus()

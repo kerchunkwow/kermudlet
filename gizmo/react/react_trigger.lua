@@ -1,8 +1,9 @@
-addFileWatch( "C:/dev/mud/mudlet/gizmo/react/react_trigger.lua" )
+-- A set to keep track of items collected via auto-gathering, like resin
+gathered = {}
 
 -- Automatically cast 'miracle' on the tank under predefined conditions
 function triggerAutoMira()
-  if session ~= 1 then return end
+  if SESSION ~= 1 then return end
   if pcStatus[1]["currentMana"] < 100 then return end
   local tankCondition = matches[2]
 
@@ -31,7 +32,7 @@ end
 function triggerRouteChat()
   deleteLine()
 
-  if session == 1 then
+  if SESSION == 1 then
     -- Assuming matches is previously defined and supposed to contain at least four elements...
     local speaker, channel, message = matches[2], matches[3], matches[4]
 
@@ -53,13 +54,13 @@ function triggerRouteChat()
       channel = "whisper"
 
       -- Play a sound when you receive a whisper (no more than once per 10s)
-      if not sound_delayed and speaker ~= "You" then
-        sound_delayed = true
+      if not whisperDelayed and speaker ~= "You" then
+        whisperDelayed = true
         playSoundFile( {name = "msg.wav"} )
-        tempTimer( 10, [[sound_delayed = false]] )
+        tempTimer( 10, [[whisperDelayed = nil]] )
       end
     end
-    local chat_color = msg_colors[channel] or "<sandy_brown>"
+    local chat_color = messageColors[channel] or "<sandy_brown>"
 
     -- Pad the message out to the length of the longest channel name (whisper == 7) for an even margin
     local padl = fill( 6 - #speaker )
@@ -76,10 +77,10 @@ end
 function triggerCaptureRoom()
   local matchedRoom = trim( matches[2] )
   if isUnique( matchedRoom ) and matchedRoom ~= currentRoomName then setPlayerRoom( UNIQUE_ROOMS[matchedRoom] ) end
-  if session == 1 then
+  if SESSION == 1 then
     pcStatusRoom( 1, matchedRoom )
   else
-    raiseGlobalEvent( "event_pcStatus_room", session, matchedRoom )
+    raiseGlobalEvent( "event_pcStatus_room", SESSION, matchedRoom )
   end
 end
 
@@ -165,7 +166,7 @@ end
 
 function triggerPCActivity()
   local actor = trim( matches[2] )
-  if isAlternate( actor ) then deleteLine() end
+  if ALT_PC[actor] then deleteLine() end
 end
 
 -- Build out from here to create a tick-tracker that keeps tracking of and reports on tick status

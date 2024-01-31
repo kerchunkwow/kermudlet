@@ -1,17 +1,3 @@
--- Display a warning in the Info window; see Game Globals for a list of customizable messages
-function show_warning( event_raised, session, warning_type, extra_info )
-  local msg = warning_messages[warning_type]
-
-  cecho( "info", f "\n{fill(1)}{pc_tags[session]} {msg}" )
-
-  -- If the warning is critical, play a sound as well (not too often)
-  if critical_warnings[warning_type] and not warning_delayed then
-    warning_delayed = true
-    tempTimer( 5, [[warning_delayed = false]] )
-    playSoundFile( {name = "bloop.wav"} )
-  end
-end
-
 -- Doubleclick the room name to summon that pc ([COLIN])
 function roomClicked( pc, event )
   send( f [[cast 'super summon' {pc}]] )

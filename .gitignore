@@ -1,11 +1,7 @@
-gizmo/assets
-gizmo/logs
-dd/logs
-gizmo/session/login.lua
-gizmo/client_config.lua
+gizmo/config/login.lua
+gizmo/config/config_local.lua
 sandbox/
 .vscode/
-.editorconfig
-modifiedScripts.txt
-rename.py
 gizmo/gizmudlet.xml
+gizmo/.mudlet
+gizmo/assets/

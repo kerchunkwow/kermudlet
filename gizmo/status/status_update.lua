@@ -12,6 +12,7 @@ function pcStatusPrompt( pc, hpc, mnc, mvc, tnk, trg )
 
     -- Calculate new health percentage & make a label for gauge
     local percentHP         = (hpc / maxHP) * 100
+
     local hp_label          = string.format( "%.1f%%", percentHP )
 
     -- Calculate change in health percentage
@@ -71,7 +72,7 @@ end
 
 -- Use the hp_monitor table to see if we should send a warning
 function checkHP( pc, percentHP, delta_p )
-  local low_hp, big_hit = hp_monitor[pc][1], hp_monitor[pc][2]
+  local low_hp, big_hit = healthMonitor[pc][1], healthMonitor[pc][2]
 
   if percentHP < low_hp then
     raiseEvent( "eventWarn", pc, "hp", percentHP )
@@ -105,7 +106,7 @@ function pcStatusRoom( pc, room )
 end
 
 -- Create and default a table to hold status info for each pc
-function initPCStatusTable( pcNames )
+local function initPCStatusTable()
   pcStatus = {}
 
   for pc = 1, 4 do
@@ -136,47 +137,4 @@ function initPCStatusTable( pcNames )
     }
   end
 end
-
-local function initPCLastStatus( pcNames )
-  pc_last_status = {
-
-    currentHP    = 0,
-    currentMana  = 0,
-    currentMoves = 0,
-    tank         = 0,
-    target       = 0,
-
-  }
-end
-
-local function printPCStatusTable()
-  for pc = 1, 4 do
-    local tnk = pcStatus[pc].tank or ""
-    local trg = pcStatus[pc].trg or ""
-
-    cecho( f [[<light_steel_blue>+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+]] .. "\n" )
-    cecho( f [[<light_steel_blue>|<black>............<reset>Session #{pc}<black>..........<reset>|]] .. "\n" )
-    cecho( f [[<light_steel_blue>+--------------------------------+]] .. "\n" )
-
-    local hp_str     = f [[<yellow_green>{pcStatus[pc].currentHP}({pcStatus[pc].maxHP})  {pcStatus[pc].percentHP}%]]
-    local mn_str     = f [[<steel_blue>{pcStatus[pc].currentMana}({pcStatus[pc].maxMana})]]
-    local mv_str     = f [[<gold>{pcStatus[pc].currentMoves}({pcStatus[pc].maxMoves})]]
-    local tank_str   = "<slate_blue>" .. tnk
-    local target_str = "<violet_red>" .. trg
-
-    cecho( f [[<light_steel_blue>|<black>................................<reset>]] .. "\n" )
-
-    cecho( f [[<light_steel_blue>|<black>..<light_steel_blue>HP:<black>.....{hp_str}<black>........<reset>]] .. "\n" )
-    cecho( f [[<light_steel_blue>|<black>..<light_steel_blue>MN:<black>.....{mn_str}<black>..............<reset>]] ..
-      "\n" )
-    cecho( f [[<light_steel_blue>|<black>..<light_steel_blue>MV:<black>.....{mv_str}<black>..............<reset>]] ..
-      "\n" )
-    cecho( f [[<light_steel_blue>|<black>..<light_steel_blue>Tank:<black>...{tank_str}<black>................<reset>]] ..
-      "\n" )
-    cecho( f [[<light_steel_blue>|<black>..<light_steel_blue>Target:<black>.{target_str}<black>................<reset>]] ..
-      "\n" )
-
-    cecho( f [[<light_steel_blue>|<black>................................<reset>]] .. "\n" )
-    cecho( [[<light_steel_blue>+--------------------------------+]] .. "\n" )
-  end
-end
+initPCStatusTable()

@@ -1,5 +1,16 @@
+-- Keywords to look for in output that indicate when spell status changes
+affectKeywords   = {
+  ["glowing"]    = "Sanctuary",
+  ["aura"]       = "Sanctuary",
+  ["righteous"]  = "Bless",
+  ["angry"]      = "Fury",
+  ["calm"]       = "Fury",
+  ["protecting"] = "Armor",
+  ["protected"]  = "Armor",
+}
+
 -- The affects we want to track; set this to "save" in Variables to maintain durations between sessions
-affectInfo = affectInfo or {
+affectInfo       = affectInfo or {
   ["Sanctuary"]        = {duration = nil, cost = 50, color = "lavender_blush", char = "🌟"},
   ["Bless"]            = {duration = nil, cost = 5, color = "light_goldenrod", char = "🙏"},
   ["Fury"]             = {duration = nil, cost = 60, color = "tomato", char = "😡"},
@@ -8,19 +19,24 @@ affectInfo = affectInfo or {
 }
 
 -- Initialize affect status, strings, and start times
-affectStatus = {}
-affectStrings = {}
+affectStatus     = {}
+affectStrings    = {}
 affectStartTimes = {}
 
-for pc = 1, 4 do
-  affectStatus[pc] = {}
-  affectStrings[pc] = ""
-  affectStartTimes[pc] = {}
-  for spellName, _ in pairs( affectInfo ) do
-    affectStatus[pc][spellName] = false
-    affectStartTimes[pc][spellName] = nil
+-- Populate tables with information about spell affects
+local function buildAffectStrings()
+  for pc = 1, 4 do
+    affectStatus[pc] = {}
+    affectStrings[pc] = ""
+    affectStartTimes[pc] = {}
+    for spellName, _ in pairs( affectInfo ) do
+      affectStatus[pc][spellName] = false
+      affectStartTimes[pc][spellName] = nil
+    end
   end
 end
+buildAffectStrings()
+
 -- Update affect status to true and modify affect string
 function applyAffect( spellName, pc )
   if affectStatus[pc] and affectInfo[spellName] then
@@ -90,10 +106,10 @@ function applyAffectTrigger()
   fg( affectColor )
   resetFormat()
   cecho( affectEmoji )
-  if session == 1 then
+  if SESSION == 1 then
     applyAffect( appliedAffect, 1 )
   else
-    raiseGlobalEvent( "eventPCStatusAffect", session, appliedAffect, true )
+    raiseGlobalEvent( "eventPCStatusAffect", SESSION, appliedAffect, true )
   end
 end
 
@@ -106,10 +122,10 @@ function removeAffectTrigger()
   fg( affectColor )
   resetFormat()
   cecho( affectEmoji )
-  if session == 1 then
+  if SESSION == 1 then
     removeAffect( removedAffect, 1 )
   else
-    raiseGlobalEvent( "eventPCStatusAffect", session, removedAffect, false )
+    raiseGlobalEvent( "eventPCStatusAffect", SESSION, removedAffect, false )
   end
 end
 
@@ -118,7 +134,7 @@ function printAffectStrings()
   for pc = 1, 4 do
     local affectString = affectStrings[pc]
     if #affectString > 0 then
-      cecho( "info", f "\nAffects for {pc_tags[pc]}: {affectString}" )
+      cecho( "info", f "\nAffects for {pcTags[pc]}: {affectString}" )
     end
   end
 end

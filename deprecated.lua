@@ -1,4 +1,63 @@
+-- Items to ignore when checking to see whether something has been added to the database;
+-- this is going to get way too long and needs another solution eventually.
+ignoredItems     = {
+  ["a vanity chit"]                        = true,
+  ["potion of healing"]                    = true,
+  ["Cradle of the Forest"]                 = true,
+  ["a brilliant blue aquamarine"]          = true,
+  ["a beazor"]                             = true,
+  ["a brilliant red ruby"]                 = true,
+  ["a small pile of precious metals"]      = true,
+  ["a piece of diamond"]                   = true,
+  ["a delicate pair of lapidary's pliers"] = true,
+  ["a shimmering filament of gold"]        = true,
+  ["a lavish opium pipe"]                  = true,
+  ["a durable mining helmet"]              = true,
+  ["a piece of Commiphora wightii bark"]   = true,
+  ["a scroll of healing"]                  = true,
+  ["an Amber Elixir"]                      = true,
+  ["a bottle of greenish ooze"]            = true,
+  ["a Delicate Daisy"]                     = true,
+  ["a pair of dice"]                       = true,
+  ["the trust flag"]                       = true,
+  ["a bread"]                              = true,
+  ["a waterskin"]                          = true,
+  ["glowing potion"]                       = true,
+  ["transparent potion"]                   = true,
+  ["a yellow potion of see invisible"]     = true,
+  ["a snowball"]                           = true,
+  ["a golden goblet"]                      = true,
+  ["a scroll of recall"]                   = true,
+  ["an olive branch"]                      = true,
+  ["a small ball of Labdanum resin"]       = true,
+  ["a raft"]                               = true,
+  ["a Seawater Potion"]                    = true,
+  ["a bag"]                                = true,
+  ["a bottle of red potion"]               = true,
+  ["a pouch of irridescent pollen"]        = true,
+  ["a Frosty Potion"]                      = true,
+  ["a bloody brew"]                        = true,
+  ["a strong-smelling brew"]               = true,
+  ["a five cheesecake chit"]               = true,
+  ["a five brownie chit"]                  = true,
+  ["a milky orange potion"]                = true,
+  ["a small ice opal"]                     = true,
+  ["a Christmas Stocking"]                 = true,
+}
 
+function isIgnoredItem( item )
+  local ignoredItemPatterns = {
+    ["^.*chit$"] = true,
+    ["^.*[Pp]otion.*$"] = true,
+    ["^.*scroll of.*$"] = true,
+  }
+  for pattern in pairs( ignoredItemPatterns ) do
+    if item:match( pattern ) then
+      return true
+    end
+  end
+  return false
+end
 
 -- Virtually traverse an exit from the players' current location to an adjoining room;
 -- This is the primary function used to "follow" the PCs position in the Map; it is synchronized

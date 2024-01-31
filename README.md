@@ -1,3 +1,16 @@
+## Mudlet/Lua Tips & Tricks
+
+- Use quick & diry semaphores to gate or throttle functions that might be called repeatedly under certain conditions (usually by triggers).
+
+```
+-- Don't let this happen more than once per 5s interval
+if not semaphore and someCondition then
+  semaphore = true
+  someFunction()
+  tempTimer( 5, [[semaphore = nil]])
+end
+```
+
 ## Quick Start
 
 - Setup sessions

@@ -8,7 +8,6 @@ function fileModifiedEvent( _, path )
     -- If it's the Mudlet module that was changed, refresh the XML file
     if path:match( 'mpackage' ) then
       refreshModuleXML()
-      cecho( "\n<dim_grey>Module file modified; regenerating .xml<reset>" )
       return
     end
     -- nil all existing functions that reference this file as their source

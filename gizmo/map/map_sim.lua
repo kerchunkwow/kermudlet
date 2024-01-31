@@ -22,8 +22,9 @@ function executeCmd( cmd )
     local longDir = LDIR[cmd]
     queueDst = tonumber( exits[longDir] )
     nextCmdTimer = tempTimer( cmdDelay, f [[displayRoom( {queueDst}, true )]] )
+  else
+    nextCmdTimer = tempTimer( cmdDelay, [[simulateOutput('\nOk.\n')]] )
   end
-  nextCmdTimer = tempTimer( cmdDelay, [[simulateOutput('\nOk.\n')]] )
 end
 
 -- Override moveExit while offline to simulate movement and display virtual rooms
@@ -75,6 +76,7 @@ function displayRoom( id, brief )
   -- if rSpec and rSpec > 0 then
   --   cecho( f "\n\tThis room has a ~<ansi_light_yellow>special procedure<reset>~.\n" )
   -- end
-  displayExits( id )
+  local exitString = getExitString( id )
+  cfeedTriggers( f "\n{exitString}" )
   cecho( "\n\n<olive_drab>< 250(250) 400(400) 500(500) ><reset>" )
 end

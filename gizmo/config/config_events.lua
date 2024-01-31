@@ -11,11 +11,18 @@
 
 -- Handle "event_session_command" from other sessions
 function sessionCommand( eventType, cmd )
-  -- Use the isAlias table to allow sessions to pass aliases as commands
-  s = string.find( cmd, " " )
-  local isAlias_cmd = isAlias[cmd] or (s and isAlias[string.sub( cmd, 1, s - 1 )])
+  -- If you want to be able to send aliases between sessions, you must add them to this table so the session_command
+  -- function will use expandAlias() instead of send().
+  local sharedAliases = {
+    ["lua"]  = true,
+    ["cls"]  = true,
+    ["putt"] = true,
+    ["gett"] = true,
+  }
+  s                   = string.find( cmd, " " )
+  local isAlias       = sharedAliases[cmd] or (s and sharedAliases[string.sub( cmd, 1, s - 1 )])
 
-  if isAlias_cmd then
+  if isAlias then
     expandAlias( cmd, false )
   else
     send( cmd, false )
@@ -26,10 +33,10 @@ end
 -- raises the corresponding event. This raises events for 'everyone' regardless of the
 -- intended recipient; there's no downside to unhandled events.
 function aliasSessionCommand()
-  local targetSession = (matches[2] == "all") and matches[2] or session_numbers[matches[2]]
+  -- If the command is not for 'all', raise an event corresponding to the target session
+  local targetSession = (matches[2] == "all") and matches[2] or sessionAliases[matches[2]]
   local cmd           = matches[3]
   local eventType     = "event_command_" .. targetSession
-
   raiseEvent( eventType, cmd )
   raiseGlobalEvent( eventType, cmd )
 end
@@ -39,7 +46,7 @@ function pcStatusPromptEvent( raised_event, pc, hpc, mnc, mvc, tnk, trg )
   pcStatusPrompt( tonumber( pc ), tonumber( hpc ), tonumber( mnc ), tonumber( mvc ), tnk, trg )
 end
 
--- The event by which alts report their score information to the main pcStatust able.
+-- The event by which alts report their score information to the main pcStatus table.
 function pcStatusScoreEvent( raised_event, pc, dam, maxHP, hit, mnm, arm, mvm, mac, aln, exp, exh, exl, gld )
   pcStatusScore( tonumber( pc ), tonumber( dam ),
     tonumber( maxHP ), tonumber( hit ),
@@ -63,3 +70,20 @@ function pcStatusAffectEvent( raised_event, pc, affect, state )
     removeAffect( affect, pc )
   end
 end
+
+-- Register event handlers (i.e., map event types to function names)
+local function registerEventHandlers()
+  -- Every session listens for "event_session_all" in addition to their own "event_command_#" event.
+  -- By interpolating the SESSION number, we assign each session an exclusive listener
+  registerAnonymousEventHandler( [[event_command_all]], [[sessionCommand]] )
+  registerAnonymousEventHandler( f [[event_command_{SESSION}]], [[sessionCommand]] )
+
+  -- Events that update the pcStatus table or interact with the UI are exclusive to the main session
+  if SESSION ~= 1 then return end
+  registerAnonymousEventHandler( [[eventWarn]], [[showWarning]] )
+  registerAnonymousEventHandler( [[event_pcStatus_prompt]], [[pcStatusPromptEvent]] )
+  registerAnonymousEventHandler( [[eventPCStatusAffect]], [[pcStatusAffectEvent]] )
+  registerAnonymousEventHandler( [[event_pcStatus_score]], [[pcStatusScoreEvent]] )
+  registerAnonymousEventHandler( [[event_pcStatus_room]], [[pcStatusRoomEvent]] )
+end
+registerEventHandlers()

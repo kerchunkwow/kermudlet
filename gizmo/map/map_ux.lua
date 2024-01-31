@@ -1,51 +1,3 @@
--- Table of predefined text colors for use throughout the Map UI & console map output
-TXT_COLOR       = {
-  default   = "<dim_grey>",
-  roomName  = "<royal_blue>",
-  roomDesc  = "<olive_drab>",
-  basicExit = "<ansi_cyan>",
-  doorExit  = "<honeydew>",
-  death     = "<tomato>",
-  area      = "<maroon>",
-  noteLabel = "<yellow>",
-  warnLabel = "<red>",
-  dirLabel  = "<yellow>",
-  key       = "<goldenrod>",
-  number    = "<dark_orange>",
-  string    = "<medium_orchid>",
-  error     = "<ansi_light_magenta>",
-}
-
--- Shorthand for the more commonly used text colors from the table above
-NC              = TXT_COLOR['number']
-RMNC            = TXT_COLOR['roomName']
-RMDC            = TXT_COLOR['roomDesc']
-ARC             = TXT_COLOR['area']
-DTC             = TXT_COLOR['death']
-ERRC            = TXT_COLOR['error']
-KEYC            = TXT_COLOR['key']
-DOORC           = TXT_COLOR['doorExit']
-EXC             = TXT_COLOR['basicExit']
-R               = "<reset>"
-
--- IDs assigned to specific Room color configurations by defineCustomColors();
--- remember them as global constants so we can style rooms in response to MUD output
-COLOR_DEATH     = 300
-COLOR_CLUB      = 310
-COLOR_INSIDE    = 320
-COLOR_FOREST    = 330
-COLOR_MOUNTAINS = 340
-COLOR_CITY      = 350
-COLOR_WATER     = 360
-COLOR_FIELD     = 370
-COLOR_HILLS     = 380
-COLOR_DEEPWATER = 390
-COLOR_OVERLAP   = 400
-COLOR_LANDMARK  = 410
-COLOR_SHOP      = 420
-COLOR_PROC      = 430
-
-
 -- Get a string representing the "room name" with varying levels of detail
 function getRoomString( id, detail )
   detail = detail or 1
@@ -97,14 +49,24 @@ function getDoorString( word, key )
   return doorString
 end
 
+function displayExits( id )
+  local exitString = ""
+  if not id or id < 1 then
+    exitString = "<dim_grey>   Obvious Exits:   <dim_grey>[No Data]<reset>"
+  else
+    exitString = getExitString( id )
+  end
+  cecho( f "\n{exitString}" )
+end
+
 -- Build a "line" of all exits from the current room, color-coded based on the attributes of
 -- the exit or destination room.
-function displayExits( id )
+function getExitString( id )
+  local exitData    = getRoomExits( id )
+  local exitString  = ""
   local isFirstExit = true
-  local exitData = getRoomExits( id )
   local sortedExits = {}
-  local exitString = ""
-  local dc = MAP_COLOR["exitDir"]
+  local dc          = MAP_COLOR["exitDir"]
 
   for dir, to in pairs( exitData ) do
     table.insert( sortedExits, {dir = dir, to = to} )
@@ -118,17 +80,15 @@ function displayExits( id )
     local dir = exit.dir
     local to = exit.to
     local tc = getExitColor( to, dir )
-    --local nextExit = f "{dc}{dir}<reset> ({tc}{to}<reset>)"
     local nextExit = f "{tc}{dir}<reset>"
     if isFirstExit then
       isFirstExit = false
-      exitString = f "<dim_grey>Obvious Exits:   [" .. nextExit .. f "<dim_grey>]<reset>"
+      exitString = f "<dim_grey>   Obvious Exits:   [" .. nextExit .. f "<dim_grey>]<reset>"
     else
       exitString = exitString .. f " <dim_grey>[<reset>" .. nextExit .. f "<dim_grey>]<reset>"
     end
   end
-  cecho( f "\n   {exitString}" )
-  --simulateOutput( f "   {exitString}" )
+  return exitString
 end
 
 -- Select one of the predefined colors to display an Exit based on Door and Destination status
@@ -153,7 +113,6 @@ end
 
 -- Configure the "Custom Environments" used by Mudlet to determine the style of rooms in the Map
 function defineCustomEnvColors()
-  roomColors = nil
   customColorsDefined = true
   setCustomEnvColor( COLOR_DEATH, 255, 99, 71, 255 )     -- <tomato>
   setCustomEnvColor( COLOR_CLUB, 70, 40, 115, 255 )      -- <medium_slate_blue>

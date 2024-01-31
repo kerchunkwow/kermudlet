@@ -31,7 +31,7 @@ end
 function nextCmd( cmd )
   -- If we don't have a room number, the map isn't ready to handle the command queue yet
   -- [TODO] This is kind of a brute force hack need to figure out why the map is not setting/maintaining these values
-  if not currentRoomNumber or currentRoomNumber <= 0 or not currentAreaNumber or currentAreaNumber <= 0 then
+  if not currentRoomNumber or currentRoomNumber <= 0 then
     send( cmd, false )
   end
   -- If a move command is pending validation or commands are queued, queue this command
@@ -44,17 +44,18 @@ function nextCmd( cmd )
   end
 end
 
--- Execute a queueable commad
+-- Attempt to execute a queuable command
 function executeCmd( cmd )
-  if DIRECTIONS[cmd] then
+  -- Make sure the map knows where we're at before using it to move
+  if DIRECTIONS[cmd] and currentRoomNumber > 0 then
     local exits = getRoomExits( currentRoomNumber )
-    local longDir = LDIR[cmd]
-    if not exits[longDir] then
+    if exits[LDIR[cmd]] then
+      queueDst = tonumber( exits[LDIR[cmd]] )
+    else
       cecho( "\n<dim_grey>Alas, you cannot go that way.<reset>" )
       cmdPending = nil
       return false
     end
-    queueDst = tonumber( exits[longDir] )
   end
   send( cmd, false )
   return true

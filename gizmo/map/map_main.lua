@@ -1,7 +1,3 @@
-culledExits = {}
-table.load( f '{homeDirectory}gizmo/map/data/culledExits.lua', culledExits )
-defineCustomEnvColors()
-
 -- Follow a list of directions; also used by the click-to-walk functionality from the Mapper
 function doSpeedWalk()
   for _, dir in ipairs( speedWalkDir ) do
@@ -78,7 +74,7 @@ function setPlayerRoom( id )
   end
   local newRoomNumber = tonumber( id )
   -- Ignore attempts to move to the room we're already in
-  if newRoomNumber == currentRoomNumber then return end
+  if newRoomNumber == currentRoomNumber or not id then return end
   if roomExists( id ) then
     local roomArea = getRoomArea( id )
     if roomArea ~= currentAreaNumber then
@@ -92,7 +88,7 @@ function setPlayerRoom( id )
     roomExits         = getRoomExits( currentRoomNumber )
     centerview( currentRoomNumber )
     -- For now, report when the map needs to be resynchronized just so we can keep an eye on how often it's necessary
-    if session == 1 and resynch then
+    if SESSION == 1 and resynch then
       cecho( "info", f "\nMap synchronized at {getRoomString( currentRoomNumber, 2 )}" )
     end
   end
@@ -110,6 +106,15 @@ function cullExit( dir )
   culledExits[currentRoomNumber][dir] = true
   table.save( 'gizmo/map/data/culledExits.lua', culledExits )
   updateMap()
+end
+
+-- Designed to enable exploration of the map offline, but may be a little out of synch with recent changes
+function startMapSim()
+  runLuaFile( 'gizmo/map/map_sim.lua' )
+  disableAlias( 'Total Recall (rr)' )
+  enableAlias( 'Virtual Recall' )
+  enableAlias( 'Map Sim' )
+  startExploration()
 end
 
 -- Find Rooms whose names are duplicated but are unique within an Area (i.e., 'area-unique')

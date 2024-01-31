@@ -7,10 +7,10 @@ function triggerParsePrompt()
   -- Tank & Target conditions (if present)
   local tnk, trg = matches[5], matches[6]
 
-  if (backup_mira and tnk ~= "full") and (gtank) then
+  if (backupMira and tnk ~= "full") and (gtank) then
     send( f "cast 'miracle' {gtank}" )
   end
-  backup_mira = false
+  backupMira = false
 
   -- Store a 'localilzed' combat status for convenience
   if trg and #trg > 0 then
@@ -28,7 +28,7 @@ function triggerParsePrompt()
   if not needs_update then
     return
   else
-    pcStatusPrompt( session, hpc, mnc, mvc, tnk, trg )
+    pcStatusPrompt( SESSION, hpc, mnc, mvc, tnk, trg )
   end
 end
 
@@ -56,5 +56,5 @@ function triggerParseScore()
   exl              = tonumber( exl )
   gld              = tonumber( gld )
 
-  pcStatusScore( session, dam, maxHP, hit, mnm, arm, mvm, mac, aln, exp, exh, exl, gld )
+  pcStatusScore( SESSION, dam, maxHP, hit, mnm, arm, mvm, mac, aln, exp, exh, exl, gld )
 end

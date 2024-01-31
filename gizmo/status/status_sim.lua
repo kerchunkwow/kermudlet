@@ -23,7 +23,7 @@ function simulateScore()
     cecho( f "\n<deep_pink>Run a simulated prompt first to generate core stats." )
     return
   end
-  local pcStatus = pcStatus[session]
+  local pcStatus = pcStatus[SESSION]
 
   -- Turn this on (it will be disabled again by the trigger)
   enableTrigger( "Parse Score" )
@@ -77,6 +77,16 @@ end
 
 --- Populate the pcStatus table with simulated stats for offline testing
 function generate_sim_stats()
+  local combatConditions = {
+    "full",
+    "fine",
+    "good",
+    "fair",
+    "wounded",
+    "bad",
+    "awful",
+    "bleeding",
+  }
   for pc = 1, 4 do
     local tnk, trg = nil, nil
     local maxHP, hpc, mnm, mnc, mvm, mvc = 0, 0, 0, 0, 0, 0
@@ -126,7 +136,7 @@ end
 -- Generate and feed a randomized prompt to trigger player console updates
 -- Syntax: ^rp ?(-?\d+)? ?(-?\d+)? ?(-?\d+)? ?(-?\d+)?$
 function simulate_prompt()
-  local pc, hpd, mnd, mvd = matches[2] or session, matches[3] or 0, matches[4] or 0, matches[5] or 0
+  local pc, hpd, mnd, mvd = matches[2] or SESSION, matches[3] or 0, matches[4] or 0, matches[5] or 0
 
   local prompt_str, left_str, right_str = "", "", ""
 
@@ -158,7 +168,7 @@ function simulate_prompt()
   end
   prompt_str = left_str .. right_str
 
-  local sim_session = short_names[tonumber( pc )]
+  local sim_session = sessionAliases[tonumber( pc )]
 
   expandAlias( f "{sim_session} sim " .. prompt_str, true )
 end

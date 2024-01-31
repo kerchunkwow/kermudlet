@@ -48,10 +48,10 @@ function createGizmoGUI()
     info_window:clear()
     chat_window:clear()
 
-    local lft, rgt = fill( 33 ) .. ui_color, fill( 33 ) .. "<reset>"
+    local lft, rgt = fill( 33 ) .. uiColor, fill( 33 ) .. "<reset>"
 
-    local chat_title = f "{ui_color}| <yellow_green>Gizmo Chat{ui_color} |"
-    local info_title = f "{ui_color}| <dark_orange>Gizmo Info{ui_color} |"
+    local chat_title = f "{uiColor}| <yellow_green>Gizmo Chat{uiColor} |"
+    local info_title = f "{uiColor}| <dark_orange>Gizmo Info{uiColor} |"
 
     cecho( "chat", f "{lft}+------------+{rgt}" )
     cecho( "chat", f "{lft}{chat_title}{rgt}" )
@@ -89,7 +89,7 @@ function createGizmoGUI()
       ["affect"]    = "l12",
     }
 
-    ui_color     = {
+    uiColor      = {
       ["rm"]     = "#444444",
       ["pc_1"]   = "#78e6f0",
       ["pc_2"]   = "#c80a4b",
@@ -116,14 +116,14 @@ function createGizmoGUI()
     CSS_gauge_bg = [[ background-color:    rgb( 30, 30, 30 );
                         border-color:        rgb( 50, 50, 50 );]] .. gauge_border
 
-    CSS_hp_fg = f [[ background-color: {ui_color["hp_bg"]};
-                      border-color:     {ui_color["hp_fg"]};]] .. gauge_border
+    CSS_hp_fg = f [[ background-color: {uiColor["hp_bg"]};
+                      border-color:     {uiColor["hp_fg"]};]] .. gauge_border
 
-    CSS_mn_fg = f [[ background-color: {ui_color["mn_bg"]};
-                      border-color:     {ui_color["mn_fg"]};]] .. gauge_border
+    CSS_mn_fg = f [[ background-color: {uiColor["mn_bg"]};
+                      border-color:     {uiColor["mn_fg"]};]] .. gauge_border
 
-    CSS_mv_fg = f [[ background-color: {ui_color["mv_bg"]};
-                      border-color:     {ui_color["mv_fg"]};]] .. gauge_border
+    CSS_mv_fg = f [[ background-color: {uiColor["mv_bg"]};
+                      border-color:     {uiColor["mv_fg"]};]] .. gauge_border
 
     CSS_text_large = [[ padding-right:        10px;
                           qproperty-alignment: 'AlignVCenter';]]
@@ -131,7 +131,7 @@ function createGizmoGUI()
     CSS_text_small = [[ padding-right:        10px;]]
 
 
-    CSS_label = f [[background-color: {ui_color["lbl_bg"]};
+    CSS_label = f [[background-color: {uiColor["lbl_bg"]};
                     border-width:      1px;
                     border-style:      solid;
                     border-radius:     2;]]
@@ -139,11 +139,11 @@ function createGizmoGUI()
     CSS_affect = f [[background-color: #000000;padding-left: 2px;qproperty-alignment: 'AlignVCenter';]]
 
     CSS_label_left = f [[
-        border-color:      {ui_color["lbl_bd"]};
+        border-color:      {uiColor["lbl_bd"]};
         padding-left:     10px;]] .. CSS_label
 
     CSS_label_right = f [[
-        border-color:      {ui_color["lbl_bd"]};
+        border-color:      {uiColor["lbl_bd"]};
         padding-right:     10px;]] .. CSS_label
   end
 
@@ -153,7 +153,7 @@ function createGizmoGUI()
     uiHeight        = nil
     font_face       = nil
     font_format     = nil
-    ui_color        = nil
+    uiColor         = nil
     nameLabel       = nil
     gauge_border    = nil
     CSS_gauge_bg    = nil
@@ -248,7 +248,7 @@ function createGizmoGUI()
 
       hpGauge[pc].text:setFont( font_face["gauge_lrg"] )
       hpGauge[pc].text:setFormat( font_format["gauge_lrg"] )
-      hpGauge[pc].text:setFgColor( ui_color["hp_fg"] )
+      hpGauge[pc].text:setFgColor( uiColor["hp_fg"] )
 
       hpGauge[pc]:setValue( 444, 444, "100%" )
 
@@ -271,7 +271,7 @@ function createGizmoGUI()
 
       manaGauge[pc].text:setFont( font_face["gauge_sm"] )
       manaGauge[pc].text:setFormat( font_format["gauge_sm"] )
-      manaGauge[pc].text:setFgColor( ui_color["mn_fg"] )
+      manaGauge[pc].text:setFgColor( uiColor["mn_fg"] )
 
       manaGauge[pc]:setValue( 69, 100, "69" )
 
@@ -292,7 +292,7 @@ function createGizmoGUI()
 
       movesGauge[pc].text:setFont( font_face["gauge_sm"] )
       movesGauge[pc].text:setFormat( font_format["gauge_sm"] )
-      movesGauge[pc].text:setFgColor( ui_color["mv_fg"] )
+      movesGauge[pc].text:setFgColor( uiColor["mv_fg"] )
 
       movesGauge[pc]:setValue( 420, 500, "420" )
 
@@ -323,10 +323,10 @@ function createGizmoGUI()
       affectLabel[pc]:setStyleSheet( CSS_affect )
       affectLabel[pc]:echo( "❓" )
 
-      local pc_label_border = ui_color[f "pc_{pc}"]
+      local pc_label_border = uiColor[f "pc_{pc}"]
       local CSS_label_pc = CSS_label .. f [[border-color: {pc_label_border};padding-right: 14px;]]
 
-      nameLabel[pc]:setFgColor( ui_color[f "pc_{pc}"] )
+      nameLabel[pc]:setFgColor( uiColor[f "pc_{pc}"] )
       nameLabel[pc]:setFont( font_face["label"] )
       nameLabel[pc]:setFormat( font_format["label"] )
       nameLabel[pc]:setStyleSheet( CSS_label_pc )
@@ -359,7 +359,7 @@ function createGizmoGUI()
 
       }, party_console )
 
-      local rm_label_border = ui_color["rm"]
+      local rm_label_border = uiColor["rm"]
       local CSS_label_rm = CSS_label .. f [[border-color: {rm_label_border};]]
 
       roomLabel[pc]:setFgColor( "#6496fa" )
@@ -367,7 +367,7 @@ function createGizmoGUI()
       roomLabel[pc]:setFormat( font_format["room"] )
       roomLabel[pc]:setStyleSheet( CSS_label_rm )
 
-      roomLabel[pc]:echo( my_room )
+      roomLabel[pc]:echo( "Bob's Pizza" )
 
       -- Call roomClicked( pc_name ) when double-clicking the room label
       setLabelDoubleClickCallback( roomLabel[pc].name, "roomClicked", pcNames[pc] )
@@ -401,7 +401,7 @@ end
 -- Work in progress to develop a console similar to the party status window to report
 -- on group member status
 local function createGroupConsole()
-  createConsoleStyles()
+  --createConsoleStyles()
 
   group_console = Adjustable.Container:new( {
     name          = "group_console",
@@ -411,7 +411,7 @@ local function createGroupConsole()
 
   group_gauges = {}
 
-  deleteConsoleStyles()
+  --deleteConsoleStyles()
 end
 
 local function getLabelCSS( bg, border )

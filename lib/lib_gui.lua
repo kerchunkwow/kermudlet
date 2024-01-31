@@ -30,6 +30,16 @@ function gizError( msg )
   cecho( f "\n\t<dim_grey>[<dark_orange>err<dim_grey>]: {msg}" )
 end
 
+-- List all fonts available in Mudlet.
+function listFonts()
+  local availableFonts = getAvailableFonts()
+
+  ---@diagnostic disable-next-line: param-type-mismatch
+  for k, v in pairs( availableFonts ) do
+    print( k )
+  end
+end
+
 -- Create and/or open a basic user window into which you can echo output; uses _G to
 -- store the object in a variable of the same name
 local function openBasicWindow( name, title, fontFace, fontSize )
@@ -47,16 +57,6 @@ local function openBasicWindow( name, title, fontFace, fontSize )
   _G[name]:disableHorizontalScrollBar()
   _G[name]:disableCommandLine()
   _G[name]:clear()
-end
-
--- List all fonts available in Mudlet.
-local function listFonts()
-  local availableFonts = getAvailableFonts()
-
-  ---@diagnostic disable-next-line: param-type-mismatch
-  for k, v in pairs( availableFonts ) do
-    print( k )
-  end
 end
 
 -- Display a list of strings within a formatted "box"; supply a maxLength

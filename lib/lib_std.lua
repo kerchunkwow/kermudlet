@@ -78,7 +78,7 @@ end
 
 -- Print all variables currently in _G (Lua's table for all variables); probably
 -- not very readable but might be helpful
-local function printVariables()
+function printVariables()
   for k, v in pairs( _G ) do
     local nameStr, typeStr, valStr = nil, nil, nil
     local vName, vType, vVal       = nil, nil, nil

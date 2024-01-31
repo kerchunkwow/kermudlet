@@ -1,3 +1,4 @@
+-- The goal is to keep kermudlet_init MUD-agnostic so it could potentially be reused for others
 homeDirectory = 'C:/dev/mud/mudlet/'
 luasql = require( "luasql.sqlite3" )
 
@@ -17,8 +18,8 @@ multimatches = nil
 line         = nil
 command      = nil
 
-if clearScreen then clearScreen() end
--- Silly function but it will put this file on the map.
+-- Somewhat of a pointless function; but for now all scripts need to define at least one function
+-- in the global namespace to be eligible for auto-reloading.
 function loadLibs()
   -- Load the standard libraries
   runLuaFile( 'lib/lib_script.lua' )
@@ -27,16 +28,17 @@ function loadLibs()
   runLuaFile( 'lib/lib_react.lua' )
   runLuaFile( 'lib/lib_string.lua' )
   runLuaFile( 'lib/lib_wintin.lua' )
+
+  -- Now branch into Gizmo-specific scripts
+  runLuaFile( 'gizmo/gizmo_init.lua' )
 end
 
 loadLibs()
 
--- Now branch into Gizmo-specific scripts
-runLuaFile( 'gizmo/gizmo_init.lua' )
-
--- Ensure all scripts have been fully loaded, then add file watchers to any file
--- that defined at least one function; this enables auto-reloading via the
--- sysPathChanged event
+-- Once all scripts are loaded, this function will iterate through the global namespace table and
+-- call addFileWatch() on any file that has at least one function definition in the current interpreter.
+-- This is done in each session's local interpreter, meaning we have four times the number of files to
+-- watch; so it might be a good idea to disable this while you're not actively developing new scripts.
 local function addFileWatchers()
   -- Table to hold all of the filenames that have defined functions in the current interpreter
   local mySources = {}
@@ -63,9 +65,8 @@ local function addFileWatchers()
       end
     end
   end
-  -- Add a watcher explicitly to the module itself to refresh the XML file
-  -- [NOTE] This will cause a console window to pop-up momentarily; comment this
-  -- out if you're making a ton of updates in Mudlet.
+  -- [NOTE] You can set a watcher on the .mpackage as well which will unpack the XML file any time
+  -- you modify it, but this pops up a command console so I prefer to do it manually with the 'refxml' alias
   -- addFileWatch( "C:/Dev/mud/mudlet/gizmo/gizmudlet.mpackage" )
 end
 addFileWatchers()

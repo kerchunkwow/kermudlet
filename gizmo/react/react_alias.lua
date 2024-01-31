@@ -165,14 +165,14 @@ end
 
 -- Cast the specified spell at a command-line target or myself by default
 function aliasCastBuff( spell )
-  local trg = matches[2] or myself
+  local trg = matches[2] or pcName
   send( f [[cast '{spell}' {trg}]] )
 end
 
 -- Called by alias 'rr' to attempt a full recall & send a critical warning if no scrolls are available
 function aliasReciteRecalls()
-  local eventMethod = session == 1 and 'raiseEvent' or 'raiseGlobalEvent'
-  local noRecallCode = f "{eventMethod}( 'eventWarn', {session}, 'norecall' )"
+  local eventMethod = SESSION == 1 and 'raiseEvent' or 'raiseGlobalEvent'
+  local noRecallCode = f "{eventMethod}( 'eventWarn', {SESSION}, 'norecall' )"
   createTemporaryTrigger( "norecalls", "does not contain", noRecallCode, 20 )
   send( f 'get recall {container}' )
   send( 'recite recall' )

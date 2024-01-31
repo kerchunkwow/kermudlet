@@ -13,21 +13,26 @@ function trimName( name )
     -- which we don't need, so it's ignored with _
     name = string.gsub( name, flag, '' )
   end
-  -- Make sure we didn't leave any whitespace behind
-  name = string.match( name, "^%s*(.-)%s*$" )
-
-  return name
+  -- Trim/remove any modifications added by "jewelcrafting"
+  name = string.gsub( name, ' with %w+ %w+ buckle', '' )
+  return trim( name )
 end
 
-function itemQueryAppend( item_name )
+function itemQueryAppend()
+  itemName = matches[2]
   -- Store untrimmed string length for later padding/alignment
-  local true_length = #item_name
-  item_name = trimName( item_name )
+  local true_length = #itemName
+  selectString( itemName, 1 )
+  fg( "slate_gray" )
+  selectString( "glowing", 1 )
+  fg( "gold" )
+  selectString( "humming", 1 )
+  fg( "olive_drab" )
+  selectString( "cloned", 1 )
+  fg( "royal_blue" )
+  resetFormat()
+  itemShortName = trimName( itemName )
 
-  -- Check if the item is in the ignored list and return immediately if it is
-  if ignoredItems[item_name] then
-    return
-  end
   -- Connect to local item db
   local luasql = require "luasql.sqlite3"
   local env = luasql.sqlite3()
@@ -40,7 +45,7 @@ function itemQueryAppend( item_name )
   -- Query for the item's stats, antis, and cloneability values
   local query = string.format(
     [[SELECT name, stats_str, antis_str, clone, effects_str FROM simple_item WHERE name = '%s']],
-    item_name:gsub( "'", "''" ) )
+    itemShortName:gsub( "'", "''" ) )
   local cur, qerr = conn:execute( query )
 
   if not cur then
@@ -58,18 +63,18 @@ function itemQueryAppend( item_name )
   if item then
     -- Some shorthanded color codes
     local sc      = "<sea_green>"   -- Item stats
-    local ec      = "<ansi_cyan>"   -- Effects
+    local ec      = "<ansi_cyan>"   -- +Affects
     local cc      = "<steel_blue>"  -- Cloneability
     local spc     = "<ansi_yellow>" -- Proc
     local ac      = "<firebrick>"   -- Antis
 
     -- Padding for alignment
-    local padding = string.rep( " ", 32 - true_length )
+    local padding = string.rep( " ", 46 - true_length )
     longest_eq    = longest_eq or 0
-    if #item_name > longest_eq then longest_eq = #item_name end
+    if #itemShortName > longest_eq then longest_eq = #itemShortName end
     -- Build display string from stats & cloneable flag
     local display_string = nil
-    local specTag        = itemHasSpec( item_name ) and f " {spc}ƒ{R}" or ""
+    local specTag        = itemHasSpec( itemShortName ) and f " {spc}ƒ{R}" or ""
     local cloneTag       = item.clone == 1 and f " {cc}c{R}" or ""
     local stats          = item.stats_str and f "{sc}{item.stats_str}{R}" or ""
     -- Add a space if strings don't start with a sign (looks nicer, usually weapons)
@@ -77,19 +82,24 @@ function itemQueryAppend( item_name )
     -- Display basic string or add additional details based on query mode
     if itemQueryMode == 0 then
       display_string = f "{padding}{stats}{cloneTag}{specTag}"
-    elseif itemQueryMode == 1 and (stats ~= "" or antis ~= "") then
+    elseif itemQueryMode == 1 and (stats ~= "") then
       -- Add effects and anti-flags when mode == 1
       local effects, antis = nil, nil
       effects              = item.effects_str and f " {ec}{item.effects_str}{R}" or ""
-      antis                = item.antis_str and f " {ac}{item.antis_str}{R}" or ""
-      display_string       = f "{padding}{stats}{cloneTag}{specTag}{effects}{antis}"
+      antis                = item.antis_str or ""
+      -- If there's an anti-string and a customize function is defined, use it
+      if #antis >= 1 and customizeAntiString then
+        antis = customizeAntiString( antis )
+        antis = f " {ac}{antis}{R}"
+      end
+      display_string = f "{padding}{stats}{cloneTag}{specTag}{effects}{antis}"
     end
     -- Print the final string
     if display_string ~= "" then
       cecho( display_string )
     end
   else
-    cecho( "info", string.format( "\nNo item named <medium_orchid>%s<reset>; #add me!", item_name ) )
+    --cecho( "info", string.format( "\nNo item named <medium_orchid>%s<reset>; #add me!", itemShortName ) )
   end
 end
 
