@@ -1,8 +1,17 @@
+# Localized configuration files; use templates to check in new functionality
 gizmo/config/login.lua
 gizmo/config/config_local.lua
-sandbox/
-.vscode/
+
+# Contents of an unpacked .mpackage file
 gizmo/gizmudlet.xml
-gizmo/.mudlet
-gizmo/assets/
 gizmo/config.lua
+gizmo/.mudlet
+
+# Anything in the sandbox if it's present
+sandbox/
+
+# Local VSCode settings & config
+.vscode/
+
+# Gizmo assets for building a Wiki (maybe later)
+gizmo/assets/
