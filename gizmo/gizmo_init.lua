@@ -38,26 +38,31 @@ if SESSION == 1 then
 else
   runLuaFiles( altScripts )
 end
--- Using Powershell, delete and re-extract the Mudlet module's XML file so it is
--- visible to global searches (nice to know when you rename or redefine something)
--- that is being referenced from within Mudlet.
+-- Using Powershell, delete and re-extract the Mudlet module's XML file, then parse
+-- the XML into a a Lua file available for interpretation by your IDE.
 function refreshModuleXML()
   local modulePath  = "C:/Dev/mud/mudlet/gizmo/gizmudlet.mpackage"
   local tempZipPath = "C:/Dev/mud/mudlet/gizmo/gizmudlet.zip"
   local xmlPath     = "C:/Dev/mud/mudlet/gizmo/gizmudlet.xml"
+  local extractDir  = "C:/Dev/mud/mudlet/gizmo/temp_extract"
 
-  -- Delete the existing XML file
+  -- If there's already a copy of the .xml present, delete it first
   os.remove( xmlPath )
 
-  -- Copy the .mpackage file to a .zip file
+  -- Copy/rename the .mpackage file to a .zip file
   os.execute( 'copy "' .. modulePath:gsub( '/', '\\' ) .. '" "' .. tempZipPath:gsub( '/', '\\' ) .. '"' )
 
-  -- Extract the XML file from the temporary .zip file
+  -- Extract everything from the .zip to a temporary directory
   local extractCmd = 'powershell -command "Expand-Archive -LiteralPath \'' ..
-      tempZipPath:gsub( '/', '\\' ) .. '\' -DestinationPath \'C:/Dev/mud/mudlet/gizmo\' -Force"'
-
+      tempZipPath:gsub( '/', '\\' ) .. '\' -DestinationPath \'' .. extractDir:gsub( '/', '\\' ) .. '\' -Force"'
   os.execute( extractCmd )
 
-  -- Delete the temporary .zip file
+  -- Relocate the .xml and delete the temporary stuff
+  local moveCmd = 'move "' .. extractDir:gsub( '/', '\\' ) .. '\\gizmudlet.xml" "' .. xmlPath:gsub( '/', '\\' ) .. '"'
+  os.execute( moveCmd )
   os.remove( tempZipPath )
+  os.execute( 'rmdir "' .. extractDir:gsub( '/', '\\' ) .. '" /s /q' )
+
+  -- Now run the parser to generate the Lua-equivalent of the XML
+  os.execute( 'python "C:/Dev/mud/mudlet/parse_xml.py"' )
 end
