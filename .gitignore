@@ -5,3 +5,4 @@ sandbox/
 gizmo/gizmudlet.xml
 gizmo/.mudlet
 gizmo/assets/
+gizmo/config.lua
