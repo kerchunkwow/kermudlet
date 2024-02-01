@@ -98,3 +98,17 @@ function printVariables()
     end
   end
 end
+
+-- Delete the current line then any of the subsequent 3 lines that are either empty or "prompt only"
+function deleteComplete()
+  deleteLine()
+  tempLineTrigger( 1, 3, [[completeDelete()]] )
+end
+
+-- Support deleteComplete() by deleteing the current line if it's empty or "prompt only"
+function completeDelete()
+  local justAPrompt = string.match( line, "< %d+%(%d+%) %d+%(%d+%) %d+%(%d+%) > $" )
+  if justAPrompt or #line <= 0 then
+    deleteLine()
+  end
+end
