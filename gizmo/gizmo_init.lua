@@ -38,3 +38,26 @@ if SESSION == 1 then
 else
   runLuaFiles( altScripts )
 end
+-- Using Powershell, delete and re-extract the Mudlet module's XML file so it is
+-- visible to global searches (nice to know when you rename or redefine something)
+-- that is being referenced from within Mudlet.
+function refreshModuleXML()
+  local modulePath  = "C:/Dev/mud/mudlet/gizmo/gizmudlet.mpackage"
+  local tempZipPath = "C:/Dev/mud/mudlet/gizmo/gizmudlet.zip"
+  local xmlPath     = "C:/Dev/mud/mudlet/gizmo/gizmudlet.xml"
+
+  -- Delete the existing XML file
+  os.remove( xmlPath )
+
+  -- Copy the .mpackage file to a .zip file
+  os.execute( 'copy "' .. modulePath:gsub( '/', '\\' ) .. '" "' .. tempZipPath:gsub( '/', '\\' ) .. '"' )
+
+  -- Extract the XML file from the temporary .zip file
+  local extractCmd = 'powershell -command "Expand-Archive -LiteralPath \'' ..
+      tempZipPath:gsub( '/', '\\' ) .. '\' -DestinationPath \'C:/Dev/mud/mudlet/gizmo\' -Force"'
+
+  os.execute( extractCmd )
+
+  -- Delete the temporary .zip file
+  os.remove( tempZipPath )
+end
