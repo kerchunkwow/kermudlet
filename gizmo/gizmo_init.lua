@@ -38,8 +38,8 @@ if SESSION == 1 then
 else
   runLuaFiles( altScripts )
 end
--- Using Powershell, delete and re-extract the Mudlet module's XML file, then parse
--- the XML into a a Lua file available for interpretation by your IDE.
+-- Using Powershell, delete and re-extract the Mudlet module's XML file, then convert
+-- it to a Lua file that your IDE can interpret.
 function refreshModuleXML()
   local modulePath  = "C:/Dev/mud/mudlet/gizmo/gizmudlet.mpackage"
   local tempZipPath = "C:/Dev/mud/mudlet/gizmo/gizmudlet.zip"
@@ -63,6 +63,7 @@ function refreshModuleXML()
   os.remove( tempZipPath )
   os.execute( 'rmdir "' .. extractDir:gsub( '/', '\\' ) .. '" /s /q' )
 
-  -- Now run the parser to generate the Lua-equivalent of the XML
-  os.execute( 'python "C:/Dev/mud/mudlet/parse_xml.py"' )
+  -- Now run the parser to generate the Lua-equivalent of the XML, keeping the PowerShell window open
+  os.execute( 'powershell -command "python \\"C:/Dev/mud/mudlet/parse_xml.py\\""' )
+  os.remove( xmlPath )
 end
