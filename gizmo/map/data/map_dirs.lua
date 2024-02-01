@@ -5,7 +5,7 @@ function goArea( area )
   local commands = expandWintinString( path )
   cecho( f "\n<dim_grey>Path: <green_yellow>{path}<reset>" )
   for _, cmd in ipairs( commands ) do
-    cecho( f "\n<orange>{cmd}<reset>" )
+    send( cmd, false )
   end
 end
 
