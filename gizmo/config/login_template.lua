@@ -4,7 +4,7 @@ local first, second, third, fourth = pcNames[1], pcNames[2], pcNames[3], pcNames
 local password = 'yourpass'
 
 -- Temporary triggers to log each of your PCs in and proceed through to Reception
-tempTrigger( [[By what name do you wish to be known?]], f [[send( "{myself}", false )]], 1 )
+tempTrigger( [[By what name do you wish to be known?]], f [[send( "{pcName}", false )]], 1 )
 tempTrigger( [[Password:]], f [[send( "{password}", false )]], 1 )
 tempTrigger( [[PRESS RETURN:]], [[send( "1", false )]], 1 )
 tempTrigger( [[Enter the game]], [[send( "1", false )]], 1 )
