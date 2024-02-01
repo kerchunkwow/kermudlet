@@ -4,36 +4,38 @@
 
 import xml.etree.ElementTree as ET
 
-def extract_lua_from_xml(xml_file_path, output_lua_file_path):
-    tree = ET.parse(xml_file_path)
+# Extract all scripts and pattern strings from a Mudlet module's XML file
+def extract_lua_from_xml( input_xml, output_lua ):
+    tree = ET.parse( input_xml )
     root = tree.getroot()
 
-    strings = {}
-    scripts = {}
+    patterns = {}
+    scripts  = {}
 
-    # Keeps track of the current element being parsed for name mapping
+    # Track the name of the current element being parsed
     current_name = None
 
     for element in root.iter():
         if element.tag == "name":
             current_name = element.text.strip()
-            # Each "name" gets a new list; this has the added benefit of creating empty stubs
-            # with the names of Packages/Groups
-            strings[current_name] = []
+            # Each "name" element gets an entry in the dict; Groups will appear as empty lists
+            patterns[current_name] = []
         elif element.tag in ["string", "regex"] and element.text:
-            # For elements with multiple strings, append each to a list before inserting into the dict
-            strings[current_name].append(element.text.strip())
+            # Elements that have multiple patterns (e.g., multiline triggers) need a list of patterns
+            patterns[current_name].append( element.text.strip() )
         elif element.tag == "script" and element.text:
             scripts[current_name] = element.text.strip()
 
-    # utf-8 encoding is necessary here
-    with open(output_lua_file_path, "w", encoding='utf-8') as lua_file:
-        lua_file.write("extractedStrings = {\n")
-        for name, string_list in strings.items():
-            combined_strings = ', '.join(f"[[{s}]]" for s in string_list)
+    # Using utf-8, write the parsed content to the specified Lua file
+    with open( output_lua, "w", encoding='utf-8' ) as lua_file:
+        # Put the patterns in a table
+        lua_file.write( "extractedPatterns = {\n" )
+        for name, string_list in patterns.items():
+            combined_strings = ', '.join( f"[[{s}]]" for s in string_list )
             lua_file.write(f"  ['{name}'] = {{{combined_strings}}},\n")
         lua_file.write("}\n\n")
 
+        # Then dump the scripts; include the name of the source element as a comment
         for name, script in scripts.items():
             lua_file.write(f"-- {name}\n{script}\n\n")
 
