@@ -7,6 +7,9 @@ gizmo/gizmudlet.xml
 gizmo/config.lua
 gizmo/.mudlet
 
+# Created by parse_xml.py
+gizmo/gizmudlet.lua
+
 # Anything in the sandbox if it's present
 sandbox/
 
