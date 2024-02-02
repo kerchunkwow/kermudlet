@@ -1,5 +1,6 @@
 ## Mudlet/Lua Tips & Tricks
 
+### Gating/Throttling Triggers
 - Use quick & diry semaphores to gate or throttle functions that might be called repeatedly under certain conditions (usually by triggers).
 
 ```
@@ -8,6 +9,19 @@ if not semaphore and someCondition then
   semaphore = true
   someFunction()
   tempTimer( 5, [[semaphore = nil]])
+end
+```
+### Temporary Data Capture Triggers
+- Certain triggers are only useful when capturing data from a specific command like score; for efficiency, leaves these off by default and use an Alias to turn them on temporarily prior to issuing the command in question. You can either leave them on for a set period of time (enough to ensure the output is done parsing), or use some component of the output to trigger the disable. Here's an example of how to enable a temporary trigger to capture 'aff' data from all sessions.
+```
+-- Called by 'aff'; turns on temporary affect capturing triggers for all sessions to update affect status strings
+function aliasAffectCapture()
+  -- Reset the affect table so missing affects are properly dropped
+  resetAffects()
+  -- Turn on the affect capturing trigger for three seconds
+  expandAlias( [[all lua tempEnableTrigger( 'AffectCapture', 3 )]], false )
+  -- Issue 'aff' in all profiles
+  expandAlias( 'all aff', false )
 end
 ```
 
