@@ -1,18 +1,15 @@
--- Update status for the given pc with data captured from the prompt; we ignore "max" values from the prompt
--- since those change infrequently and would almost never result in inserts anyway
-function pcStatusPrompt( pc, hpc, mnc, mvc, tnk, trg )
+-- Update status for the given pc with data captured from the prompt
+function pcStatusPrompt( pc, hpc, hpm, mnc, mnm, mvc, mvm, tnk, trg )
   pc = tonumber( pc )
 
   local myStatus = pcStatus[pc]
 
-  if myStatus["currentHP"] ~= hpc then
-    -- Grab current values for this pc
-    local maxHP             = myStatus["maxHP"]
+  -- If our current or maximum health have changed, update as needed
+  if myStatus["currentHP"] ~= hpc or myStatus["maxHP"] ~= hpm then
     local previousPercentHP = myStatus["percentHP"]
 
     -- Calculate new health percentage & make a label for gauge
-    local percentHP         = (hpc / maxHP) * 100
-
+    local percentHP         = (hpc / hpm) * 100
     local hp_label          = string.format( "%.1f%%", percentHP )
 
     -- Calculate change in health percentage
@@ -20,10 +17,11 @@ function pcStatusPrompt( pc, hpc, mnc, mvc, tnk, trg )
 
     -- Update status table with new values
     myStatus["currentHP"]   = hpc
+    myStatus["maxHP"]       = hpm
     myStatus["percentHP"]   = percentHP
 
     -- Update & label the HP gauge for this pc
-    hpGauge[pc]:setValue( hpc, maxHP, hp_label )
+    hpGauge[pc]:setValue( hpc, hpm, hp_label )
 
     -- If pc HP% is low or we took a big hit, send a warning & flash the gauge
     -- See: hp_monitor table in globals definition
@@ -32,15 +30,18 @@ function pcStatusPrompt( pc, hpc, mnc, mvc, tnk, trg )
       tempTimer( 0.75, f [[hpGauge[{pc}]:flash( 0.25 )]] )
     end
   end
-  if myStatus["currentMana"] ~= mnc then
+  -- If our current or maximum mana have changed, update as needed
+  if myStatus["currentMana"] ~= mnc or myStatus["maxMana"] ~= mnm then
     myStatus["currentMana"] = mnc
-    manaGauge[pc]:setValue( mnc, myStatus["maxMana"], mnc )
+    myStatus["maxMana"]     = mnm
+    manaGauge[pc]:setValue( mnc, mnm, mnc )
 
     -- Maybe put a check here to see if we're "spent"
   end
-  if myStatus["currentMoves"] ~= mvc then
+  if myStatus["currentMoves"] ~= mvc or myStatus["maxMoves"] ~= mvm then
     myStatus["currentMoves"] = mvc
-    movesGauge[pc]:setValue( mvc, myStatus["maxMoves"], mvc )
+    myStatus["maxMoves"]     = mvm
+    movesGauge[pc]:setValue( mvc, mvm, mvc )
 
     -- Maybe put a check here to see if we're "spent"
   end

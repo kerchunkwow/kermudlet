@@ -42,8 +42,9 @@ function aliasSessionCommand()
 end
 
 -- The event by which alts report their prompt status to the main pcStatus table.
-function pcStatusPromptEvent( raised_event, pc, hpc, mnc, mvc, tnk, trg )
-  pcStatusPrompt( tonumber( pc ), tonumber( hpc ), tonumber( mnc ), tonumber( mvc ), tnk, trg )
+function pcStatusPromptEvent( raised_event, pc, hpc, hpm, mnc, mnm, mvc, mvm, tnk, trg )
+  pcStatusPrompt( tonumber( pc ), tonumber( hpc ), tonumber( hpm ), tonumber( mnc ), tonumber( mnm ), tonumber( mvc ),
+    tonumber( mvm ), tnk, trg )
 end
 
 -- The event by which alts report their score information to the main pcStatus table.

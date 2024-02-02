@@ -15,6 +15,7 @@ local commonScripts = {
   'gizmo/map/data/map_unique.lua',
   'gizmo/map/map_queue.lua',
   'gizmo/map/map_main.lua',
+  'gizmo/status/status_parse.lua',
 }
 
 -- Specific to the main session
@@ -22,21 +23,13 @@ local mainScripts = {
   'gizmo/gui/gui_create.lua',
   'gizmo/gui/gui.lua',
   'gizmo/status/status_update.lua',
-  'gizmo/status/status_parse_main.lua',
   'gizmo/eq/eq_inventory.lua',
-}
-
--- Specific to alt sessions
-local altScripts = {
-  'gizmo/status/status_parse_alt.lua',
 }
 
 runLuaFiles( commonScripts )
 
 if SESSION == 1 then
   runLuaFiles( mainScripts )
-else
-  runLuaFiles( altScripts )
 end
 -- Using Powershell, delete and re-extract the Mudlet module's XML file, then convert
 -- it to a Lua file that your IDE can interpret.
