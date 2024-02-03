@@ -1,3 +1,25 @@
+-- Function to calculate duration
+function calculateDuration( pc, spellName )
+  local endTime = getStopWatchTime( "timer" )
+  local startTime = affectStartTimes[pc][spellName]
+  if startTime then
+    local newDuration = endTime - startTime
+    local existingDuration = affectInfo[spellName].duration
+
+    if existingDuration then
+      if math.abs( newDuration - existingDuration ) <= 60 then
+        -- If there's already a duration stored for this spell, average the new and existing durations
+        return math.floor( ((newDuration + existingDuration) / 2) / 10 ) * 10
+      end
+      -- If the calculated duration differs by more than +/- 60s, this was probably an error so discard
+      return existingDuration
+    else
+      -- This is the first recorded duration
+      return math.floor( newDuration / 10 ) * 10
+    end
+  end
+  return nil
+end
 ---@diagnostic disable: cast-local-type
 
 -- Parse prompt components and trigger an update if anything has changed; ignore maximum values
