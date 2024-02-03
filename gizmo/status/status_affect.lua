@@ -1,5 +1,6 @@
--- Keywords to look for in output that indicate when spell status changes
-affectKeywords   = {
+-- These keywords are captured in trigger phrases to indicate which spell has been applied or removed.
+-- They are used to map to the spell name in applyAffect() and removeAffect().
+affectKeywords = {
   ["glowing"]    = "Sanctuary",
   ["aura"]       = "Sanctuary",
   ["righteous"]  = "Bless",
@@ -9,132 +10,144 @@ affectKeywords   = {
   ["protected"]  = "Armor",
 }
 
--- The affects we want to track; set this to "save" in Variables to maintain durations between sessions
-affectInfo       = affectInfo or {
-  ["Sanctuary"]        = {duration = nil, cost = 50, color = "lavender_blush", char = "🌟"},
-  ["Bless"]            = {duration = nil, cost = 5, color = "light_goldenrod", char = "🙏"},
-  ["Fury"]             = {duration = nil, cost = 60, color = "tomato", char = "😡"},
-  ["Armor"]            = {duration = nil, cost = 5, color = "steel_blue", char = "🛡️"},
-  ["Detect Invisible"] = {duration = 60, cost = 5, color = "steel_blue", char = "🛡️"},
-}
-
--- Initialize affect status, strings, and start times
-affectStatus     = {}
-affectStrings    = {}
-affectStartTimes = {}
-
--- Populate tables with information about spell affects
-local function buildAffectStrings()
+-- Initiate the affect status table for all four PCs
+local function initAffectStatus()
+  affectStatus = {}
   for pc = 1, 4 do
-    affectStatus[pc] = {}
-    affectStrings[pc] = ""
-    affectStartTimes[pc] = {}
-    for spellName, _ in pairs( affectInfo ) do
-      affectStatus[pc][spellName] = false
-      affectStartTimes[pc][spellName] = nil
+    affectStatus[pc] = {
+      ['Sanctuary'] = {active = false, ticksRemaining = -1},
+      ['Armor']     = {active = false, ticksRemaining = -1},
+      ['Bless']     = {active = false, ticksRemaining = -1},
+      ['Fury']      = {active = false, ticksRemaining = -1},
+      ['Endure']    = {active = false, ticksRemaining = -1}
+    }
+  end
+end
+initAffectStatus()
+
+-- Update the specified affect for a given pc; duration -1 removes an affect
+-- Only available to the Main session; Alts raise events as with the prompt
+function updateAffect( pc, affectName, ticks )
+  if affectStatus[pc] and affectStatus[pc][affectName] then
+    local affect = affectStatus[pc][affectName]
+    if affect.active == (ticks >= 0) and affect.ticksRemaining == ticks then
+      -- Skip update if the affect status is unchanged
+      return
     end
-  end
-end
-buildAffectStrings()
-
--- Update affect status to true and modify affect string
-function applyAffect( spellName, pc )
-  if affectStatus[pc] and affectInfo[spellName] then
-    if not affectStatus[pc][spellName] then
-      affectStatus[pc][spellName] = true
-      updateAffectString( pc, spellName, true )
-      affectStartTimes[pc][spellName] = getStopWatchTime( "timer" )
-    end
-  else
-    cecho( f "\n<orange_red>Invalid applyAffect: {spellName} for PC{pc}<reset>" )
-  end
-end
-
--- Update affect status to false and modify affect string; called by 'remove' triggers
-function removeAffect( spellName, pc )
-  if affectStatus[pc] and affectInfo[spellName] then
-    if affectStatus[pc][spellName] then
-      --affectInfo[spellName].duration = calculateDuration( pc, spellName )
-      affectStatus[pc][spellName] = false
-      updateAffectString( pc, spellName, false )
-    end
-  else
-    cecho( f "\n<orange_red>Invalid removeAffect: {spellName} for PC{pc}<reset>" )
-  end
-end
-
--- Function to update affect strings
-function updateAffectString( pc, spellName, addChar )
-  local char = affectInfo[spellName].char
-  if addChar then
-    affectStrings[pc] = affectStrings[pc] .. char
-  else
-    affectStrings[pc] = affectStrings[pc]:gsub( char, '', 1 )
-  end
-  affectLabel[pc]:echo( affectStrings[pc] )
-end
-
--- Function to calculate duration
-function calculateDuration( pc, spellName )
-  local endTime = getStopWatchTime( "timer" )
-  local startTime = affectStartTimes[pc][spellName]
-  if startTime then
-    local newDuration = endTime - startTime
-    local existingDuration = affectInfo[spellName].duration
-
-    if existingDuration then
-      if math.abs( newDuration - existingDuration ) <= 60 then
-        -- If there's already a duration stored for this spell, average the new and existing durations
-        return math.floor( ((newDuration + existingDuration) / 2) / 10 ) * 10
-      end
-      -- If the calculated duration differs by more than +/- 60s, this was probably an error so discard
-      return existingDuration
+    -- Update the affect status based on the ticks value
+    if ticks >= 0 then
+      affectStatus[pc][affectName].active = true
+      affectStatus[pc][affectName].ticksRemaining = ticks
     else
-      -- This is the first recorded duration
-      return math.floor( newDuration / 10 ) * 10
+      affectStatus[pc][affectName].active = false
+      affectStatus[pc][affectName].ticksRemaining = -1
     end
-  end
-  return nil
-end
-
--- Called by affect apply triggers
-function applyAffectTrigger()
-  local keyword = matches[2]
-  local appliedAffect = affectKeywords[keyword]
-  local affectColor, affectEmoji = affectInfo[appliedAffect].color, affectInfo[appliedAffect].char
-  selectString( keyword, 1 )
-  fg( affectColor )
-  resetFormat()
-  cecho( affectEmoji )
-  if SESSION == 1 then
-    applyAffect( appliedAffect, 1 )
+    refreshAffectLabels( pc )
   else
-    raiseGlobalEvent( "eventPCStatusAffect", SESSION, appliedAffect, true )
+    cecho( "info", f "\n<dark_orange>err<reset> invalid updateAffect: {pc}, {affectName}" )
   end
 end
 
--- Called by affect remove triggers
-function removeAffectTrigger()
-  local keyword = matches[2]
-  local removedAffect = affectKeywords[keyword]
-  local affectColor, affectEmoji = affectInfo[removedAffect].color, affectInfo[removedAffect].char
-  selectString( keyword, 1 )
-  fg( affectColor )
-  resetFormat()
-  cecho( affectEmoji )
+-- On 'aff' this turns on the trigger group responsible for updating affects
+function aliasUpdateAffects()
+  -- Reset the affect table so missing affects are properly dropped
+  resetAffects()
+  -- Turn on the Capture Affects trigger group (it turns itself off at next prompt)
+  expandAlias( [[all lua enableTrigger( 'Capture Affects' )]], false )
+  -- Issue 'aff' in all profiles
+  expandAlias( 'all aff', false )
+end
+
+-- Called when capture triggers match an 's expires in d' pattern
+function triggerUpdateAffect()
+  local affectName = matches[2]
+  local ticks = tonumber( matches[3] )
   if SESSION == 1 then
-    removeAffect( removedAffect, 1 )
+    updateAffect( 1, affectName, ticks )
+    refreshAffectLabels( 1 )
   else
-    raiseGlobalEvent( "eventPCStatusAffect", SESSION, removedAffect, false )
+    raiseGlobalEvent( "eventPCStatusAffect", SESSION, affectName, ticks )
   end
 end
 
--- Function to print affect strings for each PC
-function printAffectStrings()
+-- When 'aff' is done refreshing data, update the labels in the Party Console
+function refreshAffectLabels( pc )
+  affectLabel[pc]:echo( getAffectsString( pc ) )
+end
+
+-- Called when an affect application message is matched in game
+function triggerAffectApllied()
+  local keyword = matches[2]
+  local affectApplied = affectKeywords[keyword]
+  local ac = color_table[affectInfo[affectApplied].color]
+  local acr, acg, acb = ac[1], ac[2], ac[3]
+  -- Highlight the application keyword in the affect's color
+  selectString( keyword, 1 )
+  setFgColor( acr, acg, acb )
+  resetFormat()
+  cecho( affectInfo[affectApplied].char )
+  if SESSION == 1 then
+    updateAffect( 1, affectApplied, affectInfo[affectApplied].duration )
+    refreshAffectLabels( 1 )
+  else
+    raiseGlobalEvent( "eventPCStatusAffect", SESSION, affectApplied, affectInfo[affectApplied].duration )
+  end
+end
+
+-- Called when an affect expiration message is matched in game
+function triggerAffectExpired()
+  local affectRemoved = affectKeywords[matches[2]]
+  if SESSION == 1 then
+    updateAffect( 1, affectRemoved, -1 )
+    refreshAffectLabels( 1 )
+  else
+    raiseGlobalEvent( "eventPCStatusAffect", SESSION, affectRemoved, -1 )
+  end
+end
+
+-- This resets/clears all affects; used before an aff to ensure a clean slate
+function resetAffects()
   for pc = 1, 4 do
-    local affectString = affectStrings[pc]
-    if #affectString > 0 then
-      cecho( "info", f "\nAffects for {pcTags[pc]}: {affectString}" )
+    for affectName in pairs( affectStatus[pc] ) do
+      affectStatus[pc][affectName].active = false
+      affectStatus[pc][affectName].ticksRemaining = -1
     end
   end
+end
+
+function triggerClearAffects()
+  for affectName in pairs( affectStatus[SESSION] ) do
+    if SESSION == 1 then
+      affectStatus[1][affectName].active = false
+      affectStatus[1][affectName].ticksRemaining = -1
+      refreshAffectLabels( 1 )
+    else
+      raiseGlobalEvent( "eventPCStatusAffect", SESSION, affectName, -1 )
+    end
+  end
+end
+
+-- Get a string representation of the given PCs active affects w/ duration
+function getAffectsString( pc )
+  local affectString = ""
+  for affectName, affectData in pairs( affectStatus[pc] ) do
+    if affectData.active then
+      local char = affectInfo[affectName].char
+      local maxDuration = affectInfo[affectName].duration
+      local ticksRemaining = affectData.ticksRemaining
+      local durationColor
+
+      -- Determine the durationColor based on ticksRemaining compared to maxDuration
+      if ticksRemaining >= maxDuration / 2 then
+        durationColor = affectDuration['high']
+      elseif ticksRemaining >= 2 then
+        durationColor = affectDuration['med']
+      else
+        durationColor = affectDuration['low']
+      end
+      -- Construct the affect string with the appropriate color
+      affectString = f "{affectString}{char}<span style='color:{durationColor};'>{ticksRemaining}</span> "
+    end
+  end
+  return trim( affectString )
 end

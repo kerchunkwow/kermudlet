@@ -64,12 +64,9 @@ function pcStatusRoomEvent( raised_event, pc, room )
 end
 
 -- Handle events from other sessions to update affect states (i.e., buffs/debuffs).
-function pcStatusAffectEvent( raised_event, pc, affect, state )
-  if state then
-    applyAffect( affect, pc )
-  else
-    removeAffect( affect, pc )
-  end
+function pcStatusAffectEvent( raised_event, pc, affect, ticks )
+  updateAffect( pc, affect, ticks )
+  refreshAffectLabels( pc )
 end
 
 -- Register event handlers (i.e., map event types to function names)
