@@ -71,6 +71,20 @@ criticalWarnings = {
   ["switched"]  = true,
   ["norecall"]  = true,
 }
+-- Customize your affect info to match the duration of your own buffs and desired colors & characters
+affectInfo       = {
+  ["Sanctuary"] = {duration = 7, color = "lavender_blush", char = "🌟"},
+  ["Bless"]     = {duration = 6, color = "light_goldenrod", char = "🙏"},
+  ["Fury"]      = {duration = 2, color = "tomato", char = "😡"},
+  ["Armor"]     = {duration = 24, color = "steel_blue", char = "🛡️"},
+  ["Endure"]    = {duration = 24, color = "orange", char = "💪"},
+}
+-- Colors to use in the Party Console labels to indicate duration of affects
+affectDuration   = {
+  ['high'] = "YellowGreen",
+  ['med']  = "Orange",
+  ['low']  = "Crimson",
+}
 
 -- Select which ANTI-FLAGS to include in stat output from eq/eq_db.lua
 function customizeAntiString( antis )
@@ -104,11 +118,12 @@ end
 local initialReactionState = {
   -- ++ON for everyone
   {name = "PC Login",                  type = "trigger", state = true,  scope = 'All'},
-  {name = "fountain",                  type = "trigger", state = true,  scope = 'All'},
   {name = "Total Recall (wor)",        type = "alias",   state = true,  scope = 'All'},
   {name = "All Rec Recall (rr)",       type = "alias",   state = true,  scope = 'All'},
-  {name = "Movement (Raw)",            type = "key",     state = true,  scope = 'All'},
   -- --OFF for everyone
+  {name = "hunger",                    type = "trigger", state = false, scope = 'All'},
+  {name = "thirst",                    type = "trigger", state = false, scope = 'All'},
+  {name = "fountain",                  type = "trigger", state = false, scope = 'All'},
   {name = "Group XP",                  type = "trigger", state = false, scope = 'All'},
   {name = "Solo XP",                   type = "trigger", state = false, scope = 'All'},
   {name = "EQ Stats",                  type = "trigger", state = false, scope = 'All'},
@@ -125,6 +140,7 @@ local initialReactionState = {
   -- --OFF for Main session
   {name = "Alt Gags",                  type = "trigger", state = false, scope = 'Main'},
   -- ++ON for Alts
+  {name = "Movement (Raw)",            type = "key",     state = true,  scope = 'Alts'},
   {name = "Alt Gags",                  type = "trigger", state = true,  scope = 'Alts'},
   -- --OFF for Alts
   {name = "gather",                    type = "trigger", state = false, scope = 'Alts'},

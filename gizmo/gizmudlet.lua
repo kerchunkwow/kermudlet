@@ -428,7 +428,7 @@ if SESSION == 1 then
 end
 
 -- Backup Automira
-if in_combat then
+if inCombat then
   backupMira = true
 end
 
