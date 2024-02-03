@@ -16,20 +16,19 @@ function triggerParsePrompt()
   -- The main session can compare directly against the master pcStatus table; Alt sessions use their local lastStatus table
   local currentStatus = (SESSION == 1) and pcStatus[1] or pcLastStatus
 
-  -- For the main session; we can compare parsed values directly against the pcStatus table
   local function statusNeedsUpdated()
     return hpc ~= currentStatus["currentHP"] or hpm ~= currentStatus["maxHP"] or
         mnc ~= currentStatus["currentMana"] or mnm ~= currentStatus["maxMana"] or
         mvc ~= currentStatus["currentMoves"] or mvm ~= currentStatus["maxMoves"] or
         tnk ~= currentStatus["tank"] or trg ~= currentStatus["target"]
   end
-  -- If nothing has changed, exit early - how can I make this work for Alts?
+  -- If nothing has changed, exit early
   if not statusNeedsUpdated() then return end
   -- At least one value has changed since the last prompt, update the status table
   if SESSION == 1 then
     pcStatusPrompt( SESSION, hpc, hpm, mnc, mnm, mvc, mvm, tnk, trg )
   else
-    raiseGlobalEvent( "event_pcStatus_prompt", SESSION, hpc, hpm, mnc, mnm, mvc, mvm, tnk, trg )
+    raiseGlobalEvent( "event_pcStatusPrompt", SESSION, hpc, hpm, mnc, mnm, mvc, mvm, tnk, trg )
   end
 end
 
