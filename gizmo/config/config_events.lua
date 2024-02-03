@@ -79,7 +79,7 @@ local function registerEventHandlers()
   -- Events that update the pcStatus table or interact with the UI are exclusive to the main session
   if SESSION ~= 1 then return end
   registerAnonymousEventHandler( [[eventWarn]], [[showWarning]] )
-  registerAnonymousEventHandler( [[event_pcStatus_prompt]], [[pcStatusPromptEvent]] )
+  registerAnonymousEventHandler( [[event_pcStatusPrompt]], [[pcStatusPromptEvent]] )
   registerAnonymousEventHandler( [[eventPCStatusAffect]], [[pcStatusAffectEvent]] )
   registerAnonymousEventHandler( [[event_pcStatus_score]], [[pcStatusScoreEvent]] )
   registerAnonymousEventHandler( [[event_pcStatus_room]], [[pcStatusRoomEvent]] )
