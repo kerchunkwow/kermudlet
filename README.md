@@ -24,6 +24,8 @@ function aliasAffectCapture()
   expandAlias( 'all aff', false )
 end
 ```
+### Inconsistent Newlinery
+- Many patterns you might expect to appear on a line of their own will appear on a line with a prompt; instead of anchoring your patterns with `^` alone, anchor them with `(?:^|> )` which will match the same pattern if it appears on the same line as a prompt.
 
 ## Notes
 
