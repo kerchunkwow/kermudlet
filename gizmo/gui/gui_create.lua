@@ -321,6 +321,8 @@ function createGizmoGUI()
 
       affectLabel[pc]:setFormat( font_format["affect"] )
       affectLabel[pc]:setStyleSheet( CSS_affect )
+      affectLabel[pc]:setFont( 'Dubai Medium' )
+      affectLabel[pc]:setFontSize( 14 )
       affectLabel[pc]:echo( "❓" )
 
       local pc_label_border = uiColor[f "pc_{pc}"]
