@@ -87,14 +87,17 @@ entire functions.
 - Do not provide "example usage" unless asked explicitly; script should only be provided within functions unless asked
 - Do not use inline comments; all comments should be on their own line.
 - Use camelCase for variables and functions, UPPER_CASE for globals and constants
-- Mudlet supports f-string interpolation
+- Mudlet supports f-string interpolation, but to not use it. Use string.format instead; when updating or modifying my scripts,
+replace any f-string interpolation with string.format calls.
 - When writing and testing new functions, include generous debug output using Mudlet's built-in `cecho()` function to send
 details to the info window: `cecho( "info", "\nInformative information." )`; prepend newlines for consistency
 - Do not include comments referring to interactions or exchanges within the chat session like `--fixed this`; comments
 should only be used to describe or explain the script itself; keep commentary within the chat session itself
 
-## Script and Function Catalog
-Quick reference to critical scripts/functions, including dependencies.
+## Key/Core Function Catalog
+- `trim( s )` and `split( s, delim )` are defined in `lib_string.lua`
+- Use `round( n, s )` from `lib_std.lua` to round values to 2.00 decimal places when performing calculations
+- Use `expandNumber( n )` when printing large values to add commas for readability
 
 ## Future Enhancements
 

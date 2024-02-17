@@ -38,17 +38,17 @@ function getMaxStringLength( stringList )
 end
 
 -- Get a list of substrings by splitting a string at delimeter
-function split( str, delimiter )
+function split( s, delim )
   local substrings = {}
   local from = 1
-  local delimFrom, delimTo = string.find( str, delimiter, from )
+  local delimFrom, delimTo = string.find( s, delim, from )
 
   while delimFrom do
-    table.insert( substrings, string.sub( str, from, delimFrom - 1 ) )
+    table.insert( substrings, string.sub( s, from, delimFrom - 1 ) )
     from = delimTo + 1
-    delimFrom, delimTo = string.find( str, delimiter, from )
+    delimFrom, delimTo = string.find( s, delim, from )
   end
-  table.insert( substrings, string.sub( str, from ) )
+  table.insert( substrings, string.sub( s, from ) )
 
   return substrings
 end

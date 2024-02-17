@@ -89,7 +89,7 @@ end
 function autoManaTransfer()
   cle_mn, mu_mn = pcStatus[1]["currentMana"], math.max( pcStatus[2]["currentMana"], pcStatus[3]["currentMana"] )
 
-  if cle_mn < 150 and mu_mn > 50 then
+  if cle_mn < 250 and mu_mn > 50 then
     aliasManaTransfer()
   end
 end
