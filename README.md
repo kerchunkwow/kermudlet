@@ -39,5 +39,32 @@ Overview of core project functionalities.
 Quick reference to critical scripts/functions, including dependencies.
 
 ## Future Enhancements
-Potential areas for development or enhancement.
+## Future Enhancements
+
+1. **Affect Tracking Improvements:** Enhance `status_affect.lua` for robust tracking and reporting of magical affects. [Issue #1](https://github.com/kerchunkwow/kermudlet/issues/1)
+
+2. **Command Directions Enhancement:** Update functions to include directions for commands like 'open door north' to handle multiple doors. [Issue #2](https://github.com/kerchunkwow/kermudlet/issues/2)
+
+3. **Party Console Click Function Abstraction:** Make Party Console interactions in `gui.lua` more configurable to fit different party setups. [Issue #3](https://github.com/kerchunkwow/kermudlet/issues/3)
+
+4. **Recall Scrolls Monitoring:** Implement mechanisms to monitor and manage recall scroll counts and warn of shortages. [Issue #4](https://github.com/kerchunkwow/kermudlet/issues/4)
+
+5. **Map Initialization and Error Handling:** Improve map synchronization, especially on new session loads or disconnects. [Issue #5](https://github.com/kerchunkwow/kermudlet/issues/5)
+
+6. **Following Map Synchronization:** Ensure map remains synchronized while following another player. [Issue #6](https://github.com/kerchunkwow/kermudlet/issues/6)
+
+7. **Tick Tracking and Reporting:** Develop functionality for accurate tick tracking to optimize gameplay efficiency. [Issue #7](https://github.com/kerchunkwow/kermudlet/issues/7)
+
+8. **Dynamic Mode Switching:** Automate switching between Solo/Group or Leader/Follower modes based on gameplay. [Issue #9](https://github.com/kerchunkwow/kermudlet/issues/9)
+
+9. **Codebase Consistency:** Complete the transition to camelCase across all scripts for consistency. [Issue #10](https://github.com/kerchunkwow/kermudlet/issues/10)
+
+10. **Terminology Corrections:** Update all instances of 'effects' to 'affects' where appropriate. [Issue #11](https://github.com/kerchunkwow/kermudlet/issues/11)
+
+11. **Item Query Expansion:** Add support for +SKILL in `eq_db.lua` item queries. [Issue #12](https://github.com/kerchunkwow/kermudlet/issues/12)
+
+12. **Party Console Group Info:** Expand the Party Console to display key group information. [Issue #13](https://github.com/kerchunkwow/kermudlet/issues/13)
+
+13. **Relative Path Usage:** Update all references to use relative paths for greater flexibility in project location. [Issue #15](https://github.com/kerchunkwow/kermudlet/issues/15)
+
 
