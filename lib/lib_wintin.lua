@@ -3,7 +3,7 @@
 -- [TODO] Add support for both short/long direction format, ordinal directions, etc.
 function createWintinString( cmdList )
   if not cmdList or #cmdList == 0 then
-    gizError( "Empty command list in createWintinString()" )
+    cecho( "\n<dark_orange>Empty command list in createWintinString()<reset>" )
     return ""
   end
   local wintinCommands = {}

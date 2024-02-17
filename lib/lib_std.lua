@@ -118,10 +118,10 @@ function averageDice( n, s, m )
   return (((n * s) + n) / 2) + m
 end
 
-function feedFile()
+-- Feed the contents of a file line-by-line as if it came from the MUD
+function feedFile( feedPath )
   local feedRate = 0.01
-  local filePath = "C:\\Dev\\mud\\mudlet\\wheres.txt"
-  local file = io.open( filePath, "r" )
+  local file = io.open( feedPath, "r" )
 
   local lines = file:lines()
 

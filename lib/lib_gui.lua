@@ -25,11 +25,6 @@ function clearScreen()
   end
 end
 
--- Send a generic error message to the main console window
-function gizError( msg )
-  cecho( "info", f "\n\t<dim_grey>[<dark_orange>err<dim_grey>]: {msg}" )
-end
-
 -- List all fonts available in Mudlet.
 function listFonts()
   local availableFonts = getAvailableFonts()
