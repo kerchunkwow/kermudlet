@@ -112,3 +112,28 @@ function completeDelete()
     deleteLine()
   end
 end
+
+-- Given a set of dice values as n, s, m, return the average roll (e.g., 3d8+2 = 3, 8, 2)
+function averageDice( n, s, m )
+  return (((n * s) + n) / 2) + m
+end
+
+function feedFile()
+  local feedRate = 0.01
+  local filePath = "C:\\Dev\\mud\\mudlet\\wheres.txt"
+  local file = io.open( filePath, "r" )
+
+  local lines = file:lines()
+
+  local function feedLine()
+    local nextLine = lines()
+    if nextLine then
+      cfeedTriggers( nextLine )
+      tempTimer( feedRate, feedLine )
+    else
+      file:close()
+    end
+  end
+
+  feedLine()
+end

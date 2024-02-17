@@ -168,7 +168,7 @@ function simulate_prompt()
   end
   prompt_str = left_str .. right_str
 
-  local sim_session = sessionAliases[tonumber( pc )]
+  local sim_session = sessionNumbers[tonumber( pc )]
 
   expandAlias( f "{sim_session} sim " .. prompt_str, true )
 end

@@ -1,15 +1,3 @@
--- These keywords are captured in trigger phrases to indicate which spell has been applied or removed.
--- They are used to map to the spell name in applyAffect() and removeAffect().
-affectKeywords = {
-  ["glowing"]    = "Sanctuary",
-  ["aura"]       = "Sanctuary",
-  ["righteous"]  = "Bless",
-  ["angry"]      = "Fury",
-  ["calm"]       = "Fury",
-  ["protecting"] = "Armor",
-  ["protected"]  = "Armor",
-}
-
 -- Initiate the affect status table for all four PCs
 local function initAffectStatus()
   affectStatus = {}

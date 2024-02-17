@@ -1,3 +1,6 @@
+# Temp datafile
+wheres.txt
+
 # Localized configuration files; use templates to check in new functionality
 gizmo/config/login.lua
 gizmo/config/config_local.lua

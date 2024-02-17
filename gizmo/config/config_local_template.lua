@@ -1,21 +1,42 @@
 -- Create a local copy of this file named client_config.lua in this location; customize it to your
 -- local environment and preference, and make sure it"s in your .gitignore so we don"t cross streams.
-pcNames          = {"Colin", "Nadja", "Laszlo", "Nandor"}
-containers       = {"stocking", "cradle", "cradle", "cradle"}
-waterskin        = "waterskin"
-food             = "bread"
+pcNames            = {"Colin", "Nadja", "Laszlo", "Nandor"}
+containers         = {"stocking", "cradle", "cradle", "cradle"}
+waterskin          = "waterskin"
+food               = "bread"
 
 -- These should be the abbreviations you use to issue commands to session windows; they're used by the
 -- aliasSessionCommand function in config_events.lua to raise the event matching the desired session.
 -- e.g., issuing 'col command' will raise event_command_1
-sessionAliases   = {
+sessionNumbers     = {
   ["col"] = 1, ["nad"] = 2, ["las"] = 3, ["nan"] = 4
 }
+sessionAliases     = {"col", "nad", "las", "nan"}
 
+-- Using this table, define which spells are castable from specific player positions within your party;
+-- use this table anywhere you need to select from among a set of possible casters (e.g., when rebuffing).
+partySpells        = {
+  ['vitality'] = {1, 2, 3}
+}
+
+-- Local customization options for GUI windows; expand this list for more GUI customizations later
+-- These are only needed to create the GUI/console and will be nil'd in deleteConsoleStyles()
+customChatFontFace = "Bitstream Vera Sans Mono"
+customChatFontSize = 14
+customInfoFontFace = "Bitstream Vera Sans Mono"
+customInfoFontSize = 14
+customChatWrap     = 60
+customInfoWrap     = 60
+customConsoleFonts = {
+  ["label"]     = "Ebrima",
+  ["gauge_sm"]  = "Bitstream Vera Sans Mono",
+  ["gauge_lrg"] = "Montserrat",
+  ["room"]      = "Consolas",
+}
 -- Used when updating the pcStatus table to decide whether to send a warning about someone's health
 -- A warning will be sent if the health falls below low% or loses more than big% in a single update
 -- Make sure to align these values with the order of your party (same as in pcNames, etc.)
-healthMonitor    = {
+healthMonitor      = {
   --[#] = {low%, big%}
   [1] = {50, 20},
   [2] = {80, 10},
@@ -24,7 +45,7 @@ healthMonitor    = {
 }
 
 -- Customize colors for your PCs; local for now 'cause it's only used to make the tags below
-local pcColors   = {
+local pcColors     = {
   "<cornflower_blue>",
   "<medium_violet_red>",
   "<dark_violet>",
@@ -32,7 +53,7 @@ local pcColors   = {
 }
 
 -- Customized nametags for each player; primarily useful for warnings echoed to the info window
-pcTags           = {
+pcTags             = {
   f "<reset>[{pcColors[1]}{pcNames[1]}<reset>]",
   f "<reset>[{pcColors[2]}{pcNames[2]}<reset>]",
   f "<reset>[{pcColors[3]}{pcNames[3]}<reset>]",
@@ -40,7 +61,7 @@ pcTags           = {
 }
 
 -- Customize chat output colors
-messageColors    = {
+messageColors      = {
   ["auction"] = "<navajo_white>",
   ["debug"]   = "<dodger_blue>",
   ["say"]     = "<cyan>",
@@ -52,7 +73,7 @@ messageColors    = {
 
 -- You can send these messages to the "Info" window with the showWarning function; this
 -- window belongs to session 1, so other sessions must raise eventWarn to pass warnings
-warningMessages  = {
+warningMessages    = {
   ["water"]     = "Needs <powder_blue>Water<reset>",
   ["mvs"]       = "Low <gold>Moves<reset>",
   ["food"]      = "Needs <olive_drab>Food<reset>",
@@ -64,7 +85,7 @@ warningMessages  = {
 }
 
 -- Critical warnings will play bloop.wav when sent.
-criticalWarnings = {
+criticalWarnings   = {
   ["whacked"]   = true,
   ["exhausted"] = true,
   ["hp"]        = true,
@@ -72,7 +93,7 @@ criticalWarnings = {
   ["norecall"]  = true,
 }
 -- Customize your affect info to match the duration of your own buffs and desired colors & characters
-affectInfo       = {
+affectInfo         = {
   ["Sanctuary"] = {duration = 7, color = "lavender_blush", char = "🌟"},
   ["Bless"]     = {duration = 6, color = "light_goldenrod", char = "🙏"},
   ["Fury"]      = {duration = 2, color = "tomato", char = "😡"},
@@ -80,10 +101,21 @@ affectInfo       = {
   ["Endure"]    = {duration = 24, color = "orange", char = "💪"},
 }
 -- Colors to use in the Party Console labels to indicate duration of affects
-affectDuration   = {
+affectDuration     = {
   ['high'] = "YellowGreen",
   ['med']  = "Orange",
   ['low']  = "Crimson",
+}
+-- These keywords are captured in trigger phrases to indicate which spell has been applied or removed.
+-- They are used to map to the spell name in applyAffect() and removeAffect().
+affectKeywords     = {
+  ["glowing"]    = "Sanctuary",
+  ["aura"]       = "Sanctuary",
+  ["righteous"]  = "Bless",
+  ["angry"]      = "Fury",
+  ["calm"]       = "Fury",
+  ["protecting"] = "Armor",
+  ["protected"]  = "Armor",
 }
 
 -- Select which ANTI-FLAGS to include in stat output from eq/eq_db.lua
@@ -193,3 +225,17 @@ local function initializeReactions()
 end
 
 initializeReactions()
+
+function aliasDoWield()
+  expandAlias( "col gett crocodile", false )
+  expandAlias( "col rem boots", false )
+  expandAlias( "col wear crocodile", false )
+  expandAlias( "col wield mace", false )
+  expandAlias( "col rem crocodile", false )
+  expandAlias( "nan gett crocodile", false )
+  expandAlias( "nan rem boots", false )
+  expandAlias( "nan wear crocodile", false )
+  expandAlias( "nan wield mace", false )
+  expandAlias( "nan rem crocodile", false )
+  expandAlias( "nan putt crocodile", false )
+end

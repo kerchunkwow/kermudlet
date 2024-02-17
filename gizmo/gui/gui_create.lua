@@ -2,69 +2,56 @@
 -- 'cause none of them are needed once the UI is created
 function createGizmoGUI()
   local function openOutputWindows()
-    local chat_window_name  = "chat"
-    local chat_window_title = "Gizmo Chat"
-    local chat_font_face    = "Bitstream Vera Sans Mono"
-    local chat_font_size    = 14
+    local chatWindowName  = "chat"
+    local chatWindowTitle = "Gizmo Chat"
+    local chatFontFace    = customChatFontFace or "Bitstream Vera Sans Mono"
+    local chatFontSize    = customChatFontSize or 14
 
-    local info_window_name  = "info"
-    local info_window_title = "Gizmo Info"
-    local info_font_face    = "Bitstream Vera Sans Mono"
-    local info_font_size    = 14
+    local infoWindowName  = "info"
+    local infoWindowTitle = "Gizmo Info"
+    local infoFontFace    = customInfoFontFace or "Bitstream Vera Sans Mono"
+    local infoFontSize    = customInfoFontSize or 14
 
-    chat_window             = Geyser.UserWindow:new( {
+    chatWindow            = Geyser.UserWindow:new( {
 
-      name          = chat_window_name,
-      titleText     = chat_window_title,
-      font          = chat_font_face,
-      fontSize      = chat_font_size,
-      wrapAt        = 80,
+      name          = chatWindowName,
+      titleText     = chatWindowTitle,
+      font          = chatFontFace,
+      fontSize      = chatFontSize,
+      wrapAt        = customChatWrap or 80,
       scrollBar     = false,
       restoreLayout = true,
 
     } )
 
-    info_window             = Geyser.UserWindow:new( {
+    infoWindow            = Geyser.UserWindow:new( {
 
-      name          = info_window_name,
-      titleText     = info_window_title,
-      font          = info_font_face,
-      fontSize      = info_font_size,
-      wrapAt        = 80,
+      name          = infoWindowName,
+      titleText     = infoWindowTitle,
+      font          = infoFontFace,
+      fontSize      = infoFontSize,
+      wrapAt        = customInfoWrap or 80,
       scrollBar     = false,
       restoreLayout = true,
 
     } )
 
-    info_window:disableScrollBar()
-    chat_window:disableScrollBar()
+    infoWindow:disableScrollBar()
+    chatWindow:disableScrollBar()
 
-    info_window:disableHorizontalScrollBar()
-    chat_window:disableHorizontalScrollBar()
+    infoWindow:disableHorizontalScrollBar()
+    chatWindow:disableHorizontalScrollBar()
 
-    info_window:disableCommandLine()
-    chat_window:disableCommandLine()
+    infoWindow:disableCommandLine()
+    chatWindow:disableCommandLine()
 
-    info_window:clear()
-    chat_window:clear()
-
-    local lft, rgt = fill( 33 ) .. uiColor, fill( 33 ) .. "<reset>"
-
-    local chat_title = f "{uiColor}| <yellow_green>Gizmo Chat{uiColor} |"
-    local info_title = f "{uiColor}| <dark_orange>Gizmo Info{uiColor} |"
-
-    cecho( "chat", f "{lft}+------------+{rgt}" )
-    cecho( "chat", f "{lft}{chat_title}{rgt}" )
-    cecho( "chat", f "{lft}+------------+{rgt}\n" )
-
-    cecho( "info", f "{lft}+------------+{rgt}" )
-    cecho( "info", f "{lft}{info_title}{rgt}" )
-    cecho( "info", f "{lft}+------------+{rgt}\n" )
+    infoWindow:clear()
+    chatWindow:clear()
   end
 
   -- Kind of an ugly version of #include
   local function createConsoleStyles()
-    uiHeight = {
+    uiHeight     = {
       ["label"]    = 24,
       ["hp_gauge"] = 50,
       ["mn_gauge"] = 18,
@@ -73,8 +60,7 @@ function createGizmoGUI()
       ["pc_tray"]  = 64,
     }
 
-
-    font_face    = {
+    consoleFonts = customConsoleFonts or {
       ["label"]     = "Ebrima",
       ["gauge_sm"]  = "Bitstream Vera Sans Mono",
       ["gauge_lrg"] = "Montserrat",
@@ -148,61 +134,64 @@ function createGizmoGUI()
   end
 
   -- Delete all the stuff created by createConsoleStyles()
-  -- [TODO] This probably is redundant now that all of this is local to createGizmoGUI()
+  -- [TODO] This probably (?) is redundant now that all of this is local to createGizmoGUI()
   local function deleteConsoleStyles()
-    uiHeight        = nil
-    font_face       = nil
-    font_format     = nil
-    uiColor         = nil
-    nameLabel       = nil
-    gauge_border    = nil
-    CSS_gauge_bg    = nil
-    CSS_hp_fg       = nil
-    CSS_mn_fg       = nil
-    CSS_mv_fg       = nil
-    CSS_text_large  = nil
-    CSS_text_small  = nil
-    CSS_label       = nil
-    CSS_label_left  = nil
-    CSS_label_right = nil
-    CSS_affect      = nil
+    uiHeight           = nil
+    consoleFonts       = nil
+    font_format        = nil
+    uiColor            = nil
+    nameLabel          = nil
+    gauge_border       = nil
+    CSS_gauge_bg       = nil
+    CSS_hp_fg          = nil
+    CSS_mn_fg          = nil
+    CSS_mv_fg          = nil
+    CSS_text_large     = nil
+    CSS_text_small     = nil
+    CSS_label          = nil
+    CSS_label_left     = nil
+    CSS_label_right    = nil
+    CSS_affect         = nil
+    customConsoleFonts = nil
+    customChatFontFace = nil
+    customChatFontSize = nil
+    customInfoFontFace = nil
+    customInfoFontSize = nil
+    customChatWrap     = nil
+    customInfoWrap     = nil
   end
 
   -- Create the party console (gauges, labels, etc.)
   local function createPartyConsole()
     createConsoleStyles()
 
-    local win_font_face  = "Ubuntu"
-    local win_font_size  = 10
-    local win_font_style = [[bold 10pt "Ubuntu"]]
-    local win_font_align = "center left"
-    local border_r       = 4
+    local win_w      = "25%"
+    local win_h      = "100%"
 
-    local win_w          = "25%"
-    local win_h          = "100%"
-
-    local icon_dim       = 32
+    local icon_dim   = 32
 
     -- Each player "area" consists of:
-    -- PC Name (Label)
-    -- Current Room (Label)
-    -- HP Gauge
-    -- MN Gauge
-    -- MV Gauge
-    -- Item Tray (Label)
-    local pc_area_h      = (uiHeight["label"] * 3) +
+    --   Spell Affects Label / PC Name (Label)
+    --   Current Room (Label)
+    --   HP Gauge
+    --   MN Gauge
+    --   MV Gauge
+    --   Combat Icon (Label)
+    local pc_area_h  = (uiHeight["label"] * 3) +
         (uiHeight["hp_gauge"]) +
         (uiHeight["mn_gauge"]) +
         (uiHeight["mv_gauge"]) +
         (3 * uiHeight["gap"]) +
         uiHeight["pc_tray"]
 
-    local pc_total_h     = (pc_area_h * 4)
+    -- The total height of the entire party inclusive of all UI components
+    local pc_total_h = (pc_area_h * 4)
 
-    local pc_y_top       = (pc_total_h - 500)
-    local pc_y_pos       = {}
+    -- Position the party console 500 pixels above the bottom of the console
+    local pc_y_top   = (pc_total_h - 500)
+    local pc_y_pos   = {}
 
-    party_console        = Geyser.UserWindow:new( {
+    party_console    = Geyser.UserWindow:new( {
       name          = "party_console",
       titleText     = "Party Console",
       width         = win_w,
@@ -210,15 +199,15 @@ function createGizmoGUI()
       restoreLayout = true,
     } )
 
-    hpGauge              = {} -- HP Gauges
-    manaGauge            = {} -- Mana Gauges
-    movesGauge           = {} -- Move Gauges
+    hpGauge          = {} -- HP Gauges
+    manaGauge        = {} -- Mana Gauges
+    movesGauge       = {} -- Move Gauges
 
-    nameLabel            = {} -- Player names
-    affectLabel          = {} -- Test for new combat label
-    roomLabel            = {} -- Player rooms
+    nameLabel        = {} -- Player names
+    affectLabel      = {} -- Test for new combat label
+    roomLabel        = {} -- Player rooms
 
-    combatIcons          = {} -- Combat icons (labels)
+    combatIcons      = {} -- Combat icons (labels)
 
     for pc = 1, 4 do
       local nameLabelY = pc_y_top + (pc_area_h * (pc - 1))
@@ -246,7 +235,7 @@ function createGizmoGUI()
       hpGauge[pc].back:setStyleSheet( CSS_gauge_bg )
       hpGauge[pc].text:setStyleSheet( CSS_text_large )
 
-      hpGauge[pc].text:setFont( font_face["gauge_lrg"] )
+      hpGauge[pc].text:setFont( consoleFonts["gauge_lrg"] )
       hpGauge[pc].text:setFormat( font_format["gauge_lrg"] )
       hpGauge[pc].text:setFgColor( uiColor["hp_fg"] )
 
@@ -269,7 +258,7 @@ function createGizmoGUI()
       manaGauge[pc].front:setStyleSheet( CSS_mn_fg )
       manaGauge[pc].back:setStyleSheet( CSS_gauge_bg )
 
-      manaGauge[pc].text:setFont( font_face["gauge_sm"] )
+      manaGauge[pc].text:setFont( consoleFonts["gauge_sm"] )
       manaGauge[pc].text:setFormat( font_format["gauge_sm"] )
       manaGauge[pc].text:setFgColor( uiColor["mn_fg"] )
 
@@ -290,7 +279,7 @@ function createGizmoGUI()
       movesGauge[pc].front:setStyleSheet( CSS_mv_fg )
       movesGauge[pc].back:setStyleSheet( CSS_gauge_bg )
 
-      movesGauge[pc].text:setFont( font_face["gauge_sm"] )
+      movesGauge[pc].text:setFont( consoleFonts["gauge_sm"] )
       movesGauge[pc].text:setFormat( font_format["gauge_sm"] )
       movesGauge[pc].text:setFgColor( uiColor["mv_fg"] )
 
@@ -325,32 +314,20 @@ function createGizmoGUI()
       affectLabel[pc]:setFontSize( 14 )
       affectLabel[pc]:echo( "❓" )
 
+      -- Call affectsClicked( pc_name ) when clicking the spell affects label
+      setLabelClickCallback( affectLabel[pc].name, "affectsClicked", pc, pcNames[pc] )
+
       local pc_label_border = uiColor[f "pc_{pc}"]
       local CSS_label_pc = CSS_label .. f [[border-color: {pc_label_border};padding-right: 14px;]]
 
       nameLabel[pc]:setFgColor( uiColor[f "pc_{pc}"] )
-      nameLabel[pc]:setFont( font_face["label"] )
+      nameLabel[pc]:setFont( consoleFonts["label"] )
       nameLabel[pc]:setFormat( font_format["label"] )
       nameLabel[pc]:setStyleSheet( CSS_label_pc )
 
       local pcName = pcNames[pc]
       nameLabel[pc]:echo( pcName )
 
-      -- Custom 'fury' icon for top pc
-      if pc == 1 then
-        fury_icon = Geyser.Label:new( {
-
-          name   = "fury_icon",
-          x      = (icon_dim * -1) - 6,
-          y      = nameLabelY - uiHeight["label"] - 16,
-          width  = 32,
-          height = 32,
-
-        }, party_console )
-
-        fury_icon:setBackgroundImage( [[C:/Dev/mud/mudlet/gizmo/assets/img/fury.png]] )
-        fury_icon:hide()
-      end
       roomLabel[pc] = Geyser.Label:new( {
 
         name   = "rm_label_" .. pc,
@@ -365,14 +342,14 @@ function createGizmoGUI()
       local CSS_label_rm = CSS_label .. f [[border-color: {rm_label_border};]]
 
       roomLabel[pc]:setFgColor( "#6496fa" )
-      roomLabel[pc]:setFont( font_face["room"] )
+      roomLabel[pc]:setFont( consoleFonts["room"] )
       roomLabel[pc]:setFormat( font_format["room"] )
       roomLabel[pc]:setStyleSheet( CSS_label_rm )
 
       roomLabel[pc]:echo( "Bob's Pizza" )
 
       -- Call roomClicked( pc_name ) when double-clicking the room label
-      setLabelDoubleClickCallback( roomLabel[pc].name, "roomClicked", pcNames[pc] )
+      setLabelDoubleClickCallback( roomLabel[pc].name, "roomClicked", pc, pcNames[pc] )
 
       combatIcons[pc] = Geyser.Label:new( {
         name = "combat_icon_" .. pc,

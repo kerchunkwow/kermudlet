@@ -34,7 +34,7 @@ end
 -- intended recipient; there's no downside to unhandled events.
 function aliasSessionCommand()
   -- If the command is not for 'all', raise an event corresponding to the target session
-  local targetSession = (matches[2] == "all") and matches[2] or sessionAliases[matches[2]]
+  local targetSession = (matches[2] == "all") and matches[2] or sessionNumbers[matches[2]]
   local cmd           = matches[3]
   local eventType     = "event_command_" .. targetSession
   raiseEvent( eventType, cmd )
@@ -83,5 +83,6 @@ local function registerEventHandlers()
   registerAnonymousEventHandler( [[eventPCStatusAffect]], [[pcStatusAffectEvent]] )
   registerAnonymousEventHandler( [[event_pcStatus_score]], [[pcStatusScoreEvent]] )
   registerAnonymousEventHandler( [[event_pcStatus_room]], [[pcStatusRoomEvent]] )
+  registerAnonymousEventHandler( [[eventProfilesLoaded]], [[createGizmoGUI]] )
 end
 registerEventHandlers()

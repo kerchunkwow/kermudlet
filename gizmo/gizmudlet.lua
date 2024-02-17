@@ -46,16 +46,14 @@ extractedPatterns = {
   ['Tick Messages'] = {[[(?:^|>\s*)The sky is getting cloudy\.$]], [[(?:^|>\s*)The sun slowly disappears in the west\.$]], [[(?:^|>\s*)The day has begun\.$]], [[(?:^|>\s*)The sun rises in the east\.$]], [[(?:^|>\s*)The night has begun\.$]]},
   ['Room Capture'] = {[[(?:^|> )([\w\s\,\-\']+)$]]},
   ['Spell Nullified'] = {[[^Your spell fails to penetrate his defenses.$]]},
-  ['Solo XP'] = {},
-  ['Solo Pummel'] = {[[^Nandor tries to pummel.*$]], [[^Nandor pummels.*$]]},
-  ['EoC'] = {[[^.+ is dead! R\.I\.P\.$]]},
-  ['Tank Condition (automira)'] = {[[\sBuf\:(\w+)\s]]},
   ['Group XP'] = {},
   ['autostand'] = {[[^(\w+) stops resting, and clambers.*$]]},
   ['autorest'] = {[[^(\w+) sits down and rests.$]], [[^(\w+) stops flying and rests.$]]},
   ['autoassist'] = {[[^\w+ assists (\w+).$]], [[^(\w+) attacked (.+) suddenly.*$]], [[^.+ fell into an ambush by Nordberg.$]], [[^(\w+) tries to assault (.+)\,.*$]]},
   ['autosplit'] = {[[^There was (\d+) coins.]]},
+  ['EoC'] = {[[^.+ is dead! R\.I\.P\.$]]},
   ['Drebin Pummel'] = {[[^Nordberg tries to tumble.*$]], [[^Hocken tries to pummel.*$]], [[^Dillon tries to tumble.*$]], [[^Dillon tumbles.*$]]},
+  ['Tank Condition (automira)'] = {[[\sBuf\:(\w+)\s]]},
   ['Backup Automira'] = {[[^Drebin utters the words, '(miracle)'$]], [[^Mac utters the words, '(miracle)'$]]},
   ['Target Condition'] = {[[\sVic\:(\w+)\s]]},
   ['autoconfig'] = {[[^You now follow (\w+)\.$]]},
@@ -78,7 +76,6 @@ extractedPatterns = {
   ['Set Pummeler'] = {[[^spum (\w+)$]]},
   ['Set Mira'] = {[[^amira (.+)]]},
   ['ass'] = {[[^ass$]]},
-  ['kill'] = {[[^k (\w+)$]]},
   ['Basic PC Commands'] = {},
   ['Inventory'] = {[[^i$]]},
   ['Bakery Restock (food)'] = {[[^food$]]},
@@ -108,7 +105,6 @@ extractedPatterns = {
   ['Miracle (mira)'] = {[[^mira$]]},
   ['session'] = {},
   ['Reload (reload)'] = {[[^reload$]]},
-  ['Play Gizmo (giz)'] = {[[^giz$]]},
   ['Session Commands (*)'] = {[[^(all|col|nad|las|nan) (.+)$]]},
   ['lib'] = {},
   ['Run Lua File (rf)'] = {[[^rf (.+)$]]},
@@ -135,6 +131,7 @@ extractedPatterns = {
   ['Start Map Sim'] = {[[^mapsim$]]},
   ['Get Path (gp)'] = {[[^gp (.*)$]]},
   ['Look Direction'] = {[[^l (n|e|s|w|u|d)$]]},
+  ['SetPlayerRoom (spr)'] = {[[^spr (\d+)$]]},
   ['EQ  Mode (eqm)'] = {[[^eqm$]]},
   ['Roll Dice (roll)'] = {[[^roll$]]},
   ['Nandor Gear Swap (nanswap)'] = {[[^nanswap$]]},
@@ -298,38 +295,6 @@ if SESSION == 2 or SESSION == 3 then
   send( "gt My magic doesn't seem very useful against this enemy." )
 end
 
--- Solo Pummel
-if SESSION == 1 then
-
-  if pcStatus[4]["currentMana"] >= 150 then
-
-    expandAlias( "nan cast 'barrage of blades'", false )
-
-  elseif not pummeled then
-
-    expandAlias( "nan pummel", false )
-    pummeled = true
-    pummel_timer = tempTimer( 2.8, [[pummeled = false]] )
-
-  end
-
-end
-
--- EoC
-if pummel_timer then killTimer(pummel_timer) end
-expandAlias( "nan abort", false )
-autoManaTransfer()
-
--- Editing & saving in-game causes sessions to inherit the enabled state; so adding some checks to the less frequent
--- patterns to re-disable it.
-if SESSION ~= 1 then
-  disableTrigger( "Group XP" )
-  return
-end
-
--- Tank Condition (automira)
-triggerAutoMira()
-
 -- autostand
 -- Editing & saving in-game causes sessions to inherit the enabled state; so adding some checks to the less frequent
 -- patterns to re-disable it.
@@ -408,6 +373,16 @@ if gleader then
   send( f"split {matches[2]}" )
 end
 
+-- EoC
+autoManaTransfer()
+
+-- Editing & saving in-game causes sessions to inherit the enabled state; so adding some checks to the less frequent
+-- patterns to re-disable it.
+if SESSION ~= 1 then
+  disableTrigger( "Group XP" )
+  return
+end
+
 -- Drebin Pummel
 if SESSION == 1 then
 
@@ -426,6 +401,9 @@ if SESSION == 1 then
   end
 
 end
+
+-- Tank Condition (automira)
+triggerAutoMira()
 
 -- Backup Automira
 if inCombat then
@@ -510,12 +488,6 @@ cecho( "info", f"\n[<slate_gray>Setting mira = <cyan>{miracleCondition}<reset>]"
 
 -- ass
 expandAlias( f"all assist {gtank}" )
-
--- kill
-local currentTarget = matches[2]
-expandAlias( f"nan pummel {currentTarget}" )
-expandAlias( "all assist nandor" )
-tempTimer( 2.8, [[expandAlias( 'nan pummel' )]] )
 
 -- Inventory
 -- Before eq'ing; temporarily enable the eq database trigger family
@@ -618,9 +590,6 @@ aliasMiracle()
 -- Reload (reload)
 reloadProfile()
 
--- Play Gizmo (giz)
-aliasPlayGizmo()
-
 -- Session Commands (*)
 aliasSessionCommand()
 
@@ -715,6 +684,9 @@ aliasGetPath()
 local dir = matches[2]
 send( f'look {dir}', false )
 inspectExit( currentRoomNumber, dir )
+
+-- SetPlayerRoom (spr)
+aliasSetPlayerRoom()
 
 -- EQ  Mode (eqm)
 toggleItemQueryMode()

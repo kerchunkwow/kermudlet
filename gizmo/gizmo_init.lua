@@ -24,6 +24,7 @@ local mainScripts = {
   'gizmo/gui/gui.lua',
   'gizmo/status/status_update.lua',
   'gizmo/eq/eq_inventory.lua',
+  'gizmo/map/map_mobs.lua',
 }
 
 runLuaFiles( commonScripts )
@@ -60,3 +61,6 @@ function refreshModuleXML()
   os.execute( 'powershell -command "python \\"C:/Dev/mud/mudlet/parse_xml.py\\""' )
   os.remove( xmlPath )
 end
+
+-- Once the final session is finished loading, alert the Main session to initialize the GUI
+if SESSION == 4 then tempTimer( 0, [[raiseGlobalEvent( 'eventProfilesLoaded' )]] ) end

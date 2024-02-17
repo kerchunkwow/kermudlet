@@ -53,7 +53,7 @@ function aliasManaTransfer()
 
   -- Transfer mana from the mage with the most mana to Colin
   if battery and battery_mana >= 50 then
-    expandAlias( f [[{short_names[battery]} cast 'mana transfer' Colin]] )
+    expandAlias( f [[{sessionAliases[battery]} cast 'mana transfer' Colin]] )
   end
 end
 
@@ -83,19 +83,24 @@ function aliasMUDps()
 
   if caster then
     if caster_mn >= 100 then
-      expandAlias( f [[{short_names[caster]} cast 'electric shock']] )
+      expandAlias( f [[{sessionAliases[caster]} cast 'electric shock']] )
     elseif caster_mn >= 50 then
-      expandAlias( f [[{short_names[caster]} cast 'lethal fire']] )
+      expandAlias( f [[{sessionAliases[caster]} cast 'lethal fire']] )
     end
   end
 end
 
 -- Find the best refresher for the job, then ask them to refresh the target.
 function optimalRefresh( target )
-  local caster, caster_mn = getMaxStat( "currentMana", 1, 2, 3 )
-
-  if caster and caster_mn >= 25 then
-    expandAlias( f [[{short_names[caster]} cast 'vitality' {target}]] )
+  -- Ensure the spell exists in the partySpells table and has assigned casters
+  if partySpells['vitality'] and #partySpells['vitality'] > 0 then
+    local caster, casterMana = getMaxStat( "currentMana", unpack( partySpells['vitality'] ) )
+    if caster and casterMana >= 25 then
+      cecho( "info", f "\n<yellow_green>Refreshing {target} with {sessionAliases[caster]}" )
+      expandAlias( f [[{sessionAliases[caster]} cast 'vitality' {target}]] )
+    end
+  else
+    cecho( "info", "Your party can't cast vitality." )
   end
 end
 
@@ -147,11 +152,6 @@ function getMinStat( stat, ... )
   return min_pc, min_stat
 end
 
--- Create the party console, open chat & info windows
-function aliasPlayGizmo()
-  createGizmoGUI()
-end
-
 function aliasGetPath()
   local dst = matches[2]
   local pathString = nil
@@ -174,8 +174,8 @@ function aliasReciteRecalls()
   local eventMethod = SESSION == 1 and 'raiseEvent' or 'raiseGlobalEvent'
   local noRecallCode = f "{eventMethod}( 'eventWarn', {SESSION}, 'norecall' )"
   createTemporaryTrigger( "norecalls", "does not contain", noRecallCode, 20 )
-  send( f 'get recall {container}' )
   send( 'recite recall' )
+  send( f 'get recall {container}' )
 end
 
 -- Cycle through "item query" modes, modifying what level of detail to include in item queries (appended in game)
@@ -183,6 +183,10 @@ function toggleItemQueryMode()
   if not itemQueryMode then itemQueryMode = 0 else itemQueryMode = itemQueryMode + 1 end
   if itemQueryMode > 1 then itemQueryMode = 0 end
   cecho( "info", f "\n<orange>itemQueryMode toggled: {itemQueryMode}" )
+end
+
+function aliasSetPlayerRoom()
+  setPlayerRoom( tonumber( matches[2] ) )
 end
 
 -- If you haven't installed a package with basic lib aliases, create the important ones

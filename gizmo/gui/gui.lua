@@ -1,14 +1,16 @@
 -- Doubleclick the room name to summon that pc ([COLIN])
-function roomClicked( pc, event )
+function roomClicked( pc, pcName, event )
+  cecho( "info", f "\nGot double-click on <royal_blue>Room<reset> @ {pcTags[pc]}" )
   send( f [[cast 'super summon' {pc}]] )
 end
 
 -- Click the hitpoint gauge to heal that pc ([COLIN])
-function healthClicked( pc, event )
+function healthClicked( pc, pcName, event )
+  cecho( "info", f "\nGot click on <olive_drab>Health<reset> @ {pcTags[pc]}" )
   -- Emergency heal if hp is critical
   if pcStatus[pc]["percentHP"] <= 33 then
-    local best_heal = getBestHeal( pcStatus[1]["currentMana"] )
-    send( f "cast '{best_heal}' {pcNames[pc]}" )
+    local optimalHealingSpell = getBestHeal( pcStatus[1]["currentMana"] )
+    send( f "cast '{optimalHealingSpell}' {pcNames[pc]}" )
     return
   end
   -- Otherwise, heal more casually based on health deficit
@@ -22,14 +24,19 @@ function healthClicked( pc, event )
 end
 
 -- Click the move gauge to refresh that pc with the opimal caster
-function movesClicked( pc, pc_name, event )
+function movesClicked( pc, pcName, event )
+  cecho( "info", f "\nGot click on <gold>Moves<reset> @ {pcTags[pc]}" )
   local mvd = (pcStatus[pc]["maxMoves"] - pcStatus[pc]["currentMoves"])
-  optimalRefresh( pc_name )
+  optimalRefresh( pcName )
 end
 
 -- Click the combat icon to have Nandor attempt a rescue ([COLIN])
-function combatClicked( pc, pc_name, event )
+function combatClicked( pc, pcName, event )
   if (pc ~= 4) then
-    expandAlias( f "nan rescue {pc_name}" )
+    expandAlias( f "nan rescue {pcName}" )
   end
+end
+
+function affectsClicked( pc, pcName, event )
+  cecho( "info", f "\nGot click on <violet>Affects<reset> @ {pcTags[pc]}" )
 end

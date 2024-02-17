@@ -12,7 +12,7 @@ if not semaphore and someCondition then
 end
 ```
 ### Temporary Data Capture Triggers
-- Certain triggers are only useful when capturing data from a specific command like score; for efficiency, leaves these off by default and use an Alias to turn them on temporarily prior to issuing the command in question. You can either leave them on for a set period of time (enough to ensure the output is done parsing), or use some component of the output to trigger the disable. Here's an example of how to enable a temporary trigger to capture 'aff' data from all sessions.
+- Certain triggers are only useful when capturing data from a specific command like score; for efficiency, you can turn these off by default and use an Alias to turn them on temporarily prior to issuing the command in question. You can either leave them on for a set period of time (enough to ensure the output is done parsing), or use some component of the output to trigger the disable. Here's an example of how to enable a temporary trigger to capture 'aff' data from all sessions.
 ```
 -- Called by 'aff'; turns on temporary affect capturing triggers for all sessions to update affect status strings
 function aliasAffectCapture()
@@ -26,6 +26,10 @@ end
 ```
 ### Inconsistent Newlinery
 - Many patterns you might expect to appear on a line of their own will appear on a line with a prompt; instead of anchoring your patterns with `^` alone, anchor them with `(?:^|> )` which will match the same pattern if it appears on the same line as a prompt.
+
+
+### Useful Regex's
+- Rooms and mob names have an unexpected range of potential special characters; match with this regex (you might have to trim it afterward): `([ 0-9a-zA-Z'!,?:.\-()&\/]+)`
 
 ## Notes
 

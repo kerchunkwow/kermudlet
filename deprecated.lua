@@ -1,3 +1,2555 @@
+function populateMobAreas()
+  local luasql     = require "luasql.sqlite3"
+  local env        = luasql.sqlite3()
+  local conn, cerr = env:connect( "C:/Dev/mud/gizmo/data/gizwrld.db" )
+
+  if not conn then
+    print( "Error connecting to database:", cerr )
+    return
+  end
+end
+
+function getMobArea( rn )
+  local sql = string.format( "SELECT * FROM Mob WHERE rnumber = %d", rn )
+  local dbpath = "C:/Dev/mud/gizmo/data/gizwrld.db"
+  local cursor, conn, env = getCursor( dbpath, sql )
+  local mobAreaName = "Unknown Area"
+
+  if not cursor then
+    return mobAreaName
+  end
+  local mob = cursor:fetch( {}, "a" )
+  cursor:close()
+
+  if mob then
+    local mobRoomVNumber = tonumber( mob.roomVNumber )
+    local mobRoomRNumber = searchRoomUserData( "roomVNumber", tostring( mobRoomVNumber ) )[1]
+    if roomExists( mobRoomRNumber ) then
+      local mobAreaRNumber = getRoomArea( mobRoomRNumber )
+      mobAreaName = getRoomAreaName( mobAreaRNumber )
+    end
+  end
+  conn:close()
+  env:close()
+
+  return mobAreaName
+end
+
+function calculateMobDamage( rn )
+  local DC, SC, R = "<maroon>", "<medium_violet_red>", "<reset>"
+  local dbpath = "C:/Dev/mud/gizmo/data/gizwrld.db"
+  -- SQL statement to select the mob by rnumber
+  local mobSql = string.format( "SELECT * FROM Mob WHERE rnumber = %d", rn )
+  local mobCursor, mobConn, mobEnv = getCursor( dbpath, mobSql )
+
+  if mobCursor then
+    local mob = mobCursor:fetch( {}, "a" )
+    mobCursor:close()
+
+    if mob then
+      local mobShort = mob.shortDescription
+      local totalAverage = 0
+      cecho( f "\nDamage for {DC}{mobShort}{R}:" )
+      local bn, bs, bm = mob.damageDice, mob.damageSides, mob.damroll
+      local ba = averageDice( bn, bs, bm )
+      cecho( f "\n  Base: {DC}{bn}d{bs} +{bm}{R} (~{DC}{ba}{R})" )
+      totalAverage = totalAverage + ba
+
+      -- Now fetch special attacks for this mob
+      local specSql = string.format( "SELECT * FROM SpecialAttack WHERE rnumber = %d", rn )
+      local specCursor, _, _ = getCursor( dbpath, specSql )
+
+      if specCursor then
+        local specNumber = 1
+        local spec = specCursor:fetch( {}, "a" )
+        while spec do
+          local sc, sn, ss, sm = spec.chance, spec.damageDice, spec.damageSides, spec.damageModifier
+          local sa = averageDice( sn, ss, sm ) * (sc / 100)
+          cecho( f "\n  Spec {specNumber}: {SC}{sc}{R}% chance of {SC}{sn}d{ss}{R} +{SC}{sm}{R} ({SC}{sa}{R} ave)" )
+          totalAverage = totalAverage + sa
+          specNumber = specNumber + 1
+          spec = specCursor:fetch( spec, "a" )
+        end
+        specCursor:close()
+      end
+      cecho( f "\n  Total: ~<dark_orange>{totalAverage}<reset>" )
+    end
+    mobConn:close()
+    mobEnv:close()
+  end
+end
+
+function listMobsWithSpecialAttacks()
+  local dbpath = "C:/Dev/mud/gizmo/data/gizwrld.db"
+  local sql = [[
+    SELECT DISTINCT Mob.shortDescription
+    FROM Mob
+    JOIN SpecialAttack ON Mob.rNumber = SpecialAttack.rNumber
+  ]]
+
+  local cursor, conn, env = getCursor( dbpath, sql )
+  if not cursor then
+    cecho( "\n<red>Failed to query database for mobs with special attacks.<reset>" )
+    return
+  end
+  local mob = cursor:fetch( {}, "a" ) -- Initialize mob to fetch in loop
+  if not mob then
+    cecho( "\n<green>No mobs with special attacks found.<reset>" )
+  else
+    cecho( "\n<green>Mobs with Special Attacks:<reset>" )
+    while mob do
+      cecho( f( "\n- {mob.shortDescription}" ) )
+      mob = cursor:fetch( mob, "a" ) -- Fetch next row into mob
+    end
+  end
+  -- It's important to close the cursor and connection
+  cursor:close()
+  conn:close()
+  env:close()
+end
+
+-- Special Attacks:
+-- ^\s*(\d+)\s*(\d+)D\s*(\d+)\s*\+(\d+)\s*(-?\d+)\s*(\d+)\s*(\d+) (.+?)$
+
+specialAttacks = {
+  [810] = {{40, 6, 7, 1, 0, 0, 2, "impale/impales"}},
+  [817] = {{10, 10, 20, 5, 3, 0, 6, "bite/bites"}},
+  [997] = {{100, 100, 10, 0, 0, 0, 236, ""}, {100, 100, 10, 0, 0, 0, 236, ""}},
+  [1008] = {{100, 10, 10, 0, 0, 0, 236, ""}, {100, 10, 10, 0, 0, 0, 236, ""}},
+  [1496] = {{25, 75, 3, 0, 10, 6, 6, "bite/bites"}, {50, 100, 2, 0, 10, 0, 6, "bite/bites"}, {75, 125, 2, 0, 10, 0, 6, "bite/bites"}, {100, 150, 2, 0, 10, 0, 6, "bite/bites"}, {100, 200, 2, 0, 10, 0, 6, "bite/bites"}, {100, 200, 2, 0, 10, 0, 6, "bite/bites"}},
+  [1497] = {{50, 50, 10, 50, 0, 0, 0, "ferocious splash/sends a ferocious splash towards"}, {75, 10, 45, 0, 10, 0, 0, ""}, {100, 3, 125, 0, 10, 0, 0, ""}, {100, 3, 125, 0, 10, 0, 0, ""}},
+  [1500] = {{25, 1, 50, 20, 10, 3, 4, "tail thrash/thrashes it's tail at"}, {100, 2, 30, 20, 0, 0, 8, "stomp/stomps on"}},
+  [1503] = {{100, 24, 10, 100, 0, 0, 0, "thick jet of saltwater/shoots a thick jet of saltwater at"}, {100, 24, 10, 100, 0, 0, 0, "thick jet of saltwater/shoots a thick jet of saltwater at"}},
+  [1504] = {{100, 24, 10, 100, 0, 0, 0, "thick jet of saltwater/shoots a thick jet of saltwater at"}, {100, 24, 10, 100, 0, 0, 0, "thick jet of saltwater/shoots a thick jet of saltwater at"}},
+  [1505] = {{50, 75, 3, 50, 10, 6, 4, ""}, {75, 150, 4, 50, 10, 0, 0, ""}, {100, 200, 5, 50, 10, 0, 0, ""}, {100, 44, 4, 50, 10, 0, 0, "thick jet of saltwater/shoots a thick jet of saltwater at"}},
+  [1552] = {{100, 10, 10, 20, 20, 1, 1, "atomic hammer/atomizes with its warhammer"}, {100, 4, 10, 10, 10, 1, 1, ""}, {80, 10, 4, 20, 5, 1, 1, "harpoon/harpoons"}, {90, 10, 3, 10, 10, 1, 1, "warglove/crushes with its warglove"}, {80, 10, 5, 20, 5, 1, 1, "silver chakra/hurls its chakra at"}},
+  [1615] = {{5, 50, 25, 0, 0, 1, 236, ""}, {100, 20, 39, 10, 0, 0, 236, ""}},
+  [1620] = {{25, 20, 20, 0, 0, 6, 236, "ringing bell/rings his bell at"}, {50, 30, 20, 0, 0, 5, 236, "bell cord/wraps his bell cord around"}, {100, 20, 40, 0, 0, 0, 236, ""}},
+  [1623] = {{25, 22, 100, 0, 0, 5, 236, "assaulting salt/assaults"}, {100, 17, 100, 0, 0, 0, 236, ""}},
+  [1624] = {{25, 11, 100, 0, 0, 6, 236, "pepper shaker/peppers"}, {100, 17, 100, 0, 0, 0, 236, ""}},
+  [1627] = {{50, 100, 5, 0, 0, 6, 236, "a shower of sparks/showers sparks on"}, {100, 60, 50, 0, 0, 0, 236, ""}},
+  [1629] = {{15, 26, 25, 0, 0, 1, 236, "honed blade/swings his honed blade at"}, {100, 12, 39, 10, 0, 0, 236, ""}},
+  [1635] = {{25, 52, 50, 0, 0, 1, 236, "sharp spur/digs his sharp spur at"}, {100, 40, 40, 0, 0, 6, 236, ""}},
+  [1641] = {{5, 100, 50, 0, 0, 1, 236, "fury/shares his fury"}, {10, 20, 50, 10, 0, 1542, 236, "whirl/whirls"}, {100, 100, 80, 0, 0, 0, 236, ""}},
+  [1655] = {{35, 4, 110, 25, 14, 0, 3, "razor fin/swings a razor fin and shaves"}, {50, 4, 60, 25, 16, 0, 1, "tail/tail slaps"}, {80, 4, 20, 25, 18, 0, 8, "thump/body thumps"}, {100, 4, 10, 25, 20, 0, 6, ""}},
+  [1673] = {{40, 8, 6, 0, 0, 0, 2, "gore/gores"}, {90, 8, 6, 0, 0, 0, 8, ""}},
+  [1674] = {{40, 8, 6, 0, 0, 0, 2, "headbutt/headbutts"}, {90, 8, 6, 0, 0, 0, 8, ""}},
+  [1675] = {{30, 11, 8, 0, 0, 0, 6, ""}, {90, 10, 8, 0, 0, 0, 5, ""}},
+  [1676] = {{5, 4, 10, 0, 0, 2, 1, ""}, {90, 4, 10, 0, 0, 0, 8, ""}},
+  [1677] = {{100, 4, 10, 0, 0, 0, 6, ""}},
+  [1678] = {{5, 10, 4, 0, 0, 2, 2, "gore/gores"}, {90, 3, 20, 0, 0, 0, 8, ""}},
+  [1679] = {{5, 10, 4, 0, 0, 2, 8, "trample/tramples"}, {100, 4, 10, 0, 0, 0, 8, ""}},
+  [1680] = {{30, 4, 8, 0, 0, 0, 6, ""}, {90, 4, 8, 0, 0, 0, 8, ""}},
+  [1681] = {{4, 4, 6, 0, 0, 2, 3, ""}, {90, 4, 6, 0, 0, 0, 3, ""}},
+  [1682] = {{100, 4, 6, 0, 0, 0, 2, ""}},
+  [1683] = {{5, 3, 8, 0, 0, 2, 0, "flurry/flurries"}, {90, 3, 8, 0, 0, 0, 0, "kick/kicks"}},
+  [1684] = {{100, 4, 10, 0, 0, 0, 8, "tramples/tramples"}},
+  [1685] = {{100, 4, 9, 0, 0, 0, 3, ""}},
+  [1686] = {{10, 4, 13, 0, 0, 2, 8, "trample/tramples"}, {90, 4, 14, 0, 0, 0, 2, "gore/gores"}},
+  [1687] = {{10, 11, 10, 0, 0, 0, 5, ""}, {90, 10, 10, 0, 0, 0, 6, ""}},
+  [1688] = {{100, 100, 100, 0, 0, 2, 1, ""}},
+  [1705] = {{20, 5, 20, 0, 20, 1, 1, ""}, {30, 30, 11, 0, 10, 2, 0, ""}, {100, 100, 9, 0, 0, 0, 0, ""}},
+  [1786] = {{100, 80, 6, 0, 0, 0, 1, "sting/stings"}},
+  [1935] = {{35, 4, 110, 25, 14, 1, 8, "unholy shockwave/unleashes an unholy shockwave down upon"}, {50, 4, 60, 25, 16, 1, 8, "hair raising war cry/screams a hair raising war cry at"}, {80, 4, 20, 25, 18, 1, 2, "flesh shredding bite/takes a flesh shredding bite out of"}, {100, 4, 10, 25, 20, 1, 8, "rib smashing bloody fist/throws a rib smashing, bloody fist at"}},
+  [2006] = {{25, 1, 1, 20, 0, 1, 1, "poison spit/spits poison on"}, {100, 2, 2, 0, 0, 0, 1, "claw/claws"}},
+  [2007] = {{25, 1, 1, 20, 10, 1, 1, "poison spit/spits poison on"}, {100, 2, 2, 0, 0, 0, 1, "claw/claws"}},
+  [2008] = {{5, 5, 5, 20, 0, 1, 1, "stomp/stomps"}, {35, 1, 1, 10, 0, 1, 1, "tail lash/tail lashes"}, {100, 4, 4, 0, 0, 0, 1, "bite/bites"}},
+  [2010] = {{30, 30, 8, 0, 10, 2, 1, "bite/bites"}, {100, 40, 9, 0, 0, 2, 1, "claw/claws"}, {100, 30, 10, 0, 0, 1, 1, "pound/pounds"}},
+  [2011] = {{100, 3, 6, 0, 0, 1, 1, "gnaw/gnaws"}},
+  [2012] = {{30, 4, 6, 6, 6, 1, 1, "tailbat/tailbats"}, {100, 6, 6, 0, 0, 1, 1, "gnaw/gnaws"}},
+  [2013] = {{35, 6, 10, 10, 10, 1, 1, "tailsmash/tailsmashes"}, {100, 8, 10, 0, 0, 1, 1, "gnaw/gnaws"}},
+  [2049] = {{50, 20, 30, 0, 0, 6, 236, "tailwhip/tailwhips"}, {75, 20, 30, 0, 0, 5, 236, "scratch/scratches"}, {100, 30, 30, 0, 0, 0, 236, ""}},
+  [2050] = {{50, 50, 7, 0, 0, 0, 8, ""}, {100, 50, 7, 0, 0, 0, 8, ""}},
+  [2051] = {{50, 50, 13, 0, 0, 0, 8, ""}, {100, 50, 13, 0, 0, 0, 8, ""}},
+  [2052] = {{50, 50, 9, 0, 0, 0, 8, ""}, {100, 50, 9, 0, 0, 0, 8, ""}},
+  [2053] = {{50, 50, 15, 0, 0, 0, 8, ""}, {100, 50, 15, 0, 0, 0, 8, ""}},
+  [2054] = {{50, 10, 55, 0, 0, 0, 8, ""}, {100, 10, 55, 0, 0, 0, 8, ""}},
+  [2055] = {{50, 50, 20, 0, 0, 5, 236, "stomp/stomps"}, {50, 50, 20, 0, 0, 0, 8, ""}, {100, 50, 20, 0, 0, 0, 8, ""}},
+  [2059] = {{50, 50, 2, 50, 0, 5, 236, ""}},
+  [2060] = {{1, 99, 99, 99, 99, 1, 0, ""}, {2, 99, 20, 50, 0, 1, 0, ""}, {7, 99, 10, 50, 0, 1, 0, ""}, {90, 99, 4, 50, 0, 1, 0, ""}},
+  [2070] = {{3, 99, 25, 50, 0, 4, 0, ""}, {6, 99, 3, 50, 0, 6, 0, ""}, {12, 75, 3, 50, 0, 6, 0, ""}, {25, 50, 3, 50, 0, 6, 0, ""}},
+  [2075] = {{15, 0, 0, 210, 50, 0, 236, "dragon punch/punches"}, {100, 20, 8, 55, 20, 0, 236, ""}},
+  [2076] = {{5, 5, 8, 25, -10, 0, 236, "hasted strike/flurry of attacks hits"}, {10, 10, 8, 25, -5, 0, 236, "lunging pierce/flurry of attacks hits"}, {20, 20, 8, 25, 0, 0, 236, "rakish lunge/flurry of attacks hits"}, {30, 30, 8, 25, 5, 0, 236, "targeted attack/flurry of attacks hits"}, {100, 40, 8, 25, 15, 0, 236, ""}},
+  [2077] = {{15, 5, 5, 120, 5, 1, 236, ""}, {100, 5, 5, 120, 5, 0, 236, ""}},
+  [2079] = {{5, 20, 9, 25, 2, 0, 236, "draining touch/draining touch grasps"}, {15, 30, 14, 15, 7, 0, 236, "chilling touch/chilling touch grasps"}, {100, 50, 7, 15, 12, 0, 236, "chilling touch/chilling touch grasps"}},
+  [2080] = {{5, 15, 50, 0, 2, 1, 236, "spiritual hammer/spiritual hammer strikes"}, {15, 15, 15, 0, 7, 1, 236, "holy strike/holy strike hits"}, {100, 15, 30, 30, 12, 0, 236, ""}},
+  [2085] = {{100, 4, 8, 18, 2, 0, 236, "chilling touch/chilling touch hits"}},
+  [2086] = {{10, 0, 0, 20, 4, 0, 236, "blast of acid/acid blasts"}, {100, 8, 6, 20, 4, 0, 236, "chilling touch/chilling touch hits"}},
+  [2087] = {{5, 4, 8, 55, 4, 0, 236, "blast of acid/acid blasts"}, {100, 4, 8, 105, 4, 0, 236, "blast of acid/acid blasts"}},
+  [2088] = {{5, 100, 2, 50, 10, 0, 236, "lashing tentacle/lashing tentacle"}, {100, 50, 5, 50, 10, 0, 236, "blast of acid/acid blasts"}},
+  [2089] = {{100, 4, 8, 18, 2, 0, 236, "cyclone/cyclone hits"}},
+  [2090] = {{100, 8, 6, 20, 4, 0, 236, "cyclone/cyclone hits"}},
+  [2091] = {{5, 4, 8, 55, 4, 0, 236, "debris cloud/debris cloud"}, {100, 4, 8, 105, 4, 0, 236, "cyclone/cyclone hits"}},
+  [2092] = {{5, 100, 2, 50, 50, 0, 236, "debris cloud/debris cloud"}, {100, 50, 5, 50, 10, 0, 236, "cyclone/cyclone hits"}},
+  [2093] = {{100, 4, 8, 18, 2, 0, 236, "burning hands/burning hands"}},
+  [2094] = {{100, 8, 6, 20, 4, 0, 236, "burning hands/burning hands"}},
+  [2095] = {{5, 4, 8, 105, 5, 0, 236, "scathing wind/scathing wind"}, {100, 4, 8, 105, 5, 0, 236, "burning hands/burning hands"}},
+  [2096] = {{5, 100, 2, 50, 10, 1, 236, "breath of fire/breathes fire on"}, {100, 50, 5, 50, 10, 0, 236, "burning hands/burning hands"}},
+  [2097] = {{100, 4, 8, 18, 2, 0, 236, "stone fist/stone fist hits"}},
+  [2098] = {{100, 8, 6, 20, 4, 0, 236, "stone fist/stone fist hits"}},
+  [2099] = {{15, 4, 8, 55, 4, 0, 236, "boulder/boulder"}, {100, 4, 8, 105, 4, 0, 236, "stone fist/stone fist"}},
+  [2100] = {{5, 100, 2, 100, 80, 0, 236, "avalanche/avalanche hits"}, {10, 50, 5, 50, 0, 2, 236, "earthquake/earthquake shakes"}, {100, 50, 5, 50, 5, 0, 236, "clenched fist/clenched fist hits"}},
+  [2104] = {{25, 2, 6, 200, 30, 2, 7, "swarming mist/swarming mists"}, {33, 25, 7, 75, 0, 0, 236, ""}, {100, 25, 7, 75, 0, 0, 236, ""}},
+  [2106] = {{10, 2, 6, 200, 5, 0, 7, "spectral grasp/spectral grasp"}, {25, 2, 6, 200, 80, 1, 0, "prismatic spray/prismatic spray"}, {80, 25, 9, 70, 0, 0, 236, ""}, {100, 25, 9, 70, 0, 0, 236, ""}},
+  [2107] = {{10, 1, 1, 250, 0, 0, 0, "soul rending pierce/soul rending pierce"}, {25, 5, 10, 75, 0, 1, 0, "acrobatic kick/acrobatic kick"}, {80, 25, 10, 75, 0, 0, 236, ""}, {100, 25, 10, 75, 0, 0, 236, ""}},
+  [2108] = {{5, 25, 16, 50, 0, 2, 0, "spray of green gas/spray of green gas"}, {20, 25, 12, 100, 0, 0, 236, ""}, {100, 25, 12, 100, 0, 0, 236, ""}},
+  [2109] = {{5, 1, 1, 200, 0, 1, 6, "barb covered tentacle/barb covered tentacle"}, {10, 25, 16, 25, 0, 0, 8, "spine covered psuedopod/spine covered psuedopod"}, {100, 25, 15, 50, 0, 0, 236, ""}},
+  [2120] = {{25, 25, 20, 100, 0, 0, 236, ""}, {100, 25, 20, 100, 0, 0, 236, ""}},
+  [2121] = {{25, 25, 24, 100, 0, 0, 236, ""}, {100, 25, 24, 100, 0, 0, 236, ""}},
+  [2124] = {{10, 1, 1, 500, 50, 2, 0, "swirling firestorm/swirling firestorm"}, {20, 20, 19, 25, 5, 0, 8, "flaming clenched fist/flaming clenched fist"}, {25, 30, 29, 150, 0, 0, 236, ""}, {100, 30, 29, 150, 0, 0, 236, ""}},
+  [2125] = {{10, 1, 1, 400, 0, 1, 4, "firey tentacle/firey tentacle"}, {25, 1, 1, 400, 0, 1, 4, "firey tentacle/firey tentacle"}, {25, 21, 29, 50, 0, 0, 4, ""}, {100, 21, 29, 50, 0, 0, 4, ""}},
+  [2126] = {{5, 100, 3, 150, 0, 1, 3, "demonic black claws/demonic black claws"}, {40, 28, 20, 70, 0, 0, 8, ""}, {100, 28, 20, 70, 0, 0, 8, ""}},
+  [2127] = {{5, 1, 1, 800, 0, 0, 6, "crushing grasp/crushing grasp"}, {10, 1, 1, 500, 0, 0, 0, "massive stomp/massive stomp"}, {20, 25, 24, 75, 0, 0, 5, ""}, {100, 25, 24, 75, 0, 0, 5, ""}},
+  [2128] = {{30, 35, 14, 100, 0, 0, 0, ""}, {100, 35, 14, 100, 0, 0, 0, ""}},
+  [2129] = {{30, 28, 29, 100, 0, 0, 236, ""}, {100, 28, 29, 100, 0, 0, 236, ""}},
+  [2132] = {{100, 2, 88, 25, 10, 0, 236, ""}},
+  [2133] = {{5, 25, 19, 100, 0, 0, 3, ""}, {20, 25, 19, 100, 0, 0, 3, ""}, {45, 25, 19, 100, 0, 0, 3, ""}, {100, 25, 19, 100, 0, 0, 3, ""}},
+  [2134] = {{100, 25, 10, 100, 0, 0, 2, ""}},
+  [2135] = {{100, 25, 13, 100, 0, 0, 8, ""}},
+  [2136] = {{100, 25, 24, 125, 0, 0, 2, ""}},
+  [2137] = {{10, 25, 16, 100, 0, 0, 0, ""}, {40, 25, 16, 100, 0, 0, 0, ""}, {100, 25, 16, 100, 0, 0, 0, ""}},
+  [2138] = {{100, 25, 10, 100, 0, 0, 236, ""}},
+  [2139] = {{100, 25, 13, 100, 0, 0, 8, ""}},
+  [2140] = {{100, 25, 13, 100, 0, 0, 2, ""}},
+  [2141] = {{100, 25, 14, 100, 0, 0, 2, ""}, {100, 25, 14, 100, 0, 0, 3, ""}},
+  [2142] = {{100, 25, 19, 100, 0, 0, 3, ""}},
+  [2143] = {{100, 100, 9, 500, 10, 0, 236, ""}},
+  [2152] = {{100, 8, 6, 10, 24, 0, 5, ""}},
+  [2153] = {{100, 8, 6, 10, 24, 0, 5, ""}},
+  [2154] = {{100, 8, 4, 15, 25, 0, 5, ""}},
+  [2155] = {{100, 8, 6, 10, 24, 0, 5, ""}},
+  [2156] = {{100, 8, 4, 15, 25, 0, 5, ""}},
+  [2157] = {{100, 5, 5, 50, 20, 0, 0, "draining touch/drains"}},
+  [2158] = {{10, 20, 15, 50, 50, 0, 5, ""}, {35, 20, 15, 50, 50, 0, 5, ""}, {100, 20, 15, 100, 50, 0, 5, ""}},
+  [2159] = {{20, 30, 15, 10, 50, 0, 5, ""}, {100, 30, 15, 200, 50, 0, 5, ""}},
+  [2160] = {{5, 30, 5, 50, 50, 0, 0, ""}, {100, 30, 15, 50, 50, 0, 0, ""}},
+  [2161] = {{100, 20, 10, 85, 30, 0, 5, "savage kick/savagely kicks"}},
+  [2203] = {{15, 30, 30, 80, 5, 257, 236, "claw/claws"}, {100, 25, 25, 80, 10, 0, 5, ""}},
+  [2206] = {{20, 40, 45, 100, 10, 257, 4, "whip/whips"}, {100, 20, 60, 100, 15, 0, 5, ""}}
+}
+
+function insertSpecialAttacks()
+  for rNumber, mob in pairs( specialAttacks ) do
+    for _, spec in pairs( mob ) do
+      local chance            = spec[1]
+      local damageDice        = spec[2]
+      local damageSides       = spec[3]
+      local damageModifier    = spec[4]
+      local hitroll           = spec[5]
+      local target            = spec[6]
+      local type              = spec[7]
+      local description       = spec[8]
+
+      local sql               = string.format( [[
+        INSERT INTO SpecialAttacks (
+          rNumber, chance, damageDice, damageSides, damageModifier, hitroll, target, type, description
+        ) VALUES (
+          %d, %d, %d, %d, %d, %d, %d, %d, '%s'
+        )]], rNumber, chance, damageDice, damageSides, damageModifier, hitroll, target, type, description )
+
+      local cursor, conn, env = getCursor( sql )
+      if cursor then
+        cecho( f "Special attack inserted successfully for rNumber: {rNumber}\n" )
+      end
+      -- Make sure to close the cursor, connection, and environment when done
+      if conn then conn:close() end
+      if env then env:close() end
+    end
+  end
+end
+
+
+-- Triggered by a "multi-line match" as a result of the 'stat' command to trap all mob stats
+function parseStatBlock()
+  local statBlock = {}
+  for l = 1, #multimatches do
+    for m = 2, #multimatches[l] do
+      local value = multimatches[l][m]
+      local numberValue = tonumber( value )
+      if numberValue then
+        table.insert( statBlock, numberValue )
+      else
+        table.insert( statBlock, trim( value ) )
+      end
+    end
+  end
+  -- Mob rnumbers are unique, so don't store stats for the same rnumber twice
+  local rnumber = statBlock[4]
+  if mobsCaptured[rnumber] then return end
+  currentKey = rnumber
+  mobsCaptured[currentKey] = {}
+  if #statBlock == 78 then
+    local mob             = mobsCaptured[currentKey]
+    mob.short_description = statBlock[7]
+    mob.long_description  = statBlock[9]
+    mob.keywords          = statBlock[3]
+    mob.rnumber           = statBlock[4]
+    mob.vnumber           = statBlock[6]
+    mob.level             = statBlock[11]
+    mob.health            = statBlock[42]
+    -- Combine damage numbers, sides, and damroll into a list like '4d3+20' = {4, 3, 20}
+    mob.damage            = {statBlock[61], statBlock[62], statBlock[51]}
+    -- Directly copy the special attacks table from the statBlock table
+    mob.proc              = statBlock[60]
+    mob.special_attacks   = {}
+    mob.ac                = statBlock[47]
+    mob.xp                = statBlock[49]
+    mob.gold              = statBlock[52]
+    mob.alignment         = statBlock[12]
+    mob.flags             = statBlock[58]
+    mob.affects           = statBlock[78]
+    mob.health_regen      = statBlock[43]
+    mob.hitroll           = statBlock[50]
+    mob.inventory         = statBlock[65]
+    mob.equipped          = statBlock[66]
+    -- Combine saving throws into a single list
+    mob.saves             = {statBlock[67], statBlock[68], statBlock[69], statBlock[70],
+      statBlock[71]}
+    mob.room              = statBlock[5]
+  else
+    cecho( "info", f "\nFailed to parse stats for: <orange_red>{currentKey}<reset>" )
+  end
+end
+-- Return the area name of a captured/scanned mob (or string version of room number for unknown areas)
+function getWhereArea( number )
+  for _, area in ipairs( whereMap ) do
+    local startNum, endNum, name = unpack( area )
+    if number >= startNum and number <= endNum then
+      return name
+    end
+  end
+  -- For areas outside the ranges of the map, return a string representation of the room number
+  return tostring( number )
+end
+
+function loadMobsIntoDatabase()
+  local luasql     = require "luasql.sqlite3"
+  local env        = luasql.sqlite3()
+  local conn, cerr = env:connect( "C:/Dev/mud/gizmo/data/gizwrld.db" )
+
+  if not conn then
+    print( "Error connecting to database:", cerr )
+    return
+  end
+  local insertedCount = 0
+  local skippedCount = 0
+
+  for rnumber, mob in pairs( mobsCaptured ) do
+    local specialProcedureFlag = (mob.proc == 'Exists') and 1 or 0
+
+    local mobInsertCmd = string.format( [[
+      INSERT INTO Mob (rnumber, shortDescription, longDescription, keywords, level, health, ac, gold, xp, alignment, flags, affects, damageDice, damageSides, damroll, hitroll, room, specialProcedure)
+      VALUES (%d, '%s', '%s', '%s', %d, %d, %d, %d, %d, %d, '%s', '%s', %d, %d, %d, %d, %d, %d)
+    ]],
+      rnumber,
+      mob.short_description:gsub( "'", "''" ), -- Escape single quotes
+      mob.long_description:gsub( "'", "''" ),
+      mob.keywords:gsub( "'", "''" ),
+      mob.level,
+      mob.health,
+      mob.ac,
+      mob.gold,
+      mob.xp,
+      mob.alignment,
+      mob.flags:gsub( "'", "''" ),
+      mob.affects:gsub( "'", "''" ),
+      mob.damage[1], -- damageDice
+      mob.damage[2], -- damageSides
+      mob.damage[3], -- damroll, assuming 3rd value in damage is damroll
+      mob.hitroll,
+      mob.room,
+      specialProcedureFlag
+    )
+
+    local res, serr = conn:execute( mobInsertCmd )
+    if not res then
+      print( string.format( "Failed to insert mob rnumber %d: %s", rnumber, serr ) )
+      skippedCount = skippedCount + 1
+    else
+      insertedCount = insertedCount + 1
+    end
+    -- Insert special attack data
+    for _, attack in ipairs( mob.special_attacks ) do
+      local specialAttackInsertCmd = string.format( [[
+        INSERT INTO SpecialAttack (rnumber, chance, damageDice, damageSides, damageModifier, hitroll, strings, target, type)
+        VALUES (%d, %d, %d, %d, %d, %d, '%s', %d, %d)
+      ]],
+        rnumber,
+        attack.chance,
+        attack.damage.n,
+        attack.damage.s,
+        attack.damage.m,
+        attack.hitRoll,
+        attack.strings:gsub( "'", "''" ),
+        attack.target,
+        attack.type
+      )
+      local saRes, saSerr = conn:execute( specialAttackInsertCmd )
+      if not saRes then
+        print( string.format( "Failed to insert special attack for mob rnumber %d: %s", rnumber, saSerr ) )
+        -- Not incrementing skippedCount here as the mob insert is the critical part
+      end
+    end
+  end
+  print( string.format( "Data loading complete. Inserted: %d, Skipped: %d", insertedCount, skippedCount ) )
+  conn:close()
+  env:close()
+end
+
+-- The last 'where' command returned 'Couldn't find that entity'; log the error
+function badKeyword()
+  local errorString = f( "{currentMobKeyword} ({currentMobIndex-1}) returned no entities from 'where'" )
+  cecho( "info", f "\n<orange_red>{errorString}<reset>" )
+end
+-- Some mobs have a special attack table that lists the chance, damage, and other data about special attacks
+-- a mob can perform; here we parse them and store them in the capturedMobs table; an example special attacks table:
+--[[
+CHANCE DAMAGE HITROLL TARGET TYPE STRINGS
+-------------------------------------------
+  5   25D16+50    0       2     0  spray of green gas/spray of green gas
+ 20   25D12+100    0       0   236
+100   25D12+100    0       0   236
+--]]
+function parseSpecialAttack()
+  local chance, diceNum, diceSides, diceModifier = tonumber( matches[2] ), tonumber( matches[3] ), tonumber( matches[4] ),
+      tonumber( matches[5] )
+  local hitRoll, target, type = tonumber( matches[6] ), tonumber( matches[7] ), tonumber( matches[8] )
+  local strings = matches[9] and trim( matches[9] ) or ""
+
+  -- Constructing the special attack table
+  local specialAttack = {
+    chance  = chance,
+    damage  = {n = diceNum, s = diceSides, m = diceModifier},
+    hitRoll = hitRoll,
+    target  = target,
+    type    = type,
+    strings = strings
+  }
+
+  -- Ensure currentKey is valid and the mob exists in mobsCaptured
+  if mobsCaptured[currentKey] then
+    -- Initialize the special_attacks table if it doesn't exist
+    mobsCaptured[currentKey].special_attacks = mobsCaptured[currentKey].special_attacks or {}
+    -- Append the new special attack
+    table.insert( mobsCaptured[currentKey].special_attacks, specialAttack )
+  else
+    cecho( "info", f "\nSpec parsed for unknown or invalid key: <orange_red>{currentKey}<reset>" )
+  end
+end
+
+-- The goal of this module will be to issue a 'where <mob>' command for each entry in the mobKeywords list and capture the resulting output
+
+-- The 'where' command returns a list of mobs throughout the world in the following format:
+-- [index] short_description - room_name [room_vnum]
+-- Here is an example of a 'where' command output:
+-- [ 3] the ace of clubs              - A Shallow Recess in the Tower  [2355]
+-- To parse these lines, consider:
+-- 1. There is a variable amount of whitespace in several areas
+-- 2. The hyphen acts as a separator, but hyphens may also appear in both mob and room names
+-- 3. Room numbers are vnums while our map data generally uses rnums, we have to translate if we want to compare
+-- 4. Short description are NOT unique and therefore we must combine this w/ area information to get a unique mob
+
+-- Table to hold all (unique) mobs and the stats captured from 'where' and 'stat' commands
+mobsCaptured = {}
+table.load( f '{homeDirectory}gizmo/map/data/mob_data.lua', mobsCaptured )
+-- An index to traverse the mobKeywords table in order until complete
+currentMobIndex   = 1
+-- The current keyword from mobKeywords, subject of the current 'where' command
+currentMobKeyword = ""
+-- Keep track of the current stat key so we can match it in functions beyond parseStatBlock
+currentKey        = ""
+
+-- mobKeywords is a predefined list of comprehensive keywords designed to cover as many mobs as possible;
+-- This function will issue a 'where' command for each keyword in the list, the output from which should
+-- trigger the capture and 'stat'ing of each mob
+function whereNextMob()
+  if mobKeywords[currentMobIndex] then
+    currentMobKeyword = mobKeywords[currentMobIndex]
+    whereMob( currentMobKeyword )
+    currentMobIndex = currentMobIndex + 1
+  else
+    -- Once all keywords have been scanned, write the table and logout of the game (currently printing a fake logout)
+    cecho( "info", f "\nMob scan completed @ index <orange>{currentMobIndex}<reset>." )
+    --table.save( f '{homeDirectory}gizmo/map/data/mob_data.lua', mobsCaptured )
+    tempTimer( 5, [[send( 'quit' )]] )
+    tempTimer( 7, [[send( '0' )]] )
+  end
+end
+
+-- Issue a 'where' command to find all mobs matching the specified keyword
+function whereMob( keyword )
+  -- Use a temporary regex to match the next prompt indicating the 'where' is complete and we can stat any
+  -- new mobs.
+  tempRegexTrigger( "\\s*^<", statCapturedMobs, 1 )
+  send( f 'where {keyword}', false )
+end
+
+-- This function is triggered once for each line of 'where' output in order to capture the mob on that line
+-- A unique key is created by combining the mobs short description and area; unique mobs are queued for 'stat'ing
+function captureWhereMobs()
+  -- windex is the position within the 'where' command itself and must be saved for subsequent 'stat' command;
+  -- note that this is NOT a static value so 'stat' must be issued shortly after where or this may change
+  local windex = trim( matches[2] )
+  windex       = tonumber( windex )
+  local sdesc  = trim( matches[3] )
+  if playerNames[sdesc] then return end -- Don't stat players
+  local rmvnum = trim( matches[5] )
+
+  -- Create a unique key by combining the mob's short name and rmvnum
+  local uniqueKey = sdesc .. "_" .. rmvnum
+
+  -- If a mob with this short description has been seen in this room, assume we can skip it
+  if not mobsToStat[uniqueKey] then
+    mobsToStat[uniqueKey] = {} -- Initialize the table before assigning properties
+    mobsToStat[uniqueKey].index = windex
+    mobsToStat[uniqueKey].keyword = currentMobKeyword
+    mobsToStat[uniqueKey].stated = false
+  end
+end
+
+-- Immediately after a 'where' command concludes, we want to 'stat' any newly added mobs due to the dynamic nature
+-- of the index number which can change as new mobs spawn/areas reset; for any mobs in the mobsCaptured that have
+-- not been 'stat'ed, this function queues a stat command at a rate of 0.5 seconds per mob
+function statCapturedMobs()
+  local statRate   = 0.75 -- Time to delay between each stat command
+  local statOffset = 0    -- Start with no offset and increase for each mob
+  for uniqueKey, mob in pairs( mobsToStat ) do
+    if not mob.stated then
+      tempTimer( statOffset, f [[send( 'stat c ]] .. mob.index .. [[.]] .. mob.keyword .. [[', false )]] )
+      mob.stated = true -- Update this in mobsToStat
+      statOffset = statOffset + statRate
+    end
+  end
+  -- Optionally, schedule the next step after all stat commands are issued
+  local whereOffset = statOffset + 2
+  tempTimer( whereOffset, whereNextMob )
+end
+
+
+playerNames = {
+  ['Hayla']    = true,
+  ['Apollo']   = true,
+  ['Glory']    = true,
+  ['Anima']    = true,
+  ['Cyrus']    = true,
+  ['Vassago']  = true,
+  ['Malcolm']  = true,
+  ['Blain']    = true,
+  ['Dillon']   = true,
+  ['Mac']      = true,
+  ['Anna']     = true,
+  ['Rax']      = true,
+  ['Sly']      = true,
+  ['Tzu']      = true,
+  ['Organ']    = true,
+  ['Trachea']  = true,
+  ['Manwe']    = true,
+  ['Turambar'] = true,
+  ['Finarfin'] = true,
+  ['Irelia']   = true,
+  ['Elbryan']  = true,
+  ['Qxuilur']  = true,
+  ['Germ']     = true,
+  ['Digest']   = true,
+  ['Ace']      = true,
+}
+
+mobKeywords = {
+  'aaron',
+  'abbess',
+  'abel',
+  'abigail',
+  'abom',
+  'abomination',
+  'ace',
+  'acid',
+  'acolyte',
+  'actor',
+  'adamantite',
+  'adatha',
+  'adrin',
+  'adult',
+  'adv',
+  'adventurer',
+  'adviser',
+  'aeacus',
+  'aello',
+  'african',
+  'agannar',
+  'agb',
+  'agent',
+  'air',
+  'aisha',
+  'akinra',
+  'alchemical',
+  'alchemist',
+  'alecto',
+  'aleja',
+  'alien',
+  'alligator',
+  'alsatian',
+  'alys',
+  'amazon',
+  'american',
+  'amizir',
+  'amon',
+  'anaconda',
+  'anc',
+  'ancient',
+  'andara',
+  'anderson',
+  'andre',
+  'andrew',
+  'andro',
+  'andromeda',
+  'andronym',
+  'angel',
+  'angry',
+  'animal',
+  'anne',
+  'ant',
+  'anti',
+  'antip',
+  'antipaladin',
+  'antithief',
+  'anua',
+  'anubis',
+  'ap',
+  'ape',
+  'apollo',
+  'apple',
+  'apprentice',
+  'aquarius',
+  'arachnid',
+  'arch',
+  'archivist',
+  'archmagi',
+  'arena',
+  'argot',
+  'ariel',
+  'aries',
+  'arkel',
+  'arknos',
+  'armand',
+  'armourer',
+  'ashdra',
+  'ashmedai',
+  'aspiring',
+  'ass',
+  'assassin',
+  'assistant',
+  'astrasi',
+  'astrologer',
+  'atlag',
+  'attendant',
+  'auctioneer',
+  'automaton',
+  'avatar',
+  'averland',
+  'axean',
+  'baatezu',
+  'baby',
+  'bad',
+  'baggins',
+  'baker',
+  'balash',
+  'baleful',
+  'ballerina',
+  'bamboo',
+  'bander',
+  'bandersnatch',
+  'bandit',
+  'banker',
+  'bard',
+  'barker',
+  'baron',
+  'barrack',
+  'bartender',
+  'bartholemew',
+  'basalt',
+  'basilisk',
+  'basket',
+  'basking',
+  'bassist',
+  'bat',
+  'bath',
+  'batherington',
+  'battle',
+  'baug',
+  'bautzan',
+  'beagle',
+  'bear',
+  'beast',
+  'beastman',
+  'beaten',
+  'beauty',
+  'beaver',
+  'bed',
+  'bedbug',
+  'bee',
+  'beest',
+  'beetle',
+  'beggar',
+  'begger',
+  'begli',
+  'behemoth',
+  'being',
+  'believer',
+  'bellied',
+  'belt',
+  'berric',
+  'berserker',
+  'bert',
+  'bertram',
+  'big',
+  'bigbird',
+  'bilbo',
+  'billows',
+  'biped',
+  'bird',
+  'bishop',
+  'bittering',
+  'bittersteel',
+  'black',
+  'blacksmith',
+  'blade',
+  'blademaster',
+  'blithering',
+  'blob',
+  'blossom',
+  'blue',
+  'bluebird',
+  'boa',
+  'board',
+  'body',
+  'bodyguard',
+  'bone',
+  'bones',
+  'bony',
+  'boofo',
+  'book',
+  'bookkeeper',
+  'boris',
+  'boss',
+  'boulder',
+  'boy',
+  'branches',
+  'brat',
+  'brewer',
+  'brian',
+  'bride',
+  'brien',
+  'bright',
+  'broker',
+  'bronze',
+  'brother',
+  'brown',
+  'brownie',
+  'brughal',
+  'brute',
+  'buffalo',
+  'bug',
+  'bull',
+  'bumpkin',
+  'bunny',
+  'buquet',
+  'burgonmaster',
+  'burmese',
+  'bush',
+  'bushboogie',
+  'butcher',
+  'butler',
+  'bv',
+  'bylos',
+  'calf',
+  'camel',
+  'cancer',
+  'candle',
+  'cannibal',
+  'canopy',
+  'cape',
+  'capricorn',
+  'captain',
+  'captive',
+  'cara',
+  'card',
+  'caretaker',
+  'carlotta',
+  'carrion',
+  'cassiopeia',
+  'castle',
+  'cat',
+  'caveman',
+  'cavern',
+  'cedar',
+  'celeborn',
+  'celeno',
+  'celeste',
+  'celestial',
+  'cellist',
+  'centaur',
+  'centipede',
+  'ceo',
+  'cepheus',
+  'cesar',
+  'chak',
+  'cham',
+  'champion',
+  'chandelier',
+  'channeler',
+  'chaos',
+  'charybdis',
+  'chatundah',
+  'chazegreth',
+  'che',
+  'check',
+  'chef',
+  'cherry',
+  'chest',
+  'chi',
+  'chia',
+  'chic',
+  'chicken',
+  'chief',
+  'chieftain',
+  'child',
+  'chimera',
+  'chinese',
+  'chirugeon',
+  'chirurgeon',
+  'choir',
+  'choker',
+  'chorlach',
+  'chorlachtogna',
+  'christian',
+  'christine',
+  'chronicleer',
+  'citizen',
+  'city',
+  'cityguard',
+  'cl',
+  'clae',
+  'claegon',
+  'clay',
+  'cleaner',
+  'cleaning',
+  'cleric',
+  'climber',
+  'clive',
+  'cloak',
+  'clock',
+  'cloud',
+  'club',
+  'clubs',
+  'clyde',
+  'coach',
+  'coachman',
+  'coat',
+  'coatrack',
+  'cobra',
+  'cochineal',
+  'codys',
+  'collins',
+  'colonel',
+  'comet',
+  'commander',
+  'commando',
+  'commoner',
+  'company',
+  'condor',
+  'conductor',
+  'conductors',
+  'confessor',
+  'conger',
+  'conglomerate',
+  'constrictor',
+  'cook',
+  'copper',
+  'corpse',
+  'count',
+  'country',
+  'cousin',
+  'cow',
+  'cowering',
+  'coyle',
+  'crab',
+  'craftsman',
+  'crank',
+  'crawdad',
+  'crazed',
+  'crazy',
+  'creature',
+  'creeper',
+  'crested',
+  'crew',
+  'cricket',
+  'crier',
+  'crimson',
+  'critic',
+  'cro',
+  'crocodile',
+  'crone',
+  'crotus',
+  'crow',
+  'crowd',
+  'cruel',
+  'crusa',
+  'crystalline',
+  'cur',
+  'curator',
+  'cute',
+  'cuttlefish',
+  'cyclops',
+  'cyprine',
+  'd',
+  'daae',
+  'daemon',
+  'dagrat',
+  'daigure',
+  'dalzn',
+  'dancer',
+  'dap',
+  'dark',
+  'darklord',
+  'darkness',
+  'darst',
+  'daughter',
+  'daunting',
+  'david',
+  'dawnman',
+  'death',
+  'decay',
+  'deceit',
+  'deer',
+  'deformed',
+  'della',
+  'demented',
+  'demi',
+  'demiwolf',
+  'demon',
+  'demonic',
+  'demonologist',
+  'desade',
+  'desert',
+  'despina',
+  'destroyer',
+  'devil',
+  'devotee',
+  'dg',
+  'diamond',
+  'diamonds',
+  'dick',
+  'dif',
+  'difwife',
+  'dignitary',
+  'dire',
+  'director',
+  'dirty',
+  'disembodied',
+  'displacer',
+  'diumbra',
+  'dock',
+  'dockhand',
+  'dockmaster',
+  'doctor',
+  'doe',
+  'dog',
+  'doljet',
+  'dolphin',
+  'dolt',
+  'donna',
+  'door',
+  'doorkeeper',
+  'doorman',
+  'dopple',
+  'doppleganger',
+  'dorek',
+  'dra',
+  'draco',
+  'dragon',
+  'dragonfly',
+  'dragonmaster',
+  'dragonmistress',
+  'dragonrider',
+  'drake',
+  'dralogh',
+  'dranum',
+  'dreia',
+  'driver',
+  'dromaer',
+  'dromedary',
+  'drone',
+  'drow',
+  'druid',
+  'druj',
+  'drunk',
+  'drunken',
+  'dryad',
+  'dtam',
+  'duck',
+  'duckling',
+  'ducky',
+  'duergar',
+  'dummy',
+  'durban',
+  'durgathel',
+  'durnan',
+  'durso',
+  'durzagon',
+  'dust',
+  'duty',
+  'dwarf',
+  'dwarven',
+  'dwell',
+  'dweller',
+  'dylanis',
+  'dynzee',
+  'earth',
+  'eater',
+  'ed',
+  'eddie',
+  'edgar',
+  'edrin',
+  'efreet',
+  'efreeti',
+  'eight',
+  'ekaziel',
+  'ekitom',
+  'elder',
+  'ele',
+  'element',
+  'elemental',
+  'elephant',
+  'elf',
+  'elite',
+  'elk',
+  'elven',
+  'emaciated',
+  'emerald',
+  'emissary',
+  'empress',
+  'enchanter',
+  'enchantress',
+  'energy',
+  'english',
+  'eniera',
+  'enormous',
+  'enraged',
+  'enri',
+  'ent',
+  'erik',
+  'erinyes',
+  'erratic',
+  'erudite',
+  'erzuli',
+  'escaped',
+  'escort',
+  'esmira',
+  'estelle',
+  'et',
+  'etcher',
+  'ether',
+  'etheral',
+  'ethereal',
+  'etienne',
+  'ett',
+  'ettin',
+  'eunuch',
+  'european',
+  'euryale',
+  'evil',
+  'ewe',
+  'excavator',
+  'excommunicated',
+  'executioner',
+  'explorer',
+  'extractor',
+  'eye',
+  'fadh',
+  'faerie',
+  'faeryn',
+  'fairy',
+  'faith',
+  'fallen',
+  'familiar',
+  'fan',
+  'fanatical',
+  'farh',
+  'farmer',
+  'father',
+  'feline',
+  'felnor',
+  'fem',
+  'female',
+  'ferocious',
+  'ferry',
+  'ferryman',
+  'fido',
+  'fiel',
+  'fiend',
+  'fighter',
+  'figure',
+  'filthy',
+  'fire',
+  'firedrake',
+  'firmin',
+  'first',
+  'fish',
+  'five',
+  'flake',
+  'flame',
+  'flaming',
+  'flesh',
+  'floor',
+  'floorboard',
+  'florist',
+  'flowering',
+  'fly',
+  'flying',
+  'flytrap',
+  'fog',
+  'fool',
+  'foreman',
+  'forest',
+  'form',
+  'formless',
+  'fountain',
+  'four',
+  'fox',
+  'frebjin',
+  'frenal',
+  'french',
+  'friend',
+  'fronds',
+  'frost',
+  'frump',
+  'fungi',
+  'furies',
+  'furious',
+  'fury',
+  'gabrielle',
+  'galadriel',
+  'gamgee',
+  'ganger',
+  'ganth',
+  'ganymede',
+  'garat',
+  'gardener',
+  'gargantuan',
+  'gargon',
+  'gargoyle',
+  'gaston',
+  'gate',
+  'gateguard',
+  'gatekeeper',
+  'gatemaster',
+  'gator',
+  'gaunt',
+  'gaz',
+  'gazelle',
+  'gecko',
+  'gelatinous',
+  'gemini',
+  'gen',
+  'general',
+  'genevieve',
+  'genius',
+  'gertrute',
+  'ghast',
+  'ghizyon',
+  'ghost',
+  'ghostly',
+  'ghoul',
+  'ghuz',
+  'giant',
+  'gigantic',
+  'gilded',
+  'giraffe',
+  'girl',
+  'giry',
+  'githyaddi',
+  'gladiator',
+  'glaucus',
+  'glavius',
+  'glowworm',
+  'gnash',
+  'gnoll',
+  'gnome',
+  'goat',
+  'goblin',
+  'god',
+  'golaud',
+  'gold',
+  'golden',
+  'golem',
+  'goliathus',
+  'gonjin',
+  'good',
+  'goose',
+  'goracka',
+  'gorgon',
+  'gorilla',
+  'gorth',
+  'gossip',
+  'goth',
+  'graceful',
+  'graff',
+  'grand',
+  'grandfather',
+  'granite',
+  'granny',
+  'grazz',
+  'green',
+  'gremlin',
+  'grey',
+  'griffin',
+  'griffon',
+  'grizzled',
+  'grizzly',
+  'grocer',
+  'ground',
+  'gruesome',
+  'grumbiter',
+  'grytha',
+  'gryttefel',
+  'guard',
+  'guarddog',
+  'guardian',
+  'guerrilla',
+  'guest',
+  'guide',
+  'guildmaster',
+  'gull',
+  'gulth',
+  'gurundi',
+  'gwark',
+  'gypsy',
+  'gyrnath',
+  'hades',
+  'hag',
+  'haggard',
+  'halfbreed',
+  'halfling',
+  'hand',
+  'hands',
+  'hans',
+  'harlan',
+  'harlans',
+  'harpy',
+  'hashaii',
+  'hat',
+  'hatamoto',
+  'hatchling',
+  'haughty',
+  'hayden',
+  'head',
+  'headmaster',
+  'healer',
+  'heap',
+  'hearts',
+  'heather',
+  'hecate',
+  'heckkingrel',
+  'hedge',
+  'hekkezth',
+  'hell',
+  'herakleous',
+  'herald',
+  'hercules',
+  'hermit',
+  'hero',
+  'hideous',
+  'high',
+  'hippo',
+  'hippocamp',
+  'hippopotamus',
+  'hobgoblin',
+  'hoeur',
+  'hog',
+  'holy',
+  'horn',
+  'horned',
+  'horror',
+  'horse',
+  'horsehead',
+  'houdini',
+  'hound',
+  'hovering',
+  'hrandor',
+  'huge',
+  'human',
+  'humanoid',
+  'hunchback',
+  'hunter',
+  'hunting',
+  'hurricane',
+  'hydra',
+  'hyena',
+  'hyokki',
+  'hypnos',
+  'hyrum',
+  'ice',
+  'id',
+  'idiot',
+  'ikelian',
+  'illusionist',
+  'imp',
+  'impala',
+  'impaled',
+  'incalae',
+  'infant',
+  'ingenue',
+  'injured',
+  'ink',
+  'inmate',
+  'innkeeper',
+  'innocent',
+  'insane',
+  'inscect',
+  'insect',
+  'instrument',
+  'inventor',
+  'iron',
+  'isha',
+  'ix',
+  'ixthian',
+  'jack',
+  'jacques',
+  'jaguar',
+  'jail',
+  'jailor',
+  'james',
+  'janitor',
+  'janus',
+  'jao',
+  'japanese',
+  'jastil',
+  'jaw',
+  'jaws',
+  'jeanette',
+  'jellyfish',
+  'jenny',
+  'jerry',
+  'jester',
+  'jeweler',
+  'jim',
+  'jimbo',
+  'jochem',
+  'joe',
+  'john',
+  'joseph',
+  'josh',
+  'jubi',
+  'judge',
+  'juggernaut',
+  'jungle',
+  'junior',
+  'justine',
+  'kadrym',
+  'kafkefoni',
+  'kalas',
+  'kalek',
+  'kalten',
+  'kamila',
+  'karen',
+  'kasumi',
+  'kazic',
+  'keeper',
+  'keg',
+  'kegroch',
+  'kelezir',
+  'kendal',
+  'keris',
+  'keseth',
+  'kestirin',
+  'khun',
+  'ki',
+  'kid',
+  'kikyo',
+  'kimuran',
+  'kindly',
+  'kineyer',
+  'king',
+  'kingfisher',
+  'kingsnake',
+  'kirhea',
+  'kirin',
+  'kitten',
+  'kitty',
+  'klath',
+  'klizgisin',
+  'knight',
+  'knives',
+  'kobold',
+  'komodo',
+  'kosseth',
+  'kraken',
+  'kranch',
+  'kretz',
+  'krynel',
+  'krytun',
+  'kuo',
+  'laborer',
+  'lac',
+  'lachenel',
+  'ladder',
+  'lady',
+  'lahac',
+  'lamia',
+  'lanky',
+  'lao',
+  'large',
+  'larger',
+  'laurana',
+  'lava',
+  'layman',
+  'lazlo',
+  'lead',
+  'leader',
+  'leaf',
+  'leather',
+  'leayr',
+  'lecturer',
+  'leech',
+  'legend',
+  'lehamic',
+  'leo',
+  'leopard',
+  'lestat',
+  'lgp',
+  'liantao',
+  'libra',
+  'librarian',
+  'lich',
+  'lifeguard',
+  'light',
+  'lightning',
+  'lil',
+  'lilith',
+  'linave',
+  'lingula',
+  'lion',
+  'lioness',
+  'lithe',
+  'lizard',
+  'llama',
+  'local',
+  'loci',
+  'loftwick',
+  'lohar',
+  'lookout',
+  'lord',
+  'lorelei',
+  'lorin',
+  'lormick',
+  'lost',
+  'lostgod',
+  'lotharian',
+  'lotus',
+  'louis',
+  'lucretia',
+  'lumberjack',
+  'lunar',
+  'lunatic',
+  'luriel',
+  'm',
+  'macaw',
+  'machine',
+  'mackerel',
+  'mad',
+  'madame',
+  'madeleine',
+  'maestro',
+  'mage',
+  'magi',
+  'magic',
+  'magician',
+  'magister',
+  'magneto',
+  'magus',
+  'maharajah',
+  'maid',
+  'maiden',
+  'main',
+  'maintenance',
+  'major',
+  'malachite',
+  'malann',
+  'malcontent',
+  'male',
+  'malgorath',
+  'malthus',
+  'mamba',
+  'mammal',
+  'mammoth',
+  'man',
+  'manticore',
+  'mantok',
+  'marauder',
+  'mari',
+  'mariko',
+  'marisa',
+  'marisothil',
+  'marsh',
+  'marshall',
+  'martos',
+  'masoch',
+  'masochist',
+  'mass',
+  'master',
+  'mastersmith',
+  'mastodon',
+  'mate',
+  'matriarch',
+  'matron',
+  'matsyansana',
+  'matt',
+  'mature',
+  'mayor',
+  'mazekeeper',
+  'Mazer',
+  'meager',
+  'medium',
+  'medusa',
+  'meek',
+  'meg',
+  'megaera',
+  'mel',
+  'melane',
+  'melisande',
+  'member',
+  'meng',
+  'mengoroth',
+  'mentor',
+  'mephesteus',
+  'mercenary',
+  'merchant',
+  'mercier',
+  'mermaid',
+  'metal',
+  'metaman',
+  'metaphysician',
+  'michael',
+  'mick',
+  'middenheim',
+  'mighty',
+  'migo',
+  'mill',
+  'miller',
+  'mimic',
+  'mindless',
+  'mine',
+  'miner',
+  'mineworker',
+  'minion',
+  'minos',
+  'minotaur',
+  'minstrel',
+  'mir',
+  'mirissa',
+  'mirror',
+  'mist',
+  'mistress',
+  'mizir',
+  'mme',
+  'mod',
+  'moira',
+  'mole',
+  'mongrel',
+  'monk',
+  'monkey',
+  'monoceros',
+  'monsieur',
+  'monster',
+  'monstrosity',
+  'moose',
+  'moray',
+  'mored',
+  'mos',
+  'mosquito',
+  'moss',
+  'mother',
+  'mountain',
+  'mountainclimber',
+  'mred',
+  'mud',
+  'mudder',
+  'muglo',
+  'mummy',
+  'murex',
+  'mus',
+  'muse',
+  'mushroom',
+  'music',
+  'musician',
+  'muskelounge',
+  'musky',
+  'mutant',
+  'myree',
+  'mysterious',
+  'mystic',
+  'naga',
+  'nalsureii',
+  'nameless',
+  'nasty',
+  'nebula',
+  'necro',
+  'necromancer',
+  'nectromanticus',
+  'neptune',
+  'nether',
+  'neutral',
+  'neutrality',
+  'new',
+  'newt',
+  'ni',
+  'nice',
+  'nicolas',
+  'night',
+  'nightgaunt',
+  'nightmare',
+  'nil',
+  'nile',
+  'nine',
+  'ninja',
+  'nix',
+  'noble',
+  'nomad',
+  'nothing',
+  'nurse',
+  'nursemaid',
+  'nyarlathotep',
+  'oak',
+  'oaken',
+  'observer',
+  'oceanid',
+  'octalon',
+  'ocypete',
+  'odei',
+  'odif',
+  'of',
+  'off',
+  'offduty',
+  'officer',
+  'oggas',
+  'ogre',
+  'ogress',
+  'ogun',
+  'oil',
+  'old',
+  'older',
+  'oldman',
+  'olga',
+  'olvan',
+  'omen',
+  'omnai',
+  'one',
+  'onyx',
+  'opera',
+  'orak',
+  'orc',
+  'orchestra',
+  'orexis',
+  'orion',
+  'ornithopter',
+  'ostermark',
+  'ostrich',
+  'outpost',
+  'overlord',
+  'owl',
+  'owner',
+  'ox',
+  'pack',
+  'packrat',
+  'page',
+  'paladin',
+  'pale',
+  'paltro',
+  'panua',
+  'paperboy',
+  'parisian',
+  'parrot',
+  'particle',
+  'paste',
+  'patient',
+  'patriarch',
+  'patron',
+  'paxman',
+  'peacock',
+  'pebble',
+  'peddler',
+  'pegasus',
+  'pel',
+  'pelican',
+  'pelleas',
+  'penny',
+  'peon',
+  'peppery',
+  'percussist',
+  'periwinkle',
+  'perluna',
+  'pern',
+  'pernicious',
+  'perry',
+  'persian',
+  'persimmons',
+  'pet',
+  'pete',
+  'peter',
+  'petrified',
+  'phantom',
+  'phauryal',
+  'philosopher',
+  'physician',
+  'physicist',
+  'piangi',
+  'piano',
+  'pierre',
+  'pig',
+  'pilgrim',
+  'piotr',
+  'pirate',
+  'pirates',
+  'pisces',
+  'pit',
+  'pitch',
+  'pitchblack',
+  'pitcher',
+  'pixie',
+  'plant',
+  'plaster',
+  'player',
+  'playerpiano',
+  'pleiades',
+  'po',
+  'poisonous',
+  'polar',
+  'polaris',
+  'pony',
+  'poor',
+  'portal',
+  'portrait',
+  'postman',
+  'pot',
+  'pound',
+  'poxman',
+  'prairie',
+  'preserver',
+  'pretentious',
+  'priest',
+  'priestess',
+  'prima',
+  'prince',
+  'princess',
+  'prison',
+  'prisoner',
+  'prophet',
+  'proserpina',
+  'protector',
+  'psemapod',
+  'ptilol',
+  'puddle',
+  'pupil',
+  'puppy',
+  'pureblood',
+  'purple',
+  'pussy',
+  'pyr',
+  'pyruleth',
+  'pyrver',
+  'python',
+  'quartz',
+  'queen',
+  'questmaster',
+  'quickling',
+  'quintor',
+  'rabbit',
+  'rabit',
+  'racehorse',
+  'rack',
+  'Rackham',
+  'radamanthus',
+  'radiant',
+  'rahin',
+  'raider',
+  'rainbow',
+  'rakjak',
+  'raoul',
+  'rat',
+  'rattlesnake',
+  'raven',
+  'reaper',
+  'receptionist',
+  'recruit',
+  'red',
+  'redmonton',
+  'regal',
+  'reina',
+  'reptile',
+  'reptilian',
+  'republican',
+  'research',
+  'researcher',
+  'retired',
+  'retiree',
+  'reton',
+  'rewey',
+  'rezlan',
+  'rhabyn',
+  'rhino',
+  'rhinoceros',
+  'rider',
+  'rin',
+  'ring',
+  'ripper',
+  'risen',
+  'robin',
+  'robot',
+  'roc',
+  'rock',
+  'roe',
+  'rogue',
+  'romnian',
+  'ron',
+  'rook',
+  'rose',
+  'roshan',
+  'rostrai',
+  'rot',
+  'rottweiler',
+  'rotund',
+  'rotworm',
+  'rover',
+  'royal',
+  'rubber',
+  'rubberducky',
+  'ruler',
+  'run',
+  'rust',
+  'rygor',
+  'sabastian',
+  'sabre',
+  'sacrifice',
+  'sadist',
+  'saeyrk',
+  'safari',
+  'sag',
+  'sage',
+  'sagely',
+  'sagittarius',
+  'sagreth',
+  'sagrethi',
+  'sailor',
+  'saint',
+  'sal',
+  'salamander',
+  'sales',
+  'salt',
+  'salty',
+  'salvatore',
+  'salvia',
+  'salvias',
+  'sammael',
+  'samurai',
+  'sandstone',
+  'santiago',
+  'sapphire',
+  'sas',
+  'sasquatch',
+  'saule',
+  'savant',
+  'scabri',
+  'scar',
+  'scavenger',
+  'scene',
+  'scholar',
+  'school',
+  'scientist',
+  'scorpat',
+  'scorpio',
+  'scorpion',
+  'scout',
+  'scullery',
+  'scylla',
+  'sea',
+  'seal',
+  'seasoned',
+  'secretary',
+  'security',
+  'seeker',
+  'seelie',
+  'seeress',
+  'sen',
+  'senior',
+  'sennyo',
+  'sentinel',
+  'sentry',
+  'seraphim',
+  'sergeant',
+  'serkhet',
+  'serpent',
+  'servant',
+  'servitor',
+  'seth',
+  'seven',
+  'sewing',
+  'sexton',
+  'shade',
+  'shadow',
+  'shadowdancer',
+  'shadowman',
+  'shadowmaster',
+  'shadows',
+  'shadowy',
+  'shaiyn',
+  'shaman',
+  'shamble',
+  'shambling',
+  'shantak',
+  'shargugh',
+  'shark',
+  'she',
+  'sheep',
+  'sheepherder',
+  'shepherd',
+  'shev',
+  'shifter',
+  'shimmering',
+  'shiragiku',
+  'shiriff',
+  'shopkeeper',
+  'shopsmith',
+  'shullush',
+  'siana',
+  'sidewinder',
+  'silver',
+  'silverback',
+  'silvery',
+  'simeon',
+  'singer',
+  'siren',
+  'sirlth',
+  'sirrin',
+  'sister',
+  'six',
+  'skeletal',
+  'skeleton',
+  'slave',
+  'slavedriver',
+  'slayer',
+  'slimy',
+  'sloth',
+  'slug',
+  'small',
+  'smilodon',
+  'smith',
+  'snail',
+  'snake',
+  'snap',
+  'snapper',
+  'snatch',
+  'snob',
+  'snow',
+  'snowcat',
+  'snowflake',
+  'snowman',
+  'snowrabbit',
+  'snowshoe',
+  'socialite',
+  'soldier',
+  'son',
+  'sondereel',
+  'songbird',
+  'sorcerer',
+  'sorelli',
+  'soul',
+  'souls',
+  'sous',
+  'spades',
+  'spark',
+  'sparrow',
+  'speckled',
+  'specter',
+  'spectral',
+  'spectre',
+  'speedy',
+  'spellcaster',
+  'sphen',
+  'sphere',
+  'sphinx',
+  'spi',
+  'spider',
+  'spindly',
+  'spiny',
+  'spiral',
+  'spirit',
+  'spitting',
+  'splendid',
+  'spoldovian',
+  'squid',
+  'squigglywig',
+  'squire',
+  'squirrel',
+  'sslessi',
+  'stable',
+  'stableboy',
+  'stablehand',
+  'stacia',
+  'stage',
+  'stair',
+  'staircase',
+  'stairs',
+  'stalker',
+  'standing',
+  'stanislaw',
+  'star',
+  'statue',
+  'stefan',
+  'steverph',
+  'stheno',
+  'stirge',
+  'stockbroker',
+  'stone',
+  'stoned',
+  'storekeeper',
+  'storm',
+  'stranger',
+  'stray',
+  'street',
+  'strength',
+  'succubi',
+  'succubus',
+  'sui',
+  'suithiess',
+  'sulfur',
+  'sultan',
+  'sundew',
+  'sunyo',
+  'super',
+  'supergiant',
+  'superior',
+  'supervisor',
+  'surveyor',
+  'swab',
+  'swallow',
+  'swamp',
+  'swan',
+  'sweeper',
+  'swordpupil',
+  'sxuvu',
+  'sylph',
+  'tako',
+  'talkinghorse',
+  'tall',
+  'tam',
+  'taninniver',
+  'taskmaster',
+  'taurus',
+  'teacher',
+  'teller',
+  'templar',
+  'ten',
+  'tentacled',
+  'tephanis',
+  'terror',
+  'terroroxulus',
+  'tester',
+  'teyrdok',
+  'th',
+  'thad',
+  'thain',
+  'the',
+  'theatre',
+  'thessen',
+  'thief',
+  'thiess',
+  'thieved',
+  'thrag',
+  'three',
+  'threggi',
+  'thule',
+  'thusk',
+  'tiarella',
+  'tiefling',
+  'tiger',
+  'tim',
+  'timber',
+  'timid',
+  'tiny',
+  'tirag',
+  'tisiphone',
+  'titan',
+  'toa',
+  'toad',
+  'todd',
+  'toddler',
+  'togna',
+  'toktok',
+  'tom',
+  'tome',
+  'tomoko',
+  'topiary',
+  'tordek',
+  'tortoise',
+  'tortured',
+  'toucan',
+  'touen',
+  'tower',
+  'townsperson',
+  'toy',
+  'tracker',
+  'trader',
+  'trainee',
+  'trainer',
+  'trainingmaster',
+  'traveler',
+  'traz',
+  'treant',
+  'treasure',
+  'treasurer',
+  'tree',
+  'treebeard',
+  'treeman',
+  'trien',
+  'troll',
+  'trollkin',
+  'trout',
+  'trouth',
+  'trylan',
+  'tsetse',
+  'tuptim',
+  'tur',
+  'turimalga',
+  'twilo',
+  'two',
+  'tymora',
+  'tyrand',
+  'tyrant',
+  'tythox',
+  'tzeentch',
+  'tzyr',
+  'ugishka',
+  'ugly',
+  'undead',
+  'unholy',
+  'unicorn',
+  'unseelie',
+  'unspeakable',
+  'unwanted',
+  'ura',
+  'urbanite',
+  'urchin',
+  'ursa',
+  'usher',
+  'usiel',
+  'usuvia',
+  'utter',
+  'vadhb',
+  'vadhp',
+  'vadir',
+  'vadpb',
+  'vadpr',
+  'vadser',
+  'vaisyo',
+  'vald',
+  'valmont',
+  'vamp',
+  'vampire',
+  'vanyel',
+  'varimthrax',
+  'varka',
+  'vault',
+  'vaultdweller',
+  'vedder',
+  'vendor',
+  'vengeful',
+  'venzu',
+  'veteran',
+  'vicar',
+  'vicious',
+  'victim',
+  'vile',
+  'villager',
+  'vine',
+  'vintner',
+  'viola',
+  'violin',
+  'viper',
+  'virgo',
+  'vizier',
+  'vlad',
+  'volunteer',
+  'vorn',
+  'voskian',
+  'vulture',
+  'vyman',
+  'vyrinth',
+  'waiter',
+  'waiting',
+  'waitress',
+  'walker',
+  'wall',
+  'wandering',
+  'war',
+  'warden',
+  'warder',
+  'wardrobe',
+  'warg',
+  'warlock',
+  'warrior',
+  'wart',
+  'warthog',
+  'wasp',
+  'water',
+  'waterbaby',
+  'waurk',
+  'weak',
+  'weaponsmaster',
+  'weaponsmith',
+  'weary',
+  'weasel',
+  'weaver',
+  'weeds',
+  'welmar',
+  'wen',
+  'westenra',
+  'wet',
+  'whale',
+  'wheels',
+  'whi',
+  'whirlpool',
+  'white',
+  'wife',
+  'wight',
+  'wil',
+  'wild',
+  'wildebeest',
+  'winged',
+  'winter',
+  'wiseman',
+  'witch',
+  'withered',
+  'wizard',
+  'wolf',
+  'wolven',
+  'woman',
+  'wooden',
+  'woolly',
+  'worker',
+  'world',
+  'worlds',
+  'worm',
+  'wormwood',
+  'worshipper',
+  'wraith',
+  'wynona',
+  'wyrm',
+  'wyvern',
+  'xandian',
+  'xandolap',
+  'xavier',
+  'xerui',
+  'xfxqrfmwfgjp',
+  'xia',
+  'xist',
+  'yabon',
+  'yadeth',
+  'yathos',
+  'yeti',
+  'yevaud',
+  'ygaddrozil',
+  'yltsaeb',
+  'ymymry',
+  'ynoild',
+  'young',
+  'younger',
+  'youngster',
+  'yousei',
+  'youth',
+  'yrgroch',
+  'yssa',
+  'yul',
+  'yulmazil',
+  'yvie',
+  'zartug',
+  'zealot',
+  'zebra',
+  'zombie',
+  'zoo',
+  'zookeeper',
+  'zovanak',
+  'zyca',
+  'zyekian',
+  'zylas',
+}
+
+whereMap = {
+  {1,     399,   [[The Shrines]]},
+  {401,   499,   [[The Etheral Plane]]},
+  {501,   599,   [[The Maritime Museum]]},
+  {800,   899,   [[The Dragon Caves]]},
+  {901,   999,   [[The Spirit Woods]]},
+  {1000,  1099,  [[Allemonde]]},
+  {1100,  1199,  [[The Shire]]},
+  {1200,  1399,  [[The Canticle]]},
+  {1401,  1499,  [[God Rooms]]},
+  {1701,  1799,  [[The Garden]]},
+  {1801,  1820,  [[The Death Tower]]},
+  {1821,  1999,  [[The Lands]]},
+  {2001,  2078,  [[The Galaxy]]},
+  {2101,  2199,  [[Zhalur the Golden]]},
+  {2301,  2399,  [[The Warring Roses]]},
+  {2501,  2599,  [[The New Graveyard]]},
+  {2600,  2699,  [[The Zoo]]},
+  {2701,  2799,  [[The Chateau of the Dead]]},
+  {2801,  2899,  [[The Ivory Tower]]},
+  {2900,  2950,  [[The Newt Caves]]},
+  {3000,  3099,  [[Northern Midgaard]]},
+  {3100,  3199,  [[Southern Midgaard]]},
+  {3200,  3299,  [[The River and Tower of Sorcery]]},
+  {3300,  3399,  [[The Buildings of Midgaard]]},
+  {3400,  3499,  [[The Graveyard Plus]]},
+  {3551,  3599,  [[Le Chateau d'Angoisse]]},
+  {3601,  3623,  [[The Martial Arts Dojo]]},
+  {3701,  3799,  [[The Mayor's House]]},
+  {3801,  3899,  [[The Pixies' Garden]]},
+  {3901,  3999,  [[The Cathedral of Mortal Heroes]]},
+  {4000,  4099,  [[Mt. Durgathel]]},
+  {4100,  4299,  [[The House of Horror]]},
+  {4501,  4520,  [[The Goblin Kingdom]]},
+  {4601,  4699,  [[The Evil Palace]]},
+  {4701,  4799,  [[The Myree Orchard]]},
+  {4801,  4899,  [[The Halfing Village]]},
+  {5001,  5099,  [[The Lost City]]},
+  {5100,  5199,  [[Drow City]]},
+  {5200,  5299,  [[The City of Thalos]]},
+  {5301,  5350,  [[The Deserted Village]]},
+  {5400,  5499,  [[The Wasteland]]},
+  {5601,  5699,  [[Piotrsgrad]]},
+  {5700,  5799,  [[The Great Pyramid]]},
+  {6000,  6099,  [[Haon Dor Light~]]},
+  {6100,  6199,  [[Haon Dor Dark]]},
+  {6201,  6299,  [[Ozymar's City]]},
+  {6301,  6399,  [[The Arachnid Archives]]},
+  {6401,  6499,  [[The Ghost Ship]]},
+  {6500,  6599,  [[The Dwarven Kingdom]]},
+  {6600,  6699,  [[Gurundi Forest]]},
+  {6700,  6799,  [[The Threggi Pit]]},
+  {6801,  6899,  [[The Alien's Den]]},
+  {6900,  6999,  [[Quifael's Shop]]},
+  {7000,  7099,  [[The Evil Outpost]]},
+  {7101,  7199,  [[The Midgaard Asylum]]},
+  {7201,  7299,  [[Vadir Temple]]},
+  {7301,  7399,  [[The Battlefield]]},
+  {7401,  7499,  [[The Battlefield Village]]},
+  {7500,  7599,  [[The Pirate Ship]]},
+  {7601,  7699,  [[The Hall of the Lost Gods]]},
+  {7900,  7999,  [[Redferne's Residence]]},
+  {8001,  8099,  [[Cei'Arda]]},
+  {8104,  8199,  [[The Ocean]]},
+  {8201,  8299,  [[The Sea of Love]]},
+  {8301,  8399,  [[The Beach]]},
+  {8401,  8499,  [[The Festival of Antiquity]]},
+  {8501,  8599,  [[The Desert and Lake]]},
+  {8600,  8699,  [[The Quest for the Holy Grail]]},
+  {8800,  8899,  [[Le Theatre des Vampyres]]},
+  {8901,  8955,  [[The King's Castle]]},
+  {9101,  9199,  [[Cloud City]]},
+  {9301,  9399,  [[Loftwick]]},
+  {9401,  9460,  [[The Elemental Canyon]]},
+  {9501,  9550,  [[The Wolves Cave]]},
+  {9600,  9699,  [[Morgoth]]},
+  {10001, 10099, [[The Dark Cathedral]]},
+  {10300, 10399, [[The Monk Monastary]]},
+  {10401, 10449, [[QuickLand]]},
+  {10501, 10599, [[The Great Desert]]},
+  {10601, 10699, [[Blackpool Swamp]]},
+  {10701, 10799, [[The Golem Kingdom]]},
+  {10801, 10899, [[Chaos Lands]]},
+  {10900, 10999, [[Zyca City]]},
+  {11000, 11299, [[The UnderWorld]]},
+  {11300, 11369, [[The Village of Romnia]]},
+  {11401, 11440, [[The Castle of Despair]]},
+  {11500, 11599, [[Phantom I]]},
+  {11601, 11699, [[Lorien]]},
+  {11700, 11799, [[Phantom II]]},
+  {11800, 11899, [[Straits of Messia]]},
+  {12000, 12200, [[The Swamp]]},
+  {12201, 12300, [[The Swamp and Secret Caves]]},
+  {12801, 12899, [[The Nightmare]]},
+  {12901, 12999, [[The Prison of Souls]]},
+  {13001, 13099, [[The Roc Aviary]]},
+  {13100, 13199, [[The Templars Mercador]]},
+  {13200, 13299, [[Rainforest of Janus]]},
+  {13600, 13699, [[The Gnoll Fortress]]},
+  {13700, 13799, [[The Cave of the Sag'rethi]]},
+  {13800, 13899, [[The Safari]]},
+  {14201, 14299, [[Slaadi Jungle]]},
+  {14301, 14399, [[Dark Kingdom I]]},
+  {14400, 14499, [[Dark Kingdom II]]},
+  {14501, 14599, [[Forgotten Valley]]},
+  {14601, 14699, [[The Dwarven Lunar Mines I]]},
+  {14700, 14799, [[The Dwarven Lunar Mines II]]},
+  {15400, 15499, [[Dark Kingdom III]]},
+  {16601, 16645, [[The Heour]]},
+  {17601, 17699, [[The Gladiator Arena]]},
+  {17900, 17993, [[The Wood of Ngai]]},
+  {18700, 18799, [[The Midgaard Museum]]},
+  {19200, 19299, [[Castle Mistamere]]},
+  {20001, 20099, [[Undead Realm]]},
+  {20100, 20199, [[The Undead Realm II]]},
+  {22000, 22052, [[Phantom III]]},
+  {22401, 22499, [[The DarkFall]]},
+  {24456, 24999, [[The Hospital]]},
+  {25000, 25099, [[The Abyss]]},
+  {25201, 25299, [[FrostHolme]]},
+  {25301, 25399, [[UtterFrost Cavern]]},
+  {25501, 25599, [[Wyvern Wood]]},
+  {26500, 26583, [[The Druid Grove of Gyrnath]]},
+  {26601, 26699, [[The Ekitom Mines]]},
+  {26701, 26799, [[Midgaard Tar Pit]]},
+  {28000, 28099, [[MirIsland]]},
+  {28100, 28199, [[Mir Crusade]]},
+  {28200, 28299, [[KoboldsI]]}
+}
+
+-- This function is triggered once for each line of 'where' output in order to capture the mob on that line
+-- A unique key is created by combining the mobs short description and area; unique mobs are queued for 'stat'ing
+function captureWhereMobs()
+  -- windex is the position within the 'where' command itself and must be saved for subsequent 'stat' command;
+  -- note that this is NOT a static value so 'stat' must be issued shortly after where or this may change
+  local windex = trim( matches[2] )
+  windex       = tonumber( windex )
+  local sdesc  = trim( matches[3] )
+  if playerNames[sdesc] then return end -- Don't stat players
+  local rmvnum    = trim( matches[5] )
+  -- Get the area name by translating vnum->rnum->area; unknown areas are represented by the room number
+  rmvnum          = tonumber( rmvnum )
+  local rmarea    = getWhereArea( rmvnum )
+
+  -- Create a unique key by combining the mob's short name and rmvnum
+  local uniqueKey = sdesc .. "_" .. rmvnum
+
+  -- If a mob with this short description has been seen in this room, assume we can skip it
+  if not mobsToStat[uniqueKey] then
+    mobsToStat[uniqueKey].index   = windex
+    mobsToStat[uniqueKey].keyword = currentMobKeyword
+    mobsToStat[uniqueKey].stated  = false
+  end
+  if not mobsCaptured[uniqueKey] then
+    mobsCaptured[uniqueKey] = {
+      stated            = false,
+      short_description = sdesc,
+      index             = windex,
+      area              = rmarea,
+      special_attacks   = {},
+      stats             = {},
+      known_rooms       = {rmvnum}
+    }
+  else
+    -- If the mob/area combination is known, update its list of known rooms if this room is new
+    if not table.contains( mobsCaptured[uniqueKey].known_rooms, rmvnum ) then
+      table.insert( mobsCaptured[uniqueKey].known_rooms, rmvnum )
+    end
+  end
+end
+-- Function to initiate stat command for the next unstated mob
+function statNextMob()
+  cecho( f "\n<yellow_green>statNextMob()<reset>" )
+  local foundUnstated = false
+
+  for uniqueKey, mob in pairs( mobsCaptured ) do
+    if not mob.stated then
+      cecho( f "\nstatNextMob() found mob to stat: <yellow_green>{uniqueKey}<reset>" )
+      -- Issue the stat command for the current mob
+      send( f 'stat c {mob.index}.{currentMobKeyword}', false )
+      -- Mark the mob as stated to avoid re-stat'ing
+      mob.stated    = true
+      foundUnstated = true
+      -- Set up the temporary trigger for the next prompt to call statNextMob again
+      tempRegexTrigger( "\\s*^<", statNextMob, 1 )
+      break -- Exit the loop after scheduling a stat for one mob
+    end
+  end
+  -- If no unstated mob was found, all mobs have been processed; call whereNextMob
+  if not foundUnstated then
+    cecho( f "\n<maroon>No unstated mobs found<reset>, moving to <royal_blue>whereNextMob()<reset>" )
+    whereNextMob()
+  end
+end
+-- Stat block seen with "PC" type; remove this entry from the capturedMobs table
+function removeCapturedPC( pcName )
+  cecho( "info", f "\nRemoving <royal_blue>{pcName}<reset> from capturedMobs" )
+  for i = #capturedMobs, 1, -1 do
+    if capturedMobs[i].short == pcName then
+      table.remove( capturedMobs, i )
+      break
+    end
+  end
+end
+
+-- I already have a trim() function; you don't need to implement one.
+-- Triggered by lines returned by the 'where' command; add or update mob data in the capturedMobs list
+function captureWhereMob()
+  local mobIndex = tonumber( matches[2] )
+  local mobShort = trim( matches[3] )
+  local roomID   = tonumber( matches[5] )
+
+  local mobFound = false
+  for _, mob in ipairs( capturedMobs ) do
+    if mob.short == mobShort then
+      mobFound = true
+      -- Update the rooms list for this mob in the capturedMobs table
+      -- Every mob should end up with a list of rooms in which it was "seen"
+      if not table.contains( mob.rooms, roomID ) then
+        table.insert( mob.rooms, roomID )
+      end
+      break
+    end
+  end
+  if not mobFound then
+    -- Add the newly-discovered mob to the capturedMobs table with an empty stat block
+    table.insert( capturedMobs, {
+      short = mobShort, -- Match against this when inserting stat blocks
+      stats = {},
+      specials = {},
+      rooms = {roomID}
+    } )
+    -- Add index to mobIndicesToStat table for new mobs
+    -- We'll iterate over this later issuing stat commands like 'stat c 1.arachnid'
+    table.insert( mobIndicesToStat, {index = mobIndex, keyword = currentMobKeyword} )
+  end
+end
+-- Mudlet has a built-in table.contains() function, you don't need to implement one.
+-- Print the content of the capturedMobs table filtered by the first letter of the mob's name
+function displayCapturedMobsByLetter( letter )
+  local filterLetter = letter:lower() -- To handle case insensitivity
+  cecho( "\n<green>--- Captured Mobs Starting with '" .. letter .. "' ---<reset>" )
+
+  for _, mob in ipairs( capturedMobs ) do
+    local mobFirstLetter = mob.short:sub( 1, 1 ):lower()
+    if mobFirstLetter == filterLetter then
+      cecho( f( "\n<yellow>Mob: <reset>{mob.short}" ) )
+      cecho( f( "\n<yellow>Rooms: <reset>{table.concat(mob.rooms, ', ')}" ) )
+
+      if #mob.specials > 0 then
+        cecho( "\n<yellow>Special Attacks:<reset>" )
+        for _, special in ipairs( mob.specials ) do
+          local attackDetails = f(
+            "Chance: {special.chance}, Damage: {special.damage.n}D{special.damage.s}+{special.damage.m}, HitRoll: {special.hitRoll}, Target: {special.target}, Type: {special.type}, Strings: {special.strings}" )
+          cecho( f( "\n\t{attackDetails}" ) )
+        end
+      end
+      if next( mob.stats ) ~= nil then
+        cecho( "\n<yellow>Stats:<reset>" )
+        -- Assuming stats are stored as a sequence of values; adjust based on actual structure
+        for i, stat in ipairs( mob.stats ) do
+          cecho( f( "\n\tStat {i}: {stat}" ) )
+        end
+      end
+    end
+  end
+end
 -- Function to calculate duration
 function calculateDuration( pc, spellName )
   local endTime = getStopWatchTime( "timer" )
@@ -20,6 +2572,27 @@ function calculateDuration( pc, spellName )
   end
   return nil
 end
+
+function feedFile()
+  local testRate = 0.01
+  local filePath = "C:\\Dev\\mud\\mudlet\\wheres.txt" -- Update the path as necessary
+  local file = io.open( filePath, "r" )               -- Open the file for reading
+
+  local lines = file:lines() -- Get an iterator over lines in the file
+
+  local function feedLine()
+    local nextLine = lines()          -- Read the next line
+    if nextLine then                  -- Continue if there's a line to read
+      cfeedTriggers( nextLine )       -- Feed the line to Mudlet's trigger processing
+      tempTimer( testRate, feedLine ) -- Schedule the next call
+    else
+      file:close()                    -- Close the file when done
+    end
+  end
+
+  feedLine() -- Start the process
+end
+
 ---@diagnostic disable: cast-local-type
 
 -- Parse prompt components and trigger an update if anything has changed; ignore maximum values

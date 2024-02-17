@@ -76,7 +76,7 @@ end
 
 -- "Nuclear option" that kills all temporary timers and triggers; will probably interfere with
 -- third party packages if you have any.
-local function killAllTemps()
+function killAllTemps()
   local topTrigger = tempTrigger( "dummy", function () end )
   local topTimer = tempTimer( 0, function () end )
   for i = 1, topTrigger do
