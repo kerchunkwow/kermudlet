@@ -1,38 +1,43 @@
-## Mudlet/Lua Tips & Tricks
+# Kermudlet Project
 
-### Gating/Throttling Triggers
-- Use quick & diry semaphores to gate or throttle functions that might be called repeatedly under certain conditions (usually by triggers).
+## Introduction
+A personal project leveraging Lua 5.1 scripts for the Mudlet client to enhance and automate MUD gameplay. Incorporates Python for utility scripts, focusing on a small team of collaborators.
 
-```
--- Don't let this happen more than once per 5s interval
-if not semaphore and someCondition then
-  semaphore = true
-  someFunction()
-  tempTimer( 5, [[semaphore = nil]])
-end
-```
-### Temporary Data Capture Triggers
-- Certain triggers are only useful when capturing data from a specific command like score; for efficiency, you can turn these off by default and use an Alias to turn them on temporarily prior to issuing the command in question. You can either leave them on for a set period of time (enough to ensure the output is done parsing), or use some component of the output to trigger the disable. Here's an example of how to enable a temporary trigger to capture 'aff' data from all sessions.
-```
--- Called by 'aff'; turns on temporary affect capturing triggers for all sessions to update affect status strings
-function aliasAffectCapture()
-  -- Reset the affect table so missing affects are properly dropped
-  resetAffects()
-  -- Turn on the affect capturing trigger for three seconds
-  expandAlias( [[all lua tempEnableTrigger( 'AffectCapture', 3 )]], false )
-  -- Issue 'aff' in all profiles
-  expandAlias( 'all aff', false )
-end
-```
-### Inconsistent Newlinery
-- Many patterns you might expect to appear on a line of their own will appear on a line with a prompt; instead of anchoring your patterns with `^` alone, anchor them with `(?:^|> )` which will match the same pattern if it appears on the same line as a prompt.
+## Project Structure
 
+### gizmo Directory
+Central hub for Lua scripts related to Mudlet functionalities.
+- **config/**: Contains settings and configuration scripts.
+- **data/**: Houses database files and mapping data.
+- **eq/**: Scripts for equipment management.
+- **gui/**: Components for the graphical user interface.
+- **map/**: Utilities and data for in-game mapping.
+- **react/**: Aliases and triggers for game reactions.
+- **status/**: Tracks player and game status.
 
-### Useful Regex's
-- Rooms and mob names have an unexpected range of potential special characters; match with this regex (you might have to trim it afterward): `([ 0-9a-zA-Z'!,?:.\-()&\/]+)`
+### lib Directory
+Shared libraries for common functionalities.
+- Example: `lib_string.lua` for string operations.
 
-## Notes
+### Utilities
+- `parse_xml.py`: Converts Mudlet's XML profiles to Lua for easier handling in IDEs.
 
-- `deprecated.lua` has a boat load of functions that are no longer relevant and/or were only needed for one-off or one-time needs; you will want to add `**/deprecated.lua` to `search.exclude` or whatever the equivalent is in your IDE so you don't get a ton of noise in your search results.
-- Some functions are temporarily defined `local` because they aren't currently being used anywhere (but I wasn't quite ready to toss them into the deprecated bin).
-- Use `refreshModuleXML()` to create `gizmudlet.lua`; the function will unpack the XML file from Mudlet's module file (`.mpackage`), then parse that into a Lua file which your IDE can use for syntax checking, verification, etc. (i.e., it makes in-client stuff available to your IDE).
+### Deprecated Components
+Notes on deprecated functions and their locations.
+
+## Key Functionalities
+Overview of core project functionalities.
+- Automated gameplay enhancements.
+- SQLite integration for game data management.
+- Custom GUI components for a better user experience.
+
+## Development Notes
+- Focus on performance optimization and code reuse.
+- Coding conventions: camelCase for variables and functions.
+
+## Script and Function Catalog
+Quick reference to critical scripts/functions, including dependencies.
+
+## Future Enhancements
+Potential areas for development or enhancement.
+
