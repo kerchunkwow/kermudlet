@@ -87,8 +87,7 @@ entire functions.
 - Do not provide "example usage" unless asked explicitly; script should only be provided within functions unless asked
 - Do not use inline comments; all comments should be on their own line.
 - Use camelCase for variables and functions, UPPER_CASE for globals and constants
-- Mudlet supports f-string interpolation, but do not use them; use string.format instead; when updating or modifying script
-that uses f-string interpolation, replace with string.format
+- Mudlet supports f-string interpolation
 - When writing and testing new functions, include generous debug output using Mudlet's built-in `cecho()` function to send
 details to the info window: `cecho( "info", "\nInformative information." )`; prepend newlines for consistency
 - Do not include comments referring to interactions or exchanges within the chat session like `--fixed this`; comments
