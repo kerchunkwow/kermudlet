@@ -45,7 +45,7 @@ function aliasUpdateAffects()
   expandAlias( [[all lua dummyvar = enableTrigger( 'Capture Affects' )]], false )
   expandAlias( [[all lua dummyvar = nil]], false )
   -- Issue 'aff' in all profiles
-  expandAlias( 'all aff', false )
+  expandAlias( 'all affect', false )
 end
 
 -- Called when capture triggers match an 's expires in d' pattern
@@ -147,8 +147,11 @@ function getAffectsString( pc )
   return trim( affectString )
 end
 
--- During an 'aff' command, gag output related to permanent affects until the 'Spells:' line
+-- During an 'aff' command, gag output related to permanent affects until the 'Spells:' line;
+-- Disable the entire affects capture group shortly afterward
 function triggerGagPermanents()
   enableTrigger( "GagPermanents" )
   tempRegexTrigger( "^Spells:", "disableTrigger( 'GagPermanents' )", 1 )
+  tempRegexTrigger( "^Spells:", "deleteLine()", 1 )
+  tempTimer( 1, [[disableTrigger( 'Capture Affects' )]] )
 end

@@ -25,10 +25,12 @@ function displayMob( rNumber )
   local dn, ds, dm, hr = mob.damageDice, mob.damageSides, mob.damageModifier, mob.hitroll
   local avd            = round( mob.averageDamage, 0.01 )
   local flg, aff       = mob.flags, mob.affects
+  local area           = mob.area
 
   cout( "[{NC}{rNumber}{RC}]" )
   cout( "  {SC}{lng}{RC}" )
   cout( "  {SC}{shrt}{RC} ({SC}{kws}{RC})" )
+  cout( "  Area: {SC}{area}{RC}" )
   cout( "  HP: {NC}{hp}{RC}  XP: {NC}{xp}{RC}  ({DC}{xpph}{RC} xp/hp)" )
   cout( "  GP: {NC}{gp}{RC}  ({DC}{gpph}{RC} gp/hp)" )
   cout( "  Dam: {NC}{dn}d{ds}+{dm}+{hr}{RC}  ({DC}{avd}{RC} avg)" )
@@ -79,14 +81,17 @@ function loadAllMobs()
       roomVNumber      = tonumber( mob.roomVNumber ),
       specialProcedure = mob.specialProcedure,
       -- Calculated fields
-      averageDamage    = nil, -- TBD
-      xpPerHealth      = nil, -- TBD
-      goldPerHealth    = nil, -- TBD
+      averageDamage    = nil,       -- TBD
+      xpPerHealth      = nil,       -- TBD
+      goldPerHealth    = nil,       -- TBD
+      area             = "Unknown", -- TBD
       -- Placeholder for special attacks
-      specialAttacks   = {}
+      specialAttacks   = {},
     }
 
-    -- Calculate experience and gold per health w/ SANCT
+    local roomRNumber = searchRoomUserData( "roomVNumber", tostring( mob.roomVNumber ) )[1]
+    if roomRNumber then mobEntry.area = getRoomAreaName( getRoomArea( roomRNumber ) ) end
+    -- Calculate experience and gold per health w/ SANCT = 2x Health
     local mhp = mob.health
     if string.find( mob.affects, 'SANCTUARY' ) then
       mobEntry.xpPerHealth = mob.xp / (mhp * 2)
@@ -140,7 +145,7 @@ function displayTopMobs( param )
   -- Display sorted mobs
   for _, mob in ipairs( mobData ) do
     local mxp = mob.xp
-    if mxp >= 10000 then
+    if mxp >= 100000 then
       local xpph = mxp / mob.health
       local xpphstr = string.format( "<orange>%.2f<reset>", xpph )
       local shortstr = string.format( "<royal_blue>%s<reset>", mob.shortDescription )
@@ -179,10 +184,17 @@ mobData = {}
 loadAllMobs()
 
 -- Print all mobs that have at least one entry in the SpecialAttacks table
-local function displayAllSpecs()
+function displayAllSpecs()
   for _, mob in ipairs( mobData ) do
-    if mob.specialAttacks and #mob.specialAttacks > 0 then
+    if mob.specialAttacks and #mob.specialAttacks > 0 and mob.averageDamage <= 500 then
       displayMob( mob.rNumber )
     end
+  end
+end
+
+-- Print all "Flags" and "Affects" for all mobs in the mobData table
+function printFlags()
+  for _, mob in ipairs( mobData ) do
+    cout( "{mob.affects}" )
   end
 end
