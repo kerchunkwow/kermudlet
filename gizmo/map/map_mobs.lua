@@ -2,15 +2,13 @@
 function getMob( rNumber )
   -- Convert in case the parameter arrives as a string
   rNumber = tonumber( rNumber )
-
   -- Look up the mob
   for _, mob in ipairs( mobData ) do
     if mob.rNumber == rNumber then
       return mob
     end
   end
-  local infostr = string.format( "\nMob with rNumber <orange>%d<reset> not found.", rNumber )
-  cecho( "info", infostr )
+  -- No such mob
   return nil
 end
 
@@ -18,34 +16,24 @@ end
 function displayMob( rNumber )
   local mob = getMob( rNumber )
   if not mob then
-    cecho( string.format( "\nMob with rNumber <orange>%d<reset> not found.", rNumber ) )
+    iout( "No mob matches {EC}{rNumber}{RC}" )
     return
   end
-  local NC = "<dark_orange>"
-  local SC = "<royal_blue>"
-  local DC = "<gold>"
-  local RC = "<reset>"
-  local FC = "<maroon>"
-  local PC = "<dark_violet>"
-
   local lng, shrt, kws = mob.longDescription, mob.shortDescription, mob.keywords
-  cecho( string.format( "\n%s%s%s", SC, lng, RC ) )
-  cecho( string.format( "\n  %s%s%s (%s%s%s)", SC, shrt, RC, SC, kws, RC ) )
-
-  local hp, xp = mob.health, mob.xp
-  cecho( string.format( "\n  HP: %s%s%s  XP: %s%s%s  (%s%.2f%s xp/hp)", NC, expandNumber( hp ), RC, NC,
-    expandNumber( xp ),
-    RC, DC, mob.xpPerHealth, RC ) )
-
-  local gp = mob.gold
-  cecho( string.format( "\n  Gold: %s%s%s  (%s%.2f%s gp/hp)", NC, expandNumber( gp ), RC, DC, mob.goldPerHealth, RC ) )
-
+  local hp, xp, gp     = mob.health, mob.xp, mob.gold
+  local xpph, gpph     = round( mob.xpPerHealth, 0.01 ), round( mob.goldPerHealth, 0.01 )
   local dn, ds, dm, hr = mob.damageDice, mob.damageSides, mob.damageModifier, mob.hitroll
-  cecho( string.format( "\n  Dam: %s%dd%d+%d+%d%s  (%s%.2f%s avg)", NC, dn, ds, dm, hr, RC, DC, mob.averageDamage, RC ) )
+  local avd            = round( mob.averageDamage, 0.01 )
+  local flg, aff       = mob.flags, mob.affects
 
-  local flg, aff = mob.flags, mob.affects
-  cecho( string.format( "\n  Flags: %s%s%s", FC, flg, RC ) )
-  cecho( string.format( "\n  Affects: %s%s%s", FC, aff, RC ) )
+  cout( "[{NC}{rNumber}{RC}]" )
+  cout( "  {SC}{lng}{RC}" )
+  cout( "  {SC}{shrt}{RC} ({SC}{kws}{RC})" )
+  cout( "  HP: {NC}{hp}{RC}  XP: {NC}{xp}{RC}  ({DC}{xpph}{RC} xp/hp)" )
+  cout( "  GP: {NC}{gp}{RC}  ({DC}{gpph}{RC} gp/hp)" )
+  cout( "  Dam: {NC}{dn}d{ds}+{dm}+{hr}{RC}  ({DC}{avd}{RC} avg)" )
+  cout( "  Flags: {FC}{flg}{RC}" )
+  cout( "  Affects: {FC}{aff}{RC}" )
 
   -- Printing special attacks
   if mob.specialAttacks and #mob.specialAttacks > 0 then
@@ -53,8 +41,8 @@ function displayMob( rNumber )
     for _, attack in ipairs( mob.specialAttacks ) do
       local ac, ad, as = attack.chance, attack.damageDice, attack.damageSides
       local am, ah     = attack.damageModifier, attack.hitroll
-      local avd        = ac * averageDice( ad, as, am ) / 100
-      cecho( string.format( "\n    %s%d%% @ %dd%d+%d+%d%s (%s%.2f%s avg)", PC, ac, ad, as, am, ah, RC, DC, avd, RC ) )
+      local savd       = attack.averageDamage
+      cout( "    {SC}{ac}% @ {NC}{ad}d{as}+{am}+{ah}{RC} ({DC}{savd}{RC} avg)" )
     end
   end
 end
@@ -99,7 +87,6 @@ function loadAllMobs()
     }
 
     -- Calculate experience and gold per health w/ SANCT
-    -- [TODO]:
     local mhp = mob.health
     if string.find( mob.affects, 'SANCTUARY' ) then
       mobEntry.xpPerHealth = mob.xp / (mhp * 2)
@@ -117,16 +104,18 @@ function loadAllMobs()
     if saCursor then
       local sa = saCursor:fetch( {}, "a" )
       while sa do
+        local savd = sa.chance * averageDice( sa.damageDice, sa.damageSides, sa.damageModifier ) / 100
+        mobEntry.averageDamage = mobEntry.averageDamage + savd
         table.insert( mobEntry.specialAttacks, {
-          chance = tonumber( sa.chance ),
-          damageDice = tonumber( sa.damageDice ),
-          damageSides = tonumber( sa.damageSides ),
+          chance         = tonumber( sa.chance ),
+          damageDice     = tonumber( sa.damageDice ),
+          damageSides    = tonumber( sa.damageSides ),
           damageModifier = tonumber( sa.damageModifier ),
-          averageDamage = sa.chance * averageDice( sa.damageDice, sa.damageSides, sa.damageModifier ) / 100,
-          hitroll = tonumber( sa.hitroll ),
-          target = sa.target,
-          type = sa.type,
-          description = sa.description
+          averageDamage  = savd,
+          hitroll        = tonumber( sa.hitroll ),
+          target         = sa.target,
+          type           = sa.type,
+          description    = sa.description
         } )
         sa = saCursor:fetch( sa, "a" )
       end
@@ -161,6 +150,34 @@ function displayTopMobs( param )
   end
 end
 
+-- Function to find and display mobs matching a given string in their descriptions
+function findMob( searchString )
+  -- Ensure searchString is lowercased for case-insensitive matching
+  local searchLower = string.lower( searchString )
+  local found = false
+
+  for _, mob in ipairs( mobData ) do
+    -- Convert descriptions to lower case to make the search case-insensitive
+    local shortLower = string.lower( mob.shortDescription or "" )
+    local longLower = string.lower( mob.longDescription or "" )
+
+    -- Check if searchString is found in either shortDescription or longDescription
+    if string.find( shortLower, searchLower ) or string.find( longLower, searchLower ) then
+      -- Display this mob's information
+      displayMob( mob.rNumber )
+      found = true
+    end
+  end
+  if not found then
+    iout( "No mob matches {EC}{searchString}{RC}" )
+  end
+end
+
+-- Global "master table" to hold all mob data
+mobData = {}
+-- Populate the table with all mob data including special attacks & derived values
+loadAllMobs()
+
 -- Print all mobs that have at least one entry in the SpecialAttacks table
 local function displayAllSpecs()
   for _, mob in ipairs( mobData ) do
@@ -169,8 +186,3 @@ local function displayAllSpecs()
     end
   end
 end
-
--- Global "master table" to hold all mob data
-mobData = {}
--- Populate the table with all mob data including special attacks & derived values
-loadAllMobs()

@@ -33,6 +33,16 @@ customConsoleFonts = {
   ["gauge_lrg"] = "Montserrat",
   ["room"]      = "Consolas",
 }
+
+-- Global color-code definitions for use throughout the project; use in conjunction with cout() and iout() to
+-- avoid overly-long lines incorporating specific color codes and <reset> flags
+NC                 = "<orange>"          -- Numbers
+RC                 = "<reset>"           -- Reset Color
+EC                 = "<deep_pink>"       -- Errors & Warnings
+DC                 = "<ansi_yellow>"     -- Derived or Calculated Values
+FC                 = "<maroon>"          -- Flags & Effects
+SC                 = "<cornflower_blue>" -- String Literals
+
 -- Used when updating the pcStatus table to decide whether to send a warning about someone's health
 -- A warning will be sent if the health falls below low% or loses more than big% in a single update
 -- Make sure to align these values with the order of your party (same as in pcNames, etc.)
