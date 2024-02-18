@@ -81,6 +81,39 @@ in naming conventions between the external scripts and internal Lua (though idea
 ### deprecated.lua
 Script that's no longer in use but may come in handy later.
 
+## Data Tables (Lua)
+Within the project exist some pre-loaded data tables that are populated with information from external SQL databases in
+order to circumvent the need to continually connect to and query these data sets (given that they are generally small).
+
+### MobData
+
+The `mobData` table serves as the primary repository for information on NPCs (mobs), combining both database attributes and computed metrics for enhanced gameplay analysis and interaction.
+
+#### Direct Attributes
+Includes:
+- `rNumber`: Mob's unique identifier.
+- `shortDescription`, `longDescription`, `keywords`: Descriptive attributes.
+- `level`, `health`, `ac`, `gold`, `xp`: Combat and reward attributes.
+- `alignment`, `flags`, `affects`: Behavioral and state indicators.
+- `damageDice`, `damageSides`, `damageModifier`, `hitroll`: Attack mechanics.
+- `roomVNumber`, `specialProcedure`: Location and custom behavior scripts.
+
+#### Derived Metrics
+Computed for each mob to facilitate analysis:
+- `averageDamage`: Expected damage output per attack.
+- `xpPerHealth`, `goldPerHealth`: Efficiency indicators for player encounters.
+
+#### SpecialAttacks
+An array detailing each mob's potential special actions, including:
+- `chance`, `damageDice`, `damageSides`, `damageModifier`, `hitroll`: Mechanics.
+- `target`, `type`, `description`: Targeting, category, and descriptive details.
+
+#### Usage
+- **Population**: Filled via `loadAllMobs`, pulling and processing data from the database.
+- **Access**: Employed by `getMob` for data retrieval and `displayMob` for output, prioritizing data efficiency and minimizing direct database interactions.
+
+This structure is designed for quick data access and comprehensive mob analysis, supporting backend functionality and AI-based game interactions.
+
 ## Development Guidance (notes for GPT)
 - Avoid rewriting entire modules or functions unless asked; when modifying only a few lines, provide snippets instead of
 entire functions.
@@ -98,6 +131,7 @@ should only be used to describe or explain the script itself; keep commentary wi
 - `trim( s )` and `split( s, delim )` are defined in `lib_string.lua`
 - Use `round( n, s )` from `lib_std.lua` to round values to 2.00 decimal places when performing calculations
 - Use `expandNumber( n )` when printing large values to add commas for readability
+- Avoid using `print()`; use Mudlet's `cecho()` function with prepended newlines like `cecho( "\nMessage" )`
 
 ## Future Enhancements
 

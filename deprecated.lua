@@ -1,3 +1,71 @@
+
+
+-- Display one or more mobs whose keywords include the specified string(s)
+function displayMobByKeyword( keywords )
+  local NC = "<dark_orange>"
+  local SC = "<royal_blue>"
+  local DC = "<gold>"
+  local RC = "<reset>"
+
+  -- Split the keywords string into a table of individual keywords
+  local keywordsTable = split( keywords, ' ' )
+  local sqlCondition = ""
+
+  -- Construct SQL condition for each keyword
+  for i, keyword in ipairs( keywordsTable ) do
+    if i > 1 then sqlCondition = sqlCondition .. " AND " end
+    sqlCondition = sqlCondition .. string.format( "keywords LIKE '%%%s%%'", keyword )
+  end
+  local sql = "SELECT * FROM Mob WHERE " .. sqlCondition
+  local cursor, conn, env = getCursor( sql )
+
+  if not cursor then
+    cecho( string.format( "\nError fetching mobs with keywords: %s\n", keywords ) )
+    return nil
+  end
+  local mob = cursor:fetch( {}, "a" )
+  while mob do
+    local lng, shrt, kws = mob.longDescription, mob.shortDescription, mob.keywords
+    cecho( string.format( "\n%s%s%s", SC, lng, RC ) )
+    cecho( string.format( "\n  %s%s%s (%s%s%s)", SC, shrt, RC, SC, kws, RC ) )
+    local hp, xp = mob.health, mob.xp
+    local xpph = round( (xp / hp), 0.05 )
+    cecho( string.format( "\n  HP: %s%s%s  XP: %s%s%s  (%s%s%s xp/hp)", NC, expandNumber( hp ), RC, NC,
+      expandNumber( xp ),
+      RC, DC, xpph, RC ) )
+    local gp = mob.gold
+    local gpph = round( (gp / hp), 0.05 )
+    cecho( string.format( "\n  Gold: %s%s%s  (%s%s%s gp/hp)", NC, expandNumber( gp ), RC, DC, gpph, RC ) )
+    local dn, ds, dm, hr = mob.damageDice, mob.damageSides, mob.damageModifier, mob.hitroll
+    local da = averageDice( dn, ds, dm )
+    cecho( string.format( "\n  Damage: %s%sd%s+%s+%s%s (%s%s%s avg)", NC, dn, ds, dm, hr, RC, DC, da, RC ) )
+    local flg, aff = mob.flags, mob.affects
+    cecho( string.format( "\n  Flags: <maroon>%s%s", flg, RC ) )
+    cecho( string.format( "\n  Affects: <maroon>%s%s", aff, RC ) )
+
+    -- Fetch the next mob
+    mob = cursor:fetch( mob, "a" )
+  end
+  -- Don't forget to close the cursor and connection
+  cursor:close()
+  conn:close()
+  env:close()
+end
+
+function getMob( rNumber )
+  -- Convert rNumber to a number in case it's passed as a string
+  rNumber = tonumber( rNumber )
+
+  -- Find mob in mobData
+  for _, mob in ipairs( mobData ) do
+    if mob.rNumber == rNumber then
+      return mob
+    end
+  end
+  cecho( string.format( "\nMob with rNumber <orange>%d<reset> not found.", rNumber ) )
+  return nil
+end
+
 function populateMobAreas()
   local luasql     = require "luasql.sqlite3"
   local env        = luasql.sqlite3()
