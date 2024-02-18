@@ -53,6 +53,16 @@ function split( s, delim )
   return substrings
 end
 
+-- Print a formatted string to the main console
+function cout( s )
+  cecho( "\n" .. f( s ) )
+end
+
+-- Print a formatted string to the "Info" console
+function iout( s )
+  cecho( "info", "\n" .. f( s ) )
+end
+
 -- Given a large number as str, return an abbreviated version like '1.2B'
 local function abbreviateNumber( numberString )
   local str = string.gsub( numberString, ",", "" )

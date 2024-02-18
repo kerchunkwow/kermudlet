@@ -4,6 +4,7 @@
 
 import xml.etree.ElementTree as ET
 
+
 # Extract all scripts and pattern strings from a Mudlet module's XML file
 def extract_lua_from_xml( input_xml, output_lua ):
     tree = ET.parse( input_xml )

@@ -18,8 +18,9 @@ Using Lua's sqlite3 library, kermudlet interacts with external databases that ho
 including Items, Areas/Rooms, and Enemies (Mobs).
 
 ### Python Support
-As needed, kermudlet will utilize Python scripts for supporting utilities. Currently, these include:
+As needed, kermudlet will utilize Python scripts for supporting utilities in `./pyutils`. Currently, these include:
 `parse_xml.py`: Converts Mudlet's XML profiles to Lua for interpretation by the IDE.
+`find_colors.py`: Search globally for references to Mudlet colors to aid refactoring
 
 ## Technical Details
 - Primary scripts are [Lua 5.1](https://www.lua.org/manual/5.1/)
