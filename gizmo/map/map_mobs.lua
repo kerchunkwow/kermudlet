@@ -1,18 +1,20 @@
+-- Retrieve data about a specific mob from the global mobData table
 function getMob( rNumber )
-  -- Convert rNumber to a number in case it's passed as a string
+  -- Convert in case the parameter arrives as a string
   rNumber = tonumber( rNumber )
 
-  -- Find mob in mobData
+  -- Look up the mob
   for _, mob in ipairs( mobData ) do
     if mob.rNumber == rNumber then
       return mob
     end
   end
-  cecho( string.format( "\nMob with rNumber <orange>%d<reset> not found.", rNumber ) )
+  local infostr = string.format( "\nMob with rNumber <orange>%d<reset> not found.", rNumber )
+  cecho( "info", infostr )
   return nil
 end
 
--- Display mob details given a specific rNumber
+-- Display mob data given a specific mob's R-Number
 function displayMob( rNumber )
   local mob = getMob( rNumber )
   if not mob then
@@ -57,6 +59,7 @@ function displayMob( rNumber )
   end
 end
 
+-- Load all mobs from the Mob and SpecialAttacks Tables in the gizwrld.db database
 function loadAllMobs()
   local sql = "SELECT * FROM Mob"
   local cursor, conn, env = getCursor( sql )
@@ -88,13 +91,23 @@ function loadAllMobs()
       roomVNumber      = tonumber( mob.roomVNumber ),
       specialProcedure = mob.specialProcedure,
       -- Calculated fields
-      averageDamage    = nil, -- To be calculated
-      xpPerHealth      = mob.xp / mob.health,
-      goldPerHealth    = mob.gold / mob.health,
+      averageDamage    = nil, -- TBD
+      xpPerHealth      = nil, -- TBD
+      goldPerHealth    = nil, -- TBD
       -- Placeholder for special attacks
       specialAttacks   = {}
     }
 
+    -- Calculate experience and gold per health w/ SANCT
+    -- [TODO]:
+    local mhp = mob.health
+    if string.find( mob.affects, 'SANCTUARY' ) then
+      mobEntry.xpPerHealth = mob.xp / (mhp * 2)
+      mobEntry.goldPerHealth = mob.gold / (mhp * 2)
+    else
+      mobEntry.xpPerHealth = mob.xp / mhp
+      mobEntry.goldPerHealth = mob.gold / mhp
+    end
     -- Calculate average damage
     mobEntry.averageDamage = averageDice( mobEntry.damageDice, mobEntry.damageSides, mobEntry.damageModifier )
 
@@ -127,10 +140,29 @@ function loadAllMobs()
   env:close()
 end
 
-function getBestMobs()
+-- Display the "best" mobs based on certain metrics; currently defaults to experience per health or xpph
+function displayTopMobs( param )
+  -- param is currently unused; later can be used to display different metrics
+
+  table.sort( mobData, function ( a, b )
+    return a.xpPerHealth > b.xpPerHealth
+  end )
+
+  -- Display sorted mobs
+  for _, mob in ipairs( mobData ) do
+    local mxp = mob.xp
+    if mxp >= 10000 then
+      local xpph = mxp / mob.health
+      local xpphstr = string.format( "<orange>%.2f<reset>", xpph )
+      local shortstr = string.format( "<royal_blue>%s<reset>", mob.shortDescription )
+      local xpphmob = string.format( "\n%s (%s)", shortstr, xpphstr )
+      cecho( xpphmob )
+    end
+  end
 end
 
-function displayAllSpecs()
+-- Print all mobs that have at least one entry in the SpecialAttacks table
+local function displayAllSpecs()
   for _, mob in ipairs( mobData ) do
     if mob.specialAttacks and #mob.specialAttacks > 0 then
       displayMob( mob.rNumber )

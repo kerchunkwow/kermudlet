@@ -165,17 +165,23 @@ entire functions.
 - Mudlet supports f-string interpolation, but to not use it. Use string.format instead; when updating or modifying my scripts,
 replace any f-string interpolation with string.format calls.
 - When writing and testing new functions, include generous debug output using Mudlet's built-in `cecho()` function to send
-details to the info window: `cecho( "info", "\nInformative information." )`; prepend newlines for consistency
+details to the info window; follow this general format when sending debug/error messages:
+`  local errstr = string.format( "\nMob with rNumber == <orange>%d<reset> not found.", rNumber )`
+`  cecho( "info", errstr )`
 - Do not include comments referring to interactions or exchanges within the chat session like `--fixed this`; comments
-should only be used to describe or explain the script itself; keep commentary within the chat session itself
-
-
+should only be used to describe or explain the script itself; keep commentary within chat sessions
 
 ## Key/Core Function Catalog
 - `trim( s )` and `split( s, delim )` are defined in `lib_string.lua`
-- Use `round( n, s )` from `lib_std.lua` to round values to 2.00 decimal places when performing calculations
-- Use `expandNumber( n )` when printing large values to add commas for readability
-- Avoid using `print()`; use Mudlet's `cecho()` function with prepended newlines like `cecho( "\nMessage" )`
+- Use `round( n, s )` from `lib_std.lua` to round values to 2.00 decimal places when displaying calculated values
+- Use `expandNumber( n )` when displaying large values to add commas for readability
+- Avoid using `print()`; use Mudlet's `cecho()` function with prepended newlines like `cecho( "\nMessage" )` (see Development Guidance)
+- `sessionCommand()` and `aliasSessionCommand()` in `./gizmo/config/config_events.lua` work together to provide the main mechanism for
+communication between sessions (player profiles). The local `registerEventHandlers()` function registers handlers for `event_command_all`
+and `event_command_#` (where # corresponds to the tab/session number) at load time; thereafter, calls to `raiseEvent()` or `raiseGlobalEvent()`
+passing these events will be heard by all sessions or the corresponding session number respectively.
+- `raiseGlobalEvent()` is heard by all sessions EXCEPT the raising session; to truly raise an event to all sessions you have to call both
+`raiseGlobalEvent()` and `raiseEvent()`
 
 ## Future Enhancements
 
