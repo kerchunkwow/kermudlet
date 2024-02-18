@@ -137,6 +137,25 @@ object needed to unlock the door.
 
 The data in `doorData` is used when constructing paths such that appropriate unlock/open/close commands can be included in the paths to ensure smooth pathing.
 
+### areaMap
+
+Defined in `./gizmo/map/data/map_dirs.lua`, this table maps strings to the R-Number of corresponding areas; R-Numbers (areaRNumber in the SQL database)
+uniquely identify areas as they do for Rooms, Mobs, and Items. This is otherwise just a basic "lookup" table used so players can issue commands to "go" to
+certain areas by name rather than memorizing R-Numbers.
+
+### areaDirs
+
+Defined in `./gizmo/map/data/map_dirs.lua`, this table is used to travel to each area using the mapping provided by the `areaMap` table.
+
+Each entry in this table defines the following properties:
+- `cost`: The total number of "steps" in the path; can be used to decide if players have enough moves to complete the journey; some MUDs have different
+costs based on terrain type so this design could be more useful there.
+- `dirs`: A Wintin-compatible string of commands that can be used by the `doWintin()` function to travel to the area; this string will be inclusive of
+any necessary door commands.
+- `rawDirs`: The "raw" list of directions to the area; does not include door-related commands
+- `roomName`: The name of the room you should end up in after following the path
+- `roomNumber`: The R-Number of the destination room
+
 ## Development Guidance (notes for GPT)
 - Avoid rewriting entire modules or functions unless asked; when modifying only a few lines, provide snippets instead of
 entire functions.

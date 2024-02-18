@@ -31,7 +31,6 @@ function loadLibs()
   runLuaFile( 'lib/lib_db.lua' )
 
   -- Now branch into Gizmo-specific scripts
-  runLuaFile( 'mob_scan.lua' )
   runLuaFile( 'gizmo/gizmo_init.lua' )
 end
 
