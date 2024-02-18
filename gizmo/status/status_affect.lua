@@ -40,8 +40,10 @@ end
 function aliasUpdateAffects()
   -- Reset the affect table so missing affects are properly dropped
   resetAffects()
-  -- Turn on the Capture Affects trigger group (it turns itself off at next prompt)
-  expandAlias( [[all lua enableTrigger( 'Capture Affects' )]], false )
+  -- Turn on the Capture Affects trigger group (it turns itself off at next prompt); consume
+  -- and discard the return value so it doesn't print on screen.
+  expandAlias( [[all lua dummyvar = enableTrigger( 'Capture Affects' )]], false )
+  expandAlias( [[all lua dummyvar = nil]], false )
   -- Issue 'aff' in all profiles
   expandAlias( 'all aff', false )
 end
@@ -50,6 +52,11 @@ end
 function triggerUpdateAffect()
   local affectName = matches[2]
   local ticks = tonumber( matches[3] )
+  selectString( affectName, 1 )
+  setFgColor( unpack( color_table['maroon'] ) )
+  selectString( ticks, 1 )
+  setFgColor( unpack( color_table['orange'] ) )
+  resetFormat()
   if SESSION == 1 then
     updateAffect( 1, affectName, ticks )
     refreshAffectLabels( 1 )
@@ -138,4 +145,10 @@ function getAffectsString( pc )
     end
   end
   return trim( affectString )
+end
+
+-- During an 'aff' command, gag output related to permanent affects until the 'Spells:' line
+function triggerGagPermanents()
+  enableTrigger( "GagPermanents" )
+  tempRegexTrigger( "^Spells:", "disableTrigger( 'GagPermanents' )", 1 )
 end

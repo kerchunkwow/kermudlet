@@ -49,9 +49,9 @@ function displayMob( rNumber )
   if mob.specialAttacks and #mob.specialAttacks > 0 then
     cecho( "\n  Special Attacks:" )
     for _, attack in ipairs( mob.specialAttacks ) do
-      local ac, ad, as, am, ah = attack.chance, attack.damageDice, attack.damageSides, attack.damageModifier,
-          attack.hitroll
-      local avd = ac * averageDice( ad, as, am ) / 100
+      local ac, ad, as = attack.chance, attack.damageDice, attack.damageSides
+      local am, ah     = attack.damageModifier, attack.hitroll
+      local avd        = ac * averageDice( ad, as, am ) / 100
       cecho( string.format( "\n    %s%d%% @ %dd%d+%d+%d%s (%s%.2f%s avg)", PC, ac, ad, as, am, ah, RC, DC, avd, RC ) )
     end
   end
@@ -125,6 +125,17 @@ function loadAllMobs()
   cursor:close()
   conn:close()
   env:close()
+end
+
+function getBestMobs()
+end
+
+function displayAllSpecs()
+  for _, mob in ipairs( mobData ) do
+    if mob.specialAttacks and #mob.specialAttacks > 0 then
+      displayMob( mob.rNumber )
+    end
+  end
 end
 
 -- Global "master table" to hold all mob data
