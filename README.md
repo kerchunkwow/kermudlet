@@ -85,7 +85,7 @@ Script that's no longer in use but may come in handy later.
 Within the project exist some pre-loaded data tables that are populated with information from external SQL databases in
 order to circumvent the need to continually connect to and query these data sets (given that they are generally small).
 
-### MobData
+### mobData
 
 The `mobData` table serves as the primary repository for information on NPCs (mobs), combining both database attributes and computed metrics for enhanced gameplay analysis and interaction.
 
@@ -114,6 +114,29 @@ An array detailing each mob's potential special actions, including:
 
 This structure is designed for quick data access and comprehensive mob analysis, supporting backend functionality and AI-based game interactions.
 
+### UNIQUE_ROOMS
+
+`./gizmo/map/data/map_unique.lua`
+
+The `UNIQUE_ROOMS` table maps room names as strings to the corresponding R-Numbers for any room whose name appears only once in the game; this allows
+rapid synchronization of the Map to ensure it is accurately tracking/updating the player's location. The R-Number of the current room is stored in the
+global `currentRoomNumber` variable and used by various built-in Mudlet functions including `centerview()` to keep the map up to date.
+
+This table is populated at load time by `loadUniqueRooms()`. `isUnique( roomName )` implements a basic check against this table for room uniqueness.
+
+### doorData
+
+`./gizmo/map/data/map_doors.lua`
+
+The `doorData` table contains data about every (mapped) door in the game. The table is indexed first by the R-Number of the room in which the door exists,
+then by the direction in which the door leads being one of `'north', 'south', 'east', 'west', 'up', 'down'`. Every door has an `exitDest` and `exitKeyword`
+property indicating where the door leads and how to interact with it using in-game commands like `open <keyword>`.
+
+Some doors include an `exitDescription` with additional information and locked doors include an `exitKey` which corresponds to the in-game ID of the key
+object needed to unlock the door.
+
+The data in `doorData` is used when constructing paths such that appropriate unlock/open/close commands can be included in the paths to ensure smooth pathing.
+
 ## Development Guidance (notes for GPT)
 - Avoid rewriting entire modules or functions unless asked; when modifying only a few lines, provide snippets instead of
 entire functions.
@@ -126,6 +149,8 @@ replace any f-string interpolation with string.format calls.
 details to the info window: `cecho( "info", "\nInformative information." )`; prepend newlines for consistency
 - Do not include comments referring to interactions or exchanges within the chat session like `--fixed this`; comments
 should only be used to describe or explain the script itself; keep commentary within the chat session itself
+
+
 
 ## Key/Core Function Catalog
 - `trim( s )` and `split( s, delim )` are defined in `lib_string.lua`
