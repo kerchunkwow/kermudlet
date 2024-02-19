@@ -163,20 +163,25 @@ entire functions.
 - Do not provide "example usage" unless asked explicitly; script should only be provided within functions unless asked
 - Do not use inline comments; all comments should be on their own line.
 - Use camelCase for variables and functions, UPPER_CASE for globals and constants
-- Mudlet supports f-string interpolation, but to not use it. Use string.format instead; when updating or modifying my scripts,
-replace any f-string interpolation with string.format calls.
-- When writing and testing new functions, include generous debug output using Mudlet's built-in `cecho()` function to send
-details to the info window; follow this general format when sending debug/error messages:
-`  local errstr = string.format( "\nMob with rNumber == <orange>%d<reset> not found.", rNumber )`
-`  cecho( "info", errstr )`
 - Do not include comments referring to interactions or exchanges within the chat session like `--fixed this`; comments
 should only be used to describe or explain the script itself; keep commentary within chat sessions
+- Mudlet has built support for f-string interpolation in Lua; this is encapsulated by `cout()` and `iout()` in `./lib/lib_strring.lua`; use
+`cout()` and `iout()` for all output, taking advantage of the global color constants defined in the config scripts:
+
+```lua
+NC = "<orange>"          -- Numbers
+RC = "<reset>"           -- Reset Color
+EC = "<deep_pink>"       -- Errors & Warnings
+DC = "<ansi_yellow>"     -- Derived or Calculated Values
+FC = "<maroon>"          -- Flags & Effects
+SC = "<cornflower_blue>" -- String Literals
+```
 
 ## Key/Core Function Catalog
 - `trim( s )` and `split( s, delim )` are defined in `lib_string.lua`
 - Use `round( n, s )` from `lib_std.lua` to round values to 2.00 decimal places when displaying calculated values
 - Use `expandNumber( n )` when displaying large values to add commas for readability
-- Avoid using `print()`; use Mudlet's `cecho()` function with prepended newlines like `cecho( "\nMessage" )` (see Development Guidance)
+- Avoid using `print()`; use `cout()` or `iout()` for all output
 - `sessionCommand()` and `aliasSessionCommand()` in `./gizmo/config/config_events.lua` work together to provide the main mechanism for
 communication between sessions (player profiles). The local `registerEventHandlers()` function registers handlers for `event_command_all`
 and `event_command_#` (where # corresponds to the tab/session number) at load time; thereafter, calls to `raiseEvent()` or `raiseGlobalEvent()`
