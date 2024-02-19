@@ -3,11 +3,12 @@ local function initAffectStatus()
   affectStatus = {}
   for pc = 1, 4 do
     affectStatus[pc] = {
-      ['Sanctuary'] = {active = false, ticksRemaining = -1},
-      ['Armor']     = {active = false, ticksRemaining = -1},
-      ['Bless']     = {active = false, ticksRemaining = -1},
-      ['Fury']      = {active = false, ticksRemaining = -1},
-      ['Endure']    = {active = false, ticksRemaining = -1}
+      ['Sanctuary']            = {active = false, ticksRemaining = -1},
+      ['Armor']                = {active = false, ticksRemaining = -1},
+      ['Bless']                = {active = false, ticksRemaining = -1},
+      ['Fury']                 = {active = false, ticksRemaining = -1},
+      ['Endure']               = {active = false, ticksRemaining = -1},
+      ['Protection from evil'] = {active = false, ticksRemaining = -1},
     }
   end
 end
@@ -50,13 +51,18 @@ end
 
 -- Called when capture triggers match an 's expires in d' pattern
 function triggerUpdateAffect()
-  local affectName = matches[2]
+  local affectName = trim( matches[2] )
   local ticks = tonumber( matches[3] )
   selectString( affectName, 1 )
   setFgColor( unpack( color_table['maroon'] ) )
   selectString( ticks, 1 )
   setFgColor( unpack( color_table['orange'] ) )
   resetFormat()
+  if affectName == "Poison" then
+    local poisoned = pcNames[SESSION]
+    expandAlias( f [[col cast 'remove poison' {poisoned}]], false )
+    return
+  end
   if SESSION == 1 then
     updateAffect( 1, affectName, ticks )
     refreshAffectLabels( 1 )
