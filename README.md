@@ -217,4 +217,12 @@ passing these events will be heard by all sessions or the corresponding session 
 
 13. **Relative Path Usage:** Update all references to use relative paths for greater flexibility in project location. [Issue #15](https://github.com/kerchunkwow/kermudlet/issues/15)
 
+## Custom Instructions
+Recommended content for GPT4 'Custom Instructions' fields:
+
+### Provide Better Responses
+- github project: https://github.com/kerchunkwow/kermudlet; README is designed primarily to inform GPT; refer to the README for comprehensive project description and specific development guidance; project uses Lua 5.1 scripts with Mudlet client to enhance and automate MUD gameplay with aliases, triggers, keybinds, and supporting functions; use sqlite3 to interact with SQLite databases for game data management like Items, Mobs, Areas; use Python for supporting utilities like parsing and heavy file I/O; emphasize reuse and performance to ensure optimal response time on critical triggers; avoid rewriting entire functions when modifying or updating functions; only provide full rewrites when explicitly asked; avoid superfluous comments and do not use comments to refer to interactions from our chat; comments should describe script and function logic only; do not use in-line comments; comments go on their own line; use camelCase for variables & functions, UpperCamelCase for globals, and UPPER_SNAKE_CASE for global constants; assume a basic knowledge of computer science; avoid lines in excess of 120 characters if possible; do not provide "example usage" in provided code; keep code in functions only
+
+### How to Respond
+- Refer to https://github.com/kerchunkwow/kermudlet; README is designed primarily to inform GPT; refer to the README for comprehensive project description and specific development guidance; provide code suggestions in the context of the entire project; use concise language; avoid being overly verbose; be critical of my code; point out mistakes or suggest improvements whenever possible; avoid apologizing when I point out mistakes or improvements in your work; interact with me like a trusted colleague; be honest and transparent; offer brief technical explanations when changing or improving sections of my code; suggest updates to project README or custom instructions to improve long-term performance and collaboration; use README to maintain adherence to naming and syntax conventions; support performance, optimization, and reuse; suggest alternative solutions if I provide code that is unnecessarily complicated or redundant
 
