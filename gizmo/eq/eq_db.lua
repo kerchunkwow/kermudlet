@@ -1,9 +1,9 @@
--- Global table to hold all item data
-itemData = {}
-
--- Load items on startup (after scripts have been initialized)
-tempTimer( 0, [[loadAllItems()]] )
-
+if not itemData then
+  -- Global table to hold all item data
+  itemData = {}
+  -- Load items on startup (after scripts have been initialized)
+  tempTimer( 0, [[loadAllItems()]] )
+end
 -- Load all items from the Item table into a globally-accessible table indexed by item name
 function loadAllItems()
   local luasql = require "luasql.sqlite3"
@@ -39,6 +39,8 @@ function loadAllItems()
   cur:close()
   conn:close()
   env:close()
+  -- Only needed at load/reload
+  loadAllItems = nil
 end
 
 -- Triggered by items seen in game (e.g., worn by players), this function pulls stats from the global

@@ -1,55 +1,5 @@
--- Retrieve then follow the path to an area; this uses the Wintin string but should
--- probably skip this and iterate over the rawDirs
-function goArea( area )
-  local path = getDirs( area )
-  local commands = expandWintinString( path )
-  cecho( f "\n<dim_grey>Path: <green_yellow>{path}<reset>" )
-  for _, cmd in ipairs( commands ) do
-    send( cmd, false )
-  end
-end
-
--- Retrieve a Wintin-compatible dirs string leading to the specified area
--- Will accept areas as full or partial strings or ID numbers
-function getDirs( area )
-  local areaID = tonumber( area )
-
-  -- If conversion fails, try a name lookup
-  if not areaID then
-    local normalizedAreaName = normalizeAreaName( area )
-
-    -- Check exact match first
-    areaID = areaMap[normalizedAreaName]
-
-    -- Otherwise, try for a partial match
-    if not areaID then
-      -- Drop the 's' so things like 'ekitoms' will match 'ekitommines'
-      normalizedAreaName = normalizedAreaName:gsub( 's$', '' )
-      for key, id in pairs( areaMap ) do
-        if key:find( normalizedAreaName ) then
-          areaID = id
-          break
-        end
-      end
-    end
-  end
-  if areaID and areaDirs[areaID] then
-    -- Return the Wintin-compatible dirs string;
-    -- Here we could also retrieve the cost to compare to our moves or verify keys
-    return areaDirs[areaID].dirs
-  else
-    cecho( f "\n<firebrick>Area {area} not found in areaDirs.<reset>" )
-    return nil
-  end
-end
-
--- Normalize area names before lookup, so e.g., 'Maritime Museum' and 'maritimemuseum' will work
-function normalizeAreaName( area )
-  return area:gsub( "^The%s+", "" ):gsub( "%s+", "" ):lower()
-end
-
 -- This table maps area names and nicknames to their respective IDs for lookup in areaDirs
-areaMap = {
+areaMap = areaMap or {
   abyss                = 119,
   aliensden            = 52,
   allemonde            = 6,
@@ -167,7 +117,7 @@ areaMap = {
 
 -- Data for pathing to areas indexed by area ID
 -- [TODO]: Add key name & number if paths include doors
-areaDirs = {
+areaDirs = areaDirs or {
   [3] = {
     cost = 56,
     dirs = "#14 w;s;#8 w;s;w;s;d;w",
@@ -899,3 +849,50 @@ areaDirs = {
     roomNumber = 8083
   }
 }
+
+-- Retrieve then follow the path to an area; this uses the Wintin string but should
+-- probably skip this and iterate over the rawDirs
+function goArea( area )
+  local path = getDirs( area )
+  local commands = expandWintinString( path )
+  display( commands )
+  iout( "<dim_grey>Path: <green_yellow>{path}<reset>" )
+  for _, cmd in ipairs( commands ) do
+    send( cmd, false )
+  end
+end
+
+-- Retrieve a Wintin-compatible dirs string leading to the specified area
+-- Will accept areas as full or partial strings or ID numbers
+function getDirs( area )
+  local areaID = tonumber( area )
+
+  -- If conversion fails, try a name lookup
+  if not areaID then
+    -- Normalize area names before lookup, so e.g., 'Maritime Museum' and 'maritimemuseum' will work
+    local normalizedAreaName = area:gsub( "^The%s+", "" ):gsub( "%s+", "" ):lower()
+
+    -- Check exact match first
+    areaID = areaMap[normalizedAreaName]
+
+    -- Otherwise, try for a partial match
+    if not areaID then
+      -- Drop the 's' so things like 'ekitoms' will match 'ekitommines'
+      normalizedAreaName = normalizedAreaName:gsub( 's$', '' )
+      for key, id in pairs( areaMap ) do
+        if key:find( normalizedAreaName ) then
+          areaID = id
+          break
+        end
+      end
+    end
+  end
+  if areaID and areaDirs[areaID] then
+    -- Return the Wintin-compatible dirs string;
+    -- Here we could also retrieve the cost to compare to our moves or verify keys
+    return areaDirs[areaID].dirs
+  else
+    cecho( f "\n<firebrick>Area {area} not found in areaDirs.<reset>" )
+    return nil
+  end
+end

@@ -1,9 +1,14 @@
+if not UNIQUE_ROOMS then
+  UNIQUE_ROOMS = {}
+  tempTimer( 0, [[loadUniqueRooms()]] )
+end
+-- Simple getter to check room uniqueness
 function isUnique( roomName )
   return UNIQUE_ROOMS[roomName]
 end
 
 -- Create a static table of every room that has a unique name and can therefore be mapped 1:1 to an ID
-local function loadUniqueRooms()
+function loadUniqueRooms()
   UNIQUE_ROOMS = {
     ["4th house"]                                                             = 2002,
     ["A Back Room in the Surveyor's Shop"]                                    = 1576,
@@ -2526,6 +2531,6 @@ local function loadUniqueRooms()
   for _, room in pairs( UNIQUE_ROOMS ) do
     uRoomCount = uRoomCount + 1
   end
+  -- Only needed at load/reload
+  loadUniqueRooms = nil
 end
-
-loadUniqueRooms()

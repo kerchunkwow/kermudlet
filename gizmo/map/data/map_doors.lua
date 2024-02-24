@@ -1,3 +1,8 @@
+-- If the doorData hasn't been initialized, load it once other scripts have finished loading
+if not doorData then
+  doorData = {}
+  tempTimer( 0, [[loadAllDoors()]] )
+end
 -- Retrieve data about the specified room's doors; if dir is supplied get that direction only
 function getDoorData( id, dir )
   local roomDoorData = doorData[id]
@@ -14,8 +19,8 @@ function getDoorData( id, dir )
   end
 end
 
--- Local function to create the door data table
-local function loadDoorData()
+-- Load data about all the doors in the game
+function loadAllDoors()
   doorData = {
     [58] = {
       south = {
@@ -9039,6 +9044,6 @@ local function loadDoorData()
       roomsWithDoors = roomsWithDoors + 1
     end
   end
+  -- Only needed once at load/relaod
+  loadAllDoors = nil
 end
-
-loadDoorData()
