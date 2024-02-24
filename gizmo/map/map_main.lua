@@ -117,6 +117,13 @@ function startMapSim()
   startExploration()
 end
 
+-- Given the V-Number of a room, return it's R-Number
+function getRoomRbyV( vNumber )
+  local roomData    = searchRoomUserData( "roomVNumber", vNumber )
+  local roomRNumber = roomData and roomData[1] or nil
+  return roomRNumber
+end
+
 -- Find Rooms whose names are duplicated but are unique within an Area (i.e., 'area-unique')
 local function getAreaUniques()
   local areaUniques = 0

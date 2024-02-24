@@ -2,7 +2,7 @@
 if SESSION == 1 then
   -- Global "master table" to hold all mob data
   mobData = {}
-  -- Populate the table with all mob data including special attacks & derived values (after all scripts are done loading)
+  -- After scripts are loaded, call loadAllMobs to populate mobData
   tempTimer( 0, [[loadAllMobs()]] )
 end
 -- Load all mobs from the Mob and SpecialAttacks Tables in the gizwrld.db database
@@ -36,21 +36,23 @@ function loadAllMobs()
       damageModifier   = tonumber( mob.damageModifier ),
       hitroll          = tonumber( mob.hitroll ),
       roomVNumber      = tonumber( mob.roomVNumber ),
-      -- If the room the mob was in exists in our Map, we can look up it's R-Number (-1 if it's not Mapped yet)
-      roomRNumber      = (roomUserData and roomUserData[1]) or nil,
-      areaRNumber      = nil,
-      areaName         = "Unknown",
       specialProcedure = mob.specialProcedure,
-      -- Calculated fields
-      averageDamage    = nil,       -- TBD
-      xpPerHealth      = nil,       -- TBD
-      goldPerHealth    = nil,       -- TBD
-      area             = "Unknown", -- TBD
+      -- Fields to calculate or lookup later
+      meleeDamage      = 0,   -- TBD for average melee damage
+      specDamage       = 0,   -- TBD for damage from special attack (tables)
+      xpPerHealth      = 0,   -- TBD
+      goldPerHealth    = 0,   -- TBD
+      roomRNumber      = nil, -- TBD
+      areaRNumber      = nil, -- TBD
+      areaName         = "Unknown",
       -- Placeholder for special attacks
       specialAttacks   = {},
     }
+    -- See if the mob's logged R-Number corresponds to a mapped room and set Area data if so
+    mobEntry.roomRNumber = getRoomRbyV( mobEntry.roomVNumber )
     if mobEntry.roomRNumber then
-      mobEntry.areaName, mobEntry.areaRNumber = getRoomAreaTrue( mobEntry.roomVNumber )
+      mobEntry.areaRNumber = getRoomArea( mobEntry.roomRNumber )
+      mobEntry.areaName    = getRoomAreaName( mobEntry.areaRNumber )
     end
     -- Calculate experience and gold per health w/ SANCT = 2x Health
     local mhp = mob.health
@@ -62,7 +64,7 @@ function loadAllMobs()
       mobEntry.goldPerHealth = mob.gold / mhp
     end
     -- Calculate average damage
-    mobEntry.averageDamage = averageDice( mobEntry.damageDice, mobEntry.damageSides, mobEntry.damageModifier )
+    mobEntry.meleeDamage = averageDice( mobEntry.damageDice, mobEntry.damageSides, mobEntry.damageModifier )
 
     -- Load special attacks corresponding to this mob
     local saSql = string.format( "SELECT * FROM SpecialAttacks WHERE rNumber = %d", mobEntry.rNumber )
@@ -71,7 +73,7 @@ function loadAllMobs()
       local sa = saCursor:fetch( {}, "a" )
       while sa do
         local savd = sa.chance * averageDice( sa.damageDice, sa.damageSides, sa.damageModifier ) / 100
-        mobEntry.averageDamage = mobEntry.averageDamage + savd
+        mobEntry.specDamage = mobEntry.specDamage + savd
         table.insert( mobEntry.specialAttacks, {
           chance         = tonumber( sa.chance ),
           damageDice     = tonumber( sa.damageDice ),
@@ -93,6 +95,8 @@ function loadAllMobs()
   cursor:close()
   conn:close()
   env:close()
+  -- This function is only needed once at startup
+  loadAllMobs = nil
 end
 
 -- Retrieve data about a specific mob from the global mobData table
@@ -133,20 +137,9 @@ function findMob( searchString )
   end
 end
 
--- In 'stat' blocks, mob rooms are given as V-Number; we convert that to the corresponding R-Number by searching the map's user
--- data; the Room's R-Number gives us the R-Number of the Area it's in which we use to look up the Area's name
-function getRoomAreaTrue( roomVNumber )
-  local roomRNumber = searchRoomUserData( "roomVNumber", tostring( roomVNumber ) )[1]
-  if roomRNumber then
-    local areaRNumber = getRoomArea( roomRNumber )
-    local areaName    = getRoomAreaName( areaRNumber )
-    return areaName, areaRNumber
-  end
-  return "Unknown", -1
-end
-
 -- Display mob data given a specific mob's R-Number
 function displayMob( rNumber )
+  local SPC = "<medium_orchid>" -- put this in config eventually
   local mob = getMob( rNumber )
   if not mob then
     iout( "No mob matches {EC}{rNumber}{RC}" )
@@ -156,17 +149,25 @@ function displayMob( rNumber )
   local hp, xp, gp     = mob.health, mob.xp, mob.gold
   local xpph, gpph     = round( mob.xpPerHealth, 0.01 ), round( mob.goldPerHealth, 0.01 )
   local dn, ds, dm, hr = mob.damageDice, mob.damageSides, mob.damageModifier, mob.hitroll
-  local avd            = round( mob.averageDamage, 0.01 )
+  local mavd           = round( mob.meleeDamage, 0.01 )
+  local savd           = round( mob.specDamage, 0.01 )
+  local tavd           = round( mob.meleeDamage + mob.specDamage, 0.01 )
   local flg, aff       = mob.flags, mob.affects
   local arn, arid      = mob.areaName, mob.areaRNumber
 
+  -- Format bonus special attack damage if it's present
+  if savd > 0 then
+    savd = f " + {SPC}{savd}{RC}"
+  else
+    savd = ""
+  end
   cout( "[{NC}{rNumber}{RC}]" )
   cout( "  {SC}{lng}{RC}" )
   cout( "  {SC}{shrt}{RC} ({SC}{kws}{RC})" )
   cout( "  Area: {SC}{arn}{RC} ({NC}{arid}{RC})" )
   cout( "  HP: {NC}{hp}{RC}  XP: {NC}{xp}{RC}  ({DC}{xpph}{RC} xp/hp)" )
   cout( "  GP: {NC}{gp}{RC}  ({DC}{gpph}{RC} gp/hp)" )
-  cout( "  Dam: {NC}{dn}d{ds}+{dm}+{hr}{RC}  ({DC}{avd}{RC} avg)" )
+  cout( "  Dam: {NC}{dn}d{ds} +{dm} +{hr}{RC}{savd}{RC} ({DC}{tavd}{RC} avg)" )
   cout( "  Flags: {FC}{flg}{RC}" )
   cout( "  Affects: {FC}{aff}{RC}" )
 
@@ -176,8 +177,8 @@ function displayMob( rNumber )
     for _, attack in ipairs( mob.specialAttacks ) do
       local ac, ad, as = attack.chance, attack.damageDice, attack.damageSides
       local am, ah     = attack.damageModifier, attack.hitroll
-      local savd       = attack.averageDamage
-      cout( "    {SC}{ac}% @ {NC}{ad}d{as}+{am}+{ah}{RC} ({DC}{savd}{RC} avg)" )
+      local savdd      = attack.averageDamage
+      cout( "    {NC}{ac}%{RC} @ {SPC}{ad}d{as} +{am} +{ah}{RC} ({SPC}{savdd}{RC} avg)" )
     end
   end
 end
@@ -186,7 +187,7 @@ end
 function displayMobArea( rNumber )
   referenceArea = getMob( rNumber ).areaRNumber
   for _, mob in ipairs( mobData ) do
-    if mob.area == referenceArea then
+    if mob.areaName == referenceArea then
       displayMob( mob.rNumber )
     end
   end
@@ -214,7 +215,7 @@ function findMobsLike( rNumber, attr, scale )
     local mobValue = mob[attr]
     -- Adjust for 'damage' attribute to use averageDamage
     if attr == 'damage' then
-      mobValue = mob.averageDamage
+      mobValue = mob.meleeDamage + mob.specDamage
     end
     -- Check against minValue and maxValue for the specified attribute
     local withinRange = (mobValue >= minValue and mobValue <= maxValue)
@@ -227,40 +228,60 @@ function findMobsLike( rNumber, attr, scale )
   end
 end
 
--- Print all mobs that have at least one entry in the SpecialAttacks table
-local function displayAllSpecs()
-  for _, mob in ipairs( mobData ) do
-    if mob.specialAttacks and #mob.specialAttacks > 0 and mob.averageDamage <= 500 then
-      displayMob( mob.rNumber )
-    end
-  end
+function simMobs()
+  cfeedTriggers( [[A big scary mob stands here meeting the threshold you set for danger.]] )
+  cfeedTriggers( [[A reasonably-sized mob is here waiting for you to use it for target practice.]] )
+  cfeedTriggers( [[A dinky mob is here not worth the effort to kill.]] )
 end
 
--- Print all "Flags" and "Affects" for all mobs in the mobData table
-local function printFlags()
-  for _, mob in ipairs( mobData ) do
-    cout( "{mob.affects}" )
+function triggerHighlightMob( dangerLevel )
+  if dangerLevel == 3 then
+    local mobString = line
+    setFgColor( 220, 20, 60 )
+    creplaceLine( f "⚠️<tomato>{mobString}<reset>  ⚠️" )
+  elseif dangerLevel == 2 then
+    selectString( line, 1 )
+    setFgColor( 107, 142, 35 )
+  elseif dangerLevel == 1 then
+    selectString( line, 1 )
+    setFgColor( 65, 65, 65 )
   end
+  resetFormat()
 end
 
--- Display the "best" mobs based on certain metrics; currently defaults to experience per health or xpph
--- Kind of built on an older design of mob data management; definitely a better way to do this
-local function displayTopMobs( param )
-  -- param is currently unused; later can be used to display different metrics
+-- Deadly mobs are aggressive and exceed the specified damage threshold
+function isMobDeadly( mob, threshold )
+  local aggro = string.find( mob.flags, "AGGRESSIVE" )
+  local dam   = mob.meleeDamage
+  -- If the mob is FURIED, double it's melee damage
+  if string.find( mob.affects, 'FURY' ) then
+    dam = dam * 2
+  end
+  -- For mobs with DUAL, fudge another ~20%
+  if string.find( mob.affects, 'DUAL' ) then
+    dam = dam * 1.2
+  end
+  -- Then add any special attack damage into the mix
+  dam = dam + mob.specDamage
+  return aggro and dam > threshold
+end
 
-  table.sort( mobData, function ( a, b )
-    return a.xpPerHealth > b.xpPerHealth
-  end )
-
-  -- Display sorted mobs
+-- Use Mudlet's built-in Map search functionality and character/highlighting to identify
+-- deadly aggressive sentinel mobs and mark them on the map.
+function flagDeadlyMobs()
   for _, mob in ipairs( mobData ) do
-    local mxp = mob.xp
-    if mxp >= 150000 and mob.averageDamage <= 100 then
-      local xpph = mxp / mob.health
-      local xpphstr = string.format( "<orange>%.2f<reset>", xpph )
-      local shortstr = string.format( "<royal_blue>%s<reset>", mob.shortDescription )
-      local xpphmob = string.format( "\n%s (%s)", shortstr, xpphstr )
-      cecho( xpphmob )
+    -- Sentinels don't wander and are always in the same room
+    local sentinel = string.find( mob.flags, "SENTINEL" )
+    -- Define deadlieness with appropriate criteria
+    local deadly   = isMobDeadly( mob, 200 )
+    -- Deadly aggressive sentinel mobs can be treated as a property of the room and marked on the map
+    if sentinel and deadly then
+      -- Find the room the mob is in
+      local room = mob.roomRNumber
+      -- If the room is found, display the mob
+      if room then
+        displayMob( mob.rNumber )
+      end
     end
   end
 end

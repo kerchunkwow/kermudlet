@@ -101,7 +101,7 @@ Includes:
 
 #### Derived Metrics
 Computed for each mob to facilitate analysis:
-- `averageDamage`: Expected damage output per attack.
+- `meleeDamage`: Expected damage output per melee attack.
 - `xpPerHealth`, `goldPerHealth`: Efficiency indicators for player encounters.
 
 #### SpecialAttacks
