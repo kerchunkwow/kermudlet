@@ -191,8 +191,8 @@ function createGizmoGUI()
     local pc_y_top   = (pc_total_h - 500)
     local pc_y_pos   = {}
 
-    party_console    = Geyser.UserWindow:new( {
-      name          = "party_console",
+    partyConsole     = Geyser.UserWindow:new( {
+      name          = "partyConsole",
       titleText     = "Party Console",
       width         = win_w,
       height        = win_h,
@@ -229,7 +229,7 @@ function createGizmoGUI()
         width  = "100%",
         height = uiHeight["hp_gauge"],
 
-      }, party_console )
+      }, partyConsole )
 
       hpGauge[pc].front:setStyleSheet( CSS_hp_fg )
       hpGauge[pc].back:setStyleSheet( CSS_gauge_bg )
@@ -253,7 +253,7 @@ function createGizmoGUI()
         width  = "100%",
         height = uiHeight["mn_gauge"],
 
-      }, party_console )
+      }, partyConsole )
 
       manaGauge[pc].front:setStyleSheet( CSS_mn_fg )
       manaGauge[pc].back:setStyleSheet( CSS_gauge_bg )
@@ -274,7 +274,7 @@ function createGizmoGUI()
         width  = "100%",
         height = uiHeight["mv_gauge"],
 
-      }, party_console )
+      }, partyConsole )
 
       movesGauge[pc].front:setStyleSheet( CSS_mv_fg )
       movesGauge[pc].back:setStyleSheet( CSS_gauge_bg )
@@ -296,7 +296,7 @@ function createGizmoGUI()
         width  = "34%",
         height = uiHeight["label"],
 
-      }, party_console )
+      }, partyConsole )
 
       affectLabel[pc] = Geyser.Label:new( {
 
@@ -306,7 +306,7 @@ function createGizmoGUI()
         width  = "66%",
         height = uiHeight["label"],
 
-      }, party_console )
+      }, partyConsole )
 
       affectLabel[pc]:setFormat( font_format["affect"] )
       affectLabel[pc]:setStyleSheet( CSS_affect )
@@ -336,7 +336,7 @@ function createGizmoGUI()
         width  = "100%",
         height = uiHeight["label"],
 
-      }, party_console )
+      }, partyConsole )
 
       local rm_label_border = uiColor["rm"]
       local CSS_label_rm = CSS_label .. f [[border-color: {rm_label_border};]]
@@ -357,7 +357,7 @@ function createGizmoGUI()
         y = combat_icon_y,
         width = icon_dim,
         height = icon_dim
-      }, party_console )
+      }, partyConsole )
 
 
       -- Call combatClicked( pc_name ) when clicking the combat icon
@@ -370,6 +370,19 @@ function createGizmoGUI()
       end
       combatIcons[pc]:hide()
     end
+    -- Add an animated "tick clock" label to the bottom-left corner of the party console
+    tickLabel = Geyser.Label:new( {
+      name   = "tickLabel",
+      x      = "4px",
+      y      = "-40px",
+      width  = "36px",
+      height = "36px"
+    }, partyConsole )
+
+    -- Give it a transparent background
+    tickLabel:setColor( 0, 0, 0, 0 )
+    tickLabel:show()
+
     deleteConsoleStyles()
   end
 

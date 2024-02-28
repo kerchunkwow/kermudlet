@@ -78,11 +78,46 @@ end
 -- third party packages if you have any.
 function killAllTemps()
   local topTrigger = tempTrigger( "dummy", function () end )
-  local topTimer = tempTimer( 0, function () end )
+  local topTimer   = tempTimer( 0, function () end )
   for i = 1, topTrigger do
     killTrigger( i )
   end
   for j = 1, topTimer do
     killTimer( j )
   end
+end
+
+--if tickTimer then killTimer( tickTimer ) end
+--tickTimer = nil
+--tickStep = nil
+
+-- Called from tickbound message triggers, this function keeps the tick timer synchronized
+-- Depending on how well the timer stays synchronized once initialized, this may only be needed once
+function synchronizeTickTimer()
+  -- Append an indicator to messages that synch the tick timer (for tracking/debugging)
+  cecho( ' [<spring_green>t<reset>]' )
+
+  -- Once the timer is running, messages should arrive at the beginning of step 0;
+  -- with some variation, anything beyond 2s probably means somethings wrong
+  if tickStep and (tickStep < 119 and tickStep > 1) then
+    iout( "Tick timer reset out of synch: {NC}{tickStep}{RC}:" )
+    iout( "{SC}{line}{RC}" )
+  end
+  tickStep = 0
+
+  -- If the tick timer isn't running yet, start it
+  if not tickTimer then
+    tickTimer = tempTimer( 0.5, [[updateTickTimer()]], true )
+  end
+end
+
+-- Once the timer is synchronized with the first tick-bound message; tickTimer uses
+-- this function to animate the clock indefinitely until it's killed
+function updateTickTimer()
+  -- Reset the clock the after the final step
+  if tickStep == TICK_STEPS then tickStep = 0 end
+  -- Update the label image to the image corresponding to the current step
+  local tickImage = f [[{ASSETS_DIR}/img/t/{tickStep}.png]]
+  tickLabel:setBackgroundImage( tickImage )
+  tickStep = tickStep + 1
 end

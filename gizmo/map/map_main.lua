@@ -1,3 +1,12 @@
+function setRoomOnClick()
+  local dst = getMapSelection()["rooms"][1]
+  iout( "Updating current room: {NC}{dst}{RC}" )
+  setPlayerRoom( dst )
+end
+
+registerAnonymousEventHandler( "setRoomOnClick", "setRoomOnClick" )
+addMapEvent( "Set Current Room", "setRoomOnClick" )
+
 -- Follow a list of directions; also used by the click-to-walk functionality from the Mapper
 function doSpeedWalk()
   for _, dir in ipairs( speedWalkDir ) do

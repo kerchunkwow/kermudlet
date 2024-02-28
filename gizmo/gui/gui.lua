@@ -1,7 +1,7 @@
--- Doubleclick the room name to summon that pc ([COLIN])
+-- Doubleclick the room name to summon that pc
 function roomClicked( pc, pcName, event )
   cecho( "info", f "\nGot double-click on <royal_blue>Room<reset> @ {pcTags[pc]}" )
-  send( f [[cast 'super summon' {pc}]] )
+  send( f [[cast 'super summon' {pcName}]] )
 end
 
 -- Click the hitpoint gauge to heal that pc ([COLIN])

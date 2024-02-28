@@ -17,4 +17,5 @@ sandbox/
 .vscode/
 
 # Gizmo assets for building a Wiki (maybe later)
-gizmo/assets/
+gizmo/assets/tools/
+gizmo/assets/wiki/

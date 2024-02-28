@@ -1,5 +1,9 @@
 -- Create a local copy of this file named client_config.lua in this location; customize it to your
 -- local environment and preference, and make sure it"s in your .gitignore so we don"t cross streams.
+
+-- Localized project paths
+ASSETS_DIR         = 'C:/Dev/mud/mudlet/gizmo/assets'
+
 pcNames            = {"Colin", "Nadja", "Laszlo", "Nandor"}
 containers         = {"stocking", "cradle", "cradle", "cradle"}
 waterskin          = "waterskin"
@@ -104,11 +108,12 @@ criticalWarnings   = {
 }
 -- Customize your affect info to match the duration of your own buffs and desired colors & characters
 affectInfo         = {
-  ["Sanctuary"] = {duration = 7, color = "lavender_blush", char = "🌟"},
-  ["Bless"]     = {duration = 6, color = "light_goldenrod", char = "🙏"},
-  ["Fury"]      = {duration = 2, color = "tomato", char = "😡"},
-  ["Armor"]     = {duration = 24, color = "steel_blue", char = "🛡️"},
-  ["Endure"]    = {duration = 24, color = "orange", char = "💪"},
+  ["Sanctuary"]            = {duration = 7, color = "lavender_blush", char = "🌟"},
+  ["Bless"]                = {duration = 6, color = "light_goldenrod", char = "🙏"},
+  ["Fury"]                 = {duration = 2, color = "tomato", char = "😡"},
+  ["Armor"]                = {duration = 24, color = "steel_blue", char = "🛡️"},
+  ["Endure"]               = {duration = 24, color = "orange", char = "💪"},
+  ["Protection from evil"] = {duration = 24, color = "gold", char = "🧿"},
 }
 -- Colors to use in the Party Console labels to indicate duration of affects
 affectDuration     = {
@@ -119,14 +124,18 @@ affectDuration     = {
 -- These keywords are captured in trigger phrases to indicate which spell has been applied or removed.
 -- They are used to map to the spell name in applyAffect() and removeAffect().
 affectKeywords     = {
-  ["glowing"]    = "Sanctuary",
-  ["aura"]       = "Sanctuary",
-  ["righteous"]  = "Bless",
-  ["angry"]      = "Fury",
-  ["calm"]       = "Fury",
-  ["protecting"] = "Armor",
-  ["protected"]  = "Armor",
+  ["glowing"]           = "Sanctuary",
+  ["aura"]              = "Sanctuary",
+  ["righteous"]         = "Bless",
+  ["angry"]             = "Fury",
+  ["calm"]              = "Fury",
+  ["protecting"]        = "Armor",
+  ["protected"]         = "Armor",
+  ["righteous feeling"] = "Protection from evil"
 }
+
+-- How many "steps" does the tick clock have (i.e., how many individual images make up the animation)
+TICK_STEPS         = 120
 
 -- Select which ANTI-FLAGS to include in stat output from eq/eq_db.lua
 function customizeAntiString( antis )
@@ -235,17 +244,3 @@ local function initializeReactions()
 end
 
 initializeReactions()
-
-function aliasDoWield()
-  expandAlias( "col gett crocodile", false )
-  expandAlias( "col rem boots", false )
-  expandAlias( "col wear crocodile", false )
-  expandAlias( "col wield mace", false )
-  expandAlias( "col rem crocodile", false )
-  expandAlias( "nan gett crocodile", false )
-  expandAlias( "nan rem boots", false )
-  expandAlias( "nan wear crocodile", false )
-  expandAlias( "nan wield mace", false )
-  expandAlias( "nan rem crocodile", false )
-  expandAlias( "nan putt crocodile", false )
-end

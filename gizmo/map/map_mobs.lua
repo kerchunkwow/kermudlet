@@ -183,12 +183,37 @@ function displayMob( rNumber )
   end
 end
 
--- Given the rNumber of a reference mob, print all other known mobs in the same Area
-function displayMobArea( rNumber )
-  referenceArea = getMob( rNumber ).areaRNumber
+-- Display mobs within a given area as determined by input parameters
+-- mobRNumber will display other mobs in the same area as the reference mob
+-- areaRNumber will display all mobs in the specified area
+-- deadliness will filter mobs to only display those that are deadly
+function displayAreaMobs( mobRNumber, areaRNumber, deadliness )
+  local referenceAreaRNumber
+
+  -- Determine the display area
+  if areaRNumber then
+    referenceAreaRNumber = areaRNumber
+  elseif mobRNumber then
+    local mob = getMob( mobRNumber )
+    if mob then
+      referenceAreaRNumber = mob.areaRNumber
+    else
+      iout( "No mob found with id {NC}{mobRNumber}{RC} in displayMobArea()" )
+      return
+    end
+  else
+    referenceAreaRNumber = getRoomArea( currentRoomNumber )
+  end
+  -- Display mobs based on the determined area
   for _, mob in ipairs( mobData ) do
-    if mob.areaName == referenceArea then
-      displayMob( mob.rNumber )
+    if mob.areaRNumber == referenceAreaRNumber then
+      if deadliness then
+        if isMobDeadly( mob, 60 ) then
+          displayMob( mob.rNumber )
+        end
+      else
+        displayMob( mob.rNumber )
+      end
     end
   end
 end
@@ -226,12 +251,6 @@ function findMobsLike( rNumber, attr, scale )
       displayMob( mob.rNumber )
     end
   end
-end
-
-function simMobs()
-  cfeedTriggers( [[A big scary mob stands here meeting the threshold you set for danger.]] )
-  cfeedTriggers( [[A reasonably-sized mob is here waiting for you to use it for target practice.]] )
-  cfeedTriggers( [[A dinky mob is here not worth the effort to kill.]] )
 end
 
 function triggerHighlightMob( dangerLevel )
@@ -273,7 +292,7 @@ function flagDeadlyMobs()
     -- Sentinels don't wander and are always in the same room
     local sentinel = string.find( mob.flags, "SENTINEL" )
     -- Define deadlieness with appropriate criteria
-    local deadly   = isMobDeadly( mob, 200 )
+    local deadly   = isMobDeadly( mob, 500 )
     -- Deadly aggressive sentinel mobs can be treated as a property of the room and marked on the map
     if sentinel and deadly then
       -- Find the room the mob is in

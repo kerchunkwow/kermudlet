@@ -78,12 +78,9 @@ local function displayBox( stringList, maxLength, borderColor )
   cecho( borderLine )
 end
 
--- Given a color (r, g, b), return a new color scaled to be d% lighter or darker
+-- Given an (r, g, b) set, return one d% darker or lighter
 local function getModifiedColor( r, g, b, d )
-  -- Ensure d is clamped between -100 and 100
   d = clamp( d, -100, 100 )
-
-  -- Calculate the scaling factor (ranging from 0 to 2)
   local scale = 1 + (d / 100)
 
   -- Adjust the color components and round to the nearest integer

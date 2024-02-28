@@ -8,7 +8,7 @@ math.randomseed( os.time() )
 -- Mudlet stopwatch is good for milisecond timing; init one and save this session's startup time
 if not timer then
   timer = createStopWatch( "timer", true )
-  setStopWatchPersistence( "timer", true )
+  setStopWatchPersistence( "timer", false )
 end
 timeStart    = getStopWatchTime( "timer" )
 

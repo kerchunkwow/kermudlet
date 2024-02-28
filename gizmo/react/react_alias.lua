@@ -189,6 +189,39 @@ function aliasSetPlayerRoom()
   setPlayerRoom( tonumber( matches[2] ) )
 end
 
+-- Set a global variable to track who our current tank is; quite important for healing, miracles, etc.
+function aliasSetTank()
+  gtank = matches[2]
+
+  if gtank then
+    -- Make sure tank is always capitalized.
+    gtank = gtank:sub( 1, 1 ):upper() .. gtank:sub( 2 )
+  else
+    gtank = pcNames[4]
+  end
+  iout( "<slate_gray>Setting tank = {NC}{gtank}{RC}" )
+end
+
+-- Set a global variable to track who is leading our group
+function aliasSetLeader()
+  gleader = matches[2]
+
+  if gleader then
+    -- Make sure tank is always capitalized.
+    gleader = gleader:sub( 1, 1 ):upper() .. gleader:sub( 2 )
+  else
+    gleader = pcNames[1]
+  end
+  iout( "<slate_gray>Setting leader = {SC}{gleader}{RC}" )
+end
+
+-- Set a global variable that defines the tank condition under which we will auto-miracle
+function aliasSetMira()
+  local miraSet = matches[2] or "bleeding"
+  miracleCondition = miraSet
+  iout( "<slate_gray>Setting mira = {SC}{miracleCondition}{SC}" )
+end
+
 -- If you haven't installed a package with basic lib aliases, create the important ones
 local function createLibAliasesOnce()
   if exists( 'lib', 'alias' ) == 0 then

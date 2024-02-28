@@ -853,21 +853,30 @@ areaDirs = areaDirs or {
 -- Retrieve then follow the path to an area; this uses the Wintin string but should
 -- probably skip this and iterate over the rawDirs
 function goArea( area )
-  local path = getDirs( area )
-  local commands = expandWintinString( path )
-  display( commands )
+  local path, dstName, dstNumber = getDirs( area )
+  local commands                 = expandWintinString( path )
+  tempTrigger( dstName, f [[updateAfterSpeedwalk( {dstNumber} )]], 1 )
   iout( "<dim_grey>Path: <green_yellow>{path}<reset>" )
   for _, cmd in ipairs( commands ) do
     send( cmd, false )
   end
 end
 
+-- An attempt to validate & update pc map position after a speedwalk completes
+function updateAfterSpeedwalk( roomNumber )
+  if currentRoomNumber ~= roomNumber then
+    iout( "Updating map location post speedwalk: {NC}{roomNumber}{RC}" )
+    setPlayerRoom( roomNumber )
+  else
+    iout( "Map did not require an update after that speedwalk." )
+  end
+end
+
 -- Retrieve a Wintin-compatible dirs string leading to the specified area
 -- Will accept areas as full or partial strings or ID numbers
 function getDirs( area )
+  -- Check if area was passed as a number, otherwise look it up in the areaMap
   local areaID = tonumber( area )
-
-  -- If conversion fails, try a name lookup
   if not areaID then
     -- Normalize area names before lookup, so e.g., 'Maritime Museum' and 'maritimemuseum' will work
     local normalizedAreaName = area:gsub( "^The%s+", "" ):gsub( "%s+", "" ):lower()
@@ -890,7 +899,8 @@ function getDirs( area )
   if areaID and areaDirs[areaID] then
     -- Return the Wintin-compatible dirs string;
     -- Here we could also retrieve the cost to compare to our moves or verify keys
-    return areaDirs[areaID].dirs
+    local dirsData = areaDirs[areaID]
+    return dirsData.dirs, dirsData.roomName, dirsData.roomNumber
   else
     cecho( f "\n<firebrick>Area {area} not found in areaDirs.<reset>" )
     return nil
