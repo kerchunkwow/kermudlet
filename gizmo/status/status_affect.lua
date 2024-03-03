@@ -19,8 +19,8 @@ initAffectStatus()
 function updateAffect( pc, affectName, ticks )
   if affectStatus[pc] and affectStatus[pc][affectName] then
     local affect = affectStatus[pc][affectName]
-    if affect.active == (ticks >= 0) and affect.ticksRemaining == ticks then
-      -- Skip update if the affect status is unchanged
+    if (affect.active == (ticks >= 0) and affect.ticksRemaining == ticks) then
+      -- Skip update if the affect status is unchanged or affect type is ignored
       return
     end
     -- Update the affect status based on the ticks value
@@ -32,8 +32,8 @@ function updateAffect( pc, affectName, ticks )
       affectStatus[pc][affectName].ticksRemaining = -1
     end
     refreshAffectLabels( pc )
-  else
-    cecho( "info", f "\n<dark_orange>err<reset> invalid updateAffect: {pc}, {affectName}" )
+  elseif not IGNORED_AFFECTS[affectName] then
+    iout( f "{EC}invalid updateAffect{RC}: {pcNames[pc]}, {affectName}" )
   end
 end
 

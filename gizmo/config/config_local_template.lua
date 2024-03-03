@@ -97,7 +97,9 @@ warningMessages    = {
   ["exhausted"] = "👟 No Moves",
   ["norecall"]  = "🌀 Out of Recalls"
 }
-
+IGNORED_AFFECTS    = {
+  ['Strength'] = true
+}
 -- Critical warnings will play bloop.wav when sent.
 criticalWarnings   = {
   ["whacked"]   = true,

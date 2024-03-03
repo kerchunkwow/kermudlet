@@ -154,6 +154,7 @@ function displayMob( rNumber )
   local tavd           = round( mob.meleeDamage + mob.specDamage, 0.01 )
   local flg, aff       = mob.flags, mob.affects
   local arn, arid      = mob.areaName, mob.areaRNumber
+  local rmid           = mob.roomRNumber
 
   -- Format bonus special attack damage if it's present
   if savd > 0 then
@@ -161,7 +162,7 @@ function displayMob( rNumber )
   else
     savd = ""
   end
-  cout( "[{NC}{rNumber}{RC}]" )
+  cout( "[{NC}{rNumber}{RC}], (<royal_blue>{rmid}<reset>)" )
   cout( "  {SC}{lng}{RC}" )
   cout( "  {SC}{shrt}{RC} ({SC}{kws}{RC})" )
   cout( "  Area: {SC}{arn}{RC} ({NC}{arid}{RC})" )
@@ -237,17 +238,18 @@ function findMobsLike( rNumber, attr, scale )
 
   -- Find and display similar mobs
   for _, mob in ipairs( mobData ) do
+    local mobDam = mob.meleeDamage + mob.specDamage
     local mobValue = mob[attr]
     -- Adjust for 'damage' attribute to use averageDamage
     if attr == 'damage' then
-      mobValue = mob.meleeDamage + mob.specDamage
+      mobValue = mobDam
     end
     -- Check against minValue and maxValue for the specified attribute
     local withinRange = (mobValue >= minValue and mobValue <= maxValue)
     -- For 'xp' attribute, compare directly; for others, ensure mob's xp is also above the xpMinValue
     local xpCondition = (attr == 'xp') or (mob.xp >= xpMinValue)
 
-    if withinRange and xpCondition and mob.rNumber ~= rNumber then
+    if withinRange and xpCondition and mob.rNumber ~= rNumber and mobDam < 100 then
       displayMob( mob.rNumber )
     end
   end
@@ -301,6 +303,29 @@ function flagDeadlyMobs()
       if room then
         displayMob( mob.rNumber )
       end
+    end
+  end
+end
+
+function findAggroTest()
+  for _, mob in ipairs( mobData ) do
+    local areaid   = mob.areaRNumber
+    local aggro    = string.find( mob.flags, "AGGRESSIVE" )
+    local sentinel = string.find( mob.flags, "SENTINEL" )
+    local dam      = mob.meleeDamage
+    -- If the mob is FURIED, double it's melee damage
+    if string.find( mob.affects, 'FURY' ) then
+      dam = dam * 2
+    end
+    -- For mobs with DUAL, fudge another ~20%
+    if string.find( mob.affects, 'DUAL' ) then
+      dam = dam * 1.2
+    end
+    -- Then add any special attack damage into the mix
+    dam = dam + mob.specDamage
+    local safe = dam < 30
+    if aggro and sentinel and safe and areaid == currentAreaNumber then
+      displayMob( mob.rNumber )
     end
   end
 end

@@ -87,10 +87,17 @@ function killAllTemps()
   end
 end
 
---if tickTimer then killTimer( tickTimer ) end
---tickTimer = nil
---tickStep = nil
+-- Reset the clock (called at load after script init)
+function resetClock()
+  if tickTimer then killTimer( tickTimer ) end
+  tickTimer = nil
+  tickStep = nil
+  tickStart = nil
+end
 
+if not tickTimer and not tickStep and not tickStart then
+  tempTimer( 0, [[resetClock()]] )
+end
 -- Called from tickbound message triggers, this function keeps the tick timer synchronized
 -- Depending on how well the timer stays synchronized once initialized, this may only be needed once
 function synchronizeTickTimer()
@@ -104,6 +111,7 @@ function synchronizeTickTimer()
     iout( "{SC}{line}{RC}" )
   end
   tickStep = 0
+  tickStart = getStopWatchTime( "timer" )
 
   -- If the tick timer isn't running yet, start it
   if not tickTimer then
@@ -120,4 +128,17 @@ function updateTickTimer()
   local tickImage = f [[{ASSETS_DIR}/img/t/{tickStep}.png]]
   tickLabel:setBackgroundImage( tickImage )
   tickStep = tickStep + 1
+end
+
+function restUntilTick()
+  if restTimer then killTimer( restTimer ) end
+  -- Get time to tick plus a blink
+  local restTime = ((TICK_STEPS - tickStep) / 2) + 0.2
+  -- Rest and set a timer to stand again
+  expandAlias( 'all rest' )
+  restTimer = tempTimer( restTime, [[resumeStand()]] )
+end
+
+function resumeStand()
+  expandAlias( 'all stand' )
 end
