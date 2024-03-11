@@ -51,8 +51,6 @@ function triggerRouteChat()
     if channel == "says" then
       channel = "say"
     elseif channel == "tells" or channel == "tell" then
-      disableTrigger( "Mob Scan" )
-      killAllTemps()
       channel = "whisper"
 
       -- Play a sound when you receive a whisper (no more than once per 10s)

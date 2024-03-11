@@ -294,17 +294,23 @@ function flagDeadlyMobs()
     -- Sentinels don't wander and are always in the same room
     local sentinel = string.find( mob.flags, "SENTINEL" )
     -- Define deadlieness with appropriate criteria
-    local deadly   = isMobDeadly( mob, 500 )
+    local deadly   = isMobDeadly( mob, 100 )
     -- Deadly aggressive sentinel mobs can be treated as a property of the room and marked on the map
     if sentinel and deadly then
       -- Find the room the mob is in
       local room = mob.roomRNumber
       -- If the room is found, display the mob
       if room then
-        displayMob( mob.rNumber )
+        local roomChar = getRoomChar( room )
+        if roomChar and #roomChar > 0 and #roomChar ~= "" then
+          setRoomChar( room, "👽" )
+        else
+          setRoomChar( room, "😈" )
+        end
       end
     end
   end
+  updateMap()
 end
 
 function findAggroTest()

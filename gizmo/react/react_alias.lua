@@ -82,10 +82,10 @@ function aliasMUDps()
   local caster, caster_mn = getMaxStat( "currentMana", 2, 3 )
 
   if caster then
-    if caster_mn >= 100 then
+    if caster_mn >= 200 then
+      expandAlias( f [[{sessionAliases[caster]} cast 'thunderball']] )
+    elseif caster_mn >= 100 then
       expandAlias( f [[{sessionAliases[caster]} cast 'electric shock']] )
-    elseif caster_mn >= 50 then
-      expandAlias( f [[{sessionAliases[caster]} cast 'lethal fire']] )
     end
   end
 end

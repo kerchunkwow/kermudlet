@@ -89,15 +89,14 @@ end
 
 -- Reset the clock (called at load after script init)
 function resetClock()
+  local resetTime = round( getStopWatchTime( "timer" ), 1 )
+  iout( "<tomato>Resetting{RC} tick clock at {resetTime}s" )
   if tickTimer then killTimer( tickTimer ) end
   tickTimer = nil
   tickStep = nil
   tickStart = nil
 end
 
-if not tickTimer and not tickStep and not tickStart then
-  tempTimer( 0, [[resetClock()]] )
-end
 -- Called from tickbound message triggers, this function keeps the tick timer synchronized
 -- Depending on how well the timer stays synchronized once initialized, this may only be needed once
 function synchronizeTickTimer()
