@@ -1,3 +1,24 @@
+-- A function to repeatedly cast 'locate object' with increasing indices so we can find all objects
+--- in the game matching the specified keyword.
+locateIndex   = 1
+locateTrigger = locateTrigger or nil
+locateObject  = locateObject or nil
+function locateAllByKeyword( keyword )
+  locateIndex = 1
+  if locateTrigger then killTrigger( locateTrigger ) end
+  locateObject     = keyword
+  local cmd        = f [[cast 'locate object' {locateIndex}.{locateObject}]]
+  local capPattern = [[^You are very confused\.$]]
+  locateTrigger    = tempRegexTrigger( capPattern,
+    function ()
+      iout( 'Triggered.' )
+      locateIndex = locateIndex + 25
+      cmd         = f [[cast 'locate object' {locateIndex}.{locateObject}]]
+      send( cmd )
+    end )
+  send( cmd )
+end
+
 -- Get the optimal Magic-User for a cast
 function getCasterMU( mana_cost )
   local nad_mn = pcStatus[2] and pcStatus[2]["currentMana"] or 0
@@ -156,7 +177,7 @@ function aliasGetPath()
   local dst = matches[2]
   local pathString = nil
   if tonumber( dst ) then
-    pathString = getFullDirs( currentRoomNumber, tonumber( dst ) )
+    pathString = getFullDirs( CurrentRoomNumber, tonumber( dst ) )
   end
   if pathString then
     cecho( f "<yellow_green>{pathString}" )
@@ -176,13 +197,6 @@ function aliasReciteRecalls()
   createTemporaryTrigger( "norecalls", "does not contain", noRecallCode, 20 )
   send( 'recite recall' )
   send( f 'get recall {container}' )
-end
-
--- Cycle through "item query" modes, modifying what level of detail to include in item queries (appended in game)
-function toggleItemQueryMode()
-  if not itemQueryMode then itemQueryMode = 0 else itemQueryMode = itemQueryMode + 1 end
-  if itemQueryMode > 1 then itemQueryMode = 0 end
-  cecho( "info", f "\n<orange>itemQueryMode toggled: {itemQueryMode}" )
 end
 
 function aliasSetPlayerRoom()
@@ -222,6 +236,29 @@ function aliasSetMira()
   iout( "<slate_gray>Setting mira = {SC}{miracleCondition}{SC}" )
 end
 
+failTrigger = failTrigger or nil
+successTrigger = successTrigger or nil
+LAST_CMD = [[send('!', false)]]
+-- For any command with failure conditions, repeat that command until success
+function sureCommand( cmd, succeedMsg, failMsg )
+  -- Kill any existing triggers
+  if failTrigger then killTrigger( failTrigger ) end
+  if successTrigger then killTrigger( successTrigger ) end
+  -- Create a temporary trigger to try again with ! if the command fails
+  failTrigger = tempTrigger( failMsg, [[send('!', false)]] )
+  -- Create a temporary trigger on success to kill the failTrigger (and itself)
+  successTrigger = tempTrigger( succeedMsg,
+    function ()
+      -- Kill both temporary triggers and nil their IDs
+      killTrigger( failTrigger )
+      failTrigger = nil
+      killTrigger( successTrigger )
+      successTrigger = nil
+    end )
+  -- Attempt the command to start the process
+  send( cmd, true )
+end
+
 -- If you haven't installed a package with basic lib aliases, create the important ones
 local function createLibAliasesOnce()
   if exists( 'lib', 'alias' ) == 0 then
@@ -240,3 +277,12 @@ local function createLibAliasesOnce()
 end
 
 createLibAliasesOnce()
+
+function aliasWaitFerry()
+  tempRegexTrigger( "^The ferry approaches and ties up to the dock\\.$",
+    function ()
+      send( 'order troll enter ferry', false )
+      send( 'enter ferry', false )
+      send( 'look', false )
+    end, 1 )
+end

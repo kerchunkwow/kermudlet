@@ -99,16 +99,16 @@ function getExitColor( to, dir )
   local toFlags = getRoomUserData( to, "roomFlags" )
   local isDT    = toFlags and toFlags:find( "DEATH" )
   if isDT then return DTC end
-  local isDoor = doorData[currentRoomNumber] and doorData[currentRoomNumber][LDIR[dir]]
-  local hasKey = isDoor and doorData[currentRoomNumber][LDIR[dir]].exitKey
+  local isDoor = doorData[CurrentRoomNumber] and doorData[CurrentRoomNumber][LDIR[dir]]
+  local hasKey = isDoor and doorData[CurrentRoomNumber][LDIR[dir]].exitKey
   if hasKey then return KEYC elseif isDoor then return DOORC end
-  local isBorder = currentAreaNumber ~= getRoomArea( to )
+  local isBorder = CurrentAreaNumber ~= getRoomArea( to )
   if isBorder then return ARC else return EXC end
 end
 
 -- Get a useful string representation of an Area including it's ID number for output (e.g., with cecho)
 function getAreaTag()
-  return f "<medium_violet_red>{currentAreaName}<reset> [<maroon>{currentAreaNumber}<reset>]"
+  return f "<medium_violet_red>{CurrentAreaName}<reset> [<maroon>{CurrentAreaNumber}<reset>]"
 end
 
 -- Configure the "Custom Environments" used by Mudlet to determine the style of rooms in the Map
@@ -133,7 +133,7 @@ end
 
 -- Set the color of the current Room on the map based on terrain type or attributes
 function setRoomStyle( id )
-  --local id = currentRoomNumber
+  --local id = CurrentRoomNumber
   local roomFlags = getRoomUserData( id, "roomFlags" )
   local roomSpec = tonumber( getRoomUserData( id, "roomSpec" ) )
   local roomType = getRoomUserData( id, "roomType" )
@@ -184,7 +184,7 @@ function addLabel()
 
   -- Hang on to the rest in globals so we can nudge with WASD; confirm with 'F' and cancel with 'C'
   if labelType == "room" then
-    labelText = formatLabel( currentRoomName )
+    labelText = formatLabel( CurrentRoomName )
   elseif labelType == "key" and lastKey > 0 then
     labelText = tostring( lastKey )
     lastKey = -1
@@ -195,7 +195,7 @@ function addLabel()
     -- Replace '\\n' in our label strings with a "real" newline; probably a better way to do this
     -- labelText = labelText:gsub( "\\\\n", "\n" )
   end
-  labelArea = getRoomArea( currentRoomNumber )
+  labelArea = getRoomArea( CurrentRoomNumber )
   labelX = mX + dX
   labelY = mY + dY
   labelR, labelG, labelB, labelSize = getLabelStyle( labelType )

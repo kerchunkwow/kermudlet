@@ -9047,3 +9047,19 @@ function loadAllDoors()
   -- Only needed once at load/relaod
   loadAllDoors = nil
 end
+
+-- If a door exists in the direction the player is attempting to move, open it
+function openDoor( dir )
+  local data = doorData[CurrentRoomNumber][dir]
+  if data then
+    local door     = data['exitKeyword']
+    local key      = data['exitKey']
+    local closeDir = REVERSE[dir]
+    closeCmd       = f 'close {door} {closeDir}'
+    if key then
+      send( f 'unlock {door} {dir}' )
+    end
+    send( f 'open {door} {dir}', true )
+    tempTimer( 1, [[send( closeCmd, true )]] )
+  end
+end

@@ -121,7 +121,7 @@ This structure is designed for quick data access and comprehensive mob analysis,
 
 The `UNIQUE_ROOMS` table maps room names as strings to the corresponding R-Numbers for any room whose name appears only once in the game; this allows
 rapid synchronization of the Map to ensure it is accurately tracking/updating the player's location. The R-Number of the current room is stored in the
-global `currentRoomNumber` variable and used by various built-in Mudlet functions including `centerview()` to keep the map up to date.
+global `CurrentRoomNumber` variable and used by various built-in Mudlet functions including `centerview()` to keep the map up to date.
 
 This table is populated at load time by `loadUniqueRooms()`. `isUnique( roomName )` implements a basic check against this table for room uniqueness.
 
@@ -157,37 +157,55 @@ any necessary door commands.
 - `roomName`: The name of the room you should end up in after following the path
 - `roomNumber`: The R-Number of the destination room
 
-## Development Guidance (notes for GPT)
-- Avoid rewriting entire modules or functions unless asked; when modifying only a few lines, provide snippets instead of
-entire functions.
-- Do not provide "example usage" unless asked explicitly; script should only be provided within functions unless asked
-- Do not use inline comments; all comments should be on their own line.
-- Use camelCase for variables and functions, UPPER_CASE for globals and constants
-- Do not include comments referring to interactions or exchanges within the chat session like `--fixed this`; comments
-should only be used to describe or explain the script itself; keep commentary within chat sessions
-- Mudlet has built support for f-string interpolation in Lua; this is encapsulated by `cout()` and `iout()` in `./lib/lib_strring.lua`; use
-`cout()` and `iout()` for all output, taking advantage of the global color constants defined in the config scripts:
+## Development Guidelines & Tips for ChatGPT
+- Avoid rewriting entire modules or functions unless asked; limit changes to snippets whenever possible
+- Provide "example usage" as commented script; never provide free script outside the scope of a function unless explicitly requested
+- Do not include inline comments; all comments go on their own line
+- Use lowerCamelCase for variables and function names
+- Use UpperCamelCase for global variables and tables (NOTE: Mudlet has built-in global variables & tables which do not conform to the UpperCamelCase convention)
+- Use UPPER_SNAKE_CASE for global constants
+- Do not use comments to refer to our chat interactions; for example, if I ask for a change don't comment `--changed this`
+- Avoid using `print()`; use `cout()` or `iout()` for all output
+- `cout()` and `iout()` both encapsulate argument interpolation; `cout( "{GlobalVariable}" )` is valid syntax and will print the value of that variable to the console; you should rarely if ever need to use Lua's concatenation operator `..`
+- `cout()` and `iout()` take care of newlines, no need to include newline characters when calling these functions
+
+- Mudlet supports color tags within strings in most contexts; the format for coloring strings is `<red>String<reset>`; do not use `<red>String</red>` or `<red>String</reset>` etc. there is no forward-slash closing tag syntax for Mudlet colors
+- Do not modify the content of string literals in code that I provide unless explicitly necessary to accomplish the task requested; do not remove {arguments} from strings or replace them with Lua's concatenate operator `..`
+- The following global constants can be used as shortened versions of their respective color tags:
 
 ```lua
-NC = "<orange>"          -- Numbers
-RC = "<reset>"           -- Reset Color
-EC = "<deep_pink>"       -- Errors & Warnings
-DC = "<ansi_yellow>"     -- Derived or Calculated Values
-FC = "<maroon>"          -- Flags & Effects
-SC = "<cornflower_blue>" -- String Literals
+  -- Use these shorthand color tags in string literals in order to limit their length
+  -- Example instead of iout(f"<orange_red>text<reset>") you can use iout("{EC}text{RC}")
+  -- Sacrifices some readiability for concise strings without overhead of a function call or table lookup
+  NC  = "<orange>"          -- Numbers
+  EC  = "<orange_red>"      -- Errors & Warnings
+  DC  = "<ansi_yellow>"     -- Derived or Calculated Values
+  FC  = "<maroon>"          -- Flags & Affects like 'Sanctuary'
+  SC  = "<cornflower_blue>" -- String Literals such as Room & Mob Names
+  SYC = "<ansi_magenta>"    -- System Messages (Client Status, etc.)
+  RC  = "<reset>"           -- Reset Color (do not use </reset> or </color> syntax)
 ```
 
 ## Key/Core Function Catalog
+- `iout()` prints to the Info window; use it for "system" info messages like statuses and errors, e.g., `iout( "Finished loading." )`
+- `cout()` pritnts to the game window; use for gameplay related messages like `cout( "You are critically injured." )`
 - `trim( s )` and `split( s, delim )` are defined in `lib_string.lua`
 - Use `round( n, s )` from `lib_std.lua` to round values to 2.00 decimal places when displaying calculated values
 - Use `expandNumber( n )` when displaying large values to add commas for readability
-- Avoid using `print()`; use `cout()` or `iout()` for all output
 - `sessionCommand()` and `aliasSessionCommand()` in `./gizmo/config/config_events.lua` work together to provide the main mechanism for
 communication between sessions (player profiles). The local `registerEventHandlers()` function registers handlers for `event_command_all`
 and `event_command_#` (where # corresponds to the tab/session number) at load time; thereafter, calls to `raiseEvent()` or `raiseGlobalEvent()`
 passing these events will be heard by all sessions or the corresponding session number respectively.
 - `raiseGlobalEvent()` is heard by all sessions EXCEPT the raising session; to truly raise an event to all sessions you have to call both
 `raiseGlobalEvent()` and `raiseEvent()`
+
+## Global Variable Catalog
+- `Timer` is a global stopwatch instance created by `createStopWatch( "timer", true )` which can provide the current time with milisecond precision
+- `StartTime` marks the beginning of the current session i.e., the value of `getStopWatchTime( "timer" )` when the current session began
+
+## Global CONSTANT Catalog
+- `SESSION` stores a session number returned by Mudlet's `getProfileTabNumber()` function and is used to differentiate separate client sessions which
+run simultaneously when playing multiple characters.
 
 ## Future Enhancements
 

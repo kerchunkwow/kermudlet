@@ -1,33 +1,45 @@
--- The goal is to keep kermudlet_init MUD-agnostic so it could potentially be reused for others
-homeDirectory = 'C:/dev/mud/mudlet/'
+-- Uses the default Windows Mudlet directory to determine a username for this session
+local function setUserName()
+  local path = lfs.currentdir()
+  local pattern = "C:\\Users\\([^\\]+)\\"
+  local username = string.match( path, pattern )
+  if username then
+    _G["USERNAME"] = username
+  else
+    cout( "<orange_red>Failed to parse USERNAME from lfs.currentdir()<reset>" )
+  end
+end
+setUserName()
+
 luasql = require( "luasql.sqlite3" )
 
 -- Seed Lua's shitty useless piece of shit random number generator
 math.randomseed( os.time() )
 
 -- Mudlet stopwatch is good for milisecond timing; init one and save this session's startup time
-if not timer then
-  timer = createStopWatch( "timer", true )
+if not Timer then
+  Timer = createStopWatch( "timer", true )
   setStopWatchPersistence( "timer", false )
+  StartTime = StartTime or getStopWatchTime( "timer" )
 end
-timeStart    = getStopWatchTime( "timer" )
-
--- nil Mudlet's built-in parsing variables to ensure nothing hangs arounda after reloads
-matches      = nil
-multimatches = nil
-line         = nil
-command      = nil
+-- Mudlet has a variety of built-in variables that can hang on to old values between reloads; explicitly nil
+-- some important ones here so we avoid carrying noise across updates.
+matches         = nil -- Capture groups from matched regex
+multimatches    = nil -- Capture groups from matched multi-line regex
+line            = nil -- The full content of the last matched line
+command         = nil -- The most recent command enter by the player
+speedWalkDir    = nil -- Set by getPath() and other related map functions
+speedWalkPath   = nil -- Set by getPath() and other related map functions
+speedWalkWeight = nil -- Set by getPath() and other related map functions
 
 -- Somewhat of a pointless function; but for now all scripts need to define at least one function
 -- in the global namespace to be eligible for auto-reloading.
 function loadLibs()
   -- Load the standard libraries
-  runLuaFile( 'lib/lib_script.lua' )
   runLuaFile( 'lib/lib_std.lua' )
   runLuaFile( 'lib/lib_gui.lua' )
   runLuaFile( 'lib/lib_react.lua' )
   runLuaFile( 'lib/lib_string.lua' )
-  runLuaFile( 'lib/lib_wintin.lua' )
   runLuaFile( 'lib/lib_db.lua' )
 
   -- Now branch into Gizmo-specific scripts
@@ -36,11 +48,15 @@ end
 
 loadLibs()
 
+-- Register an event to listen for file modifications and reload scripts
+registerAnonymousEventHandler( 'sysPathChanged', fileModifiedEvent )
+
 -- Once all scripts are loaded, this function will iterate through the global namespace table and
 -- call addFileWatch() on any file that has at least one function definition in the current interpreter.
 -- This is done in each session's local interpreter, meaning we have four times the number of files to
 -- watch; so it might be a good idea to disable this while you're not actively developing new scripts.
 local function addFileWatchers()
+  local homeDirectory = 'C:/dev/mud/mudlet/'
   -- Table to hold all of the filenames that have defined functions in the current interpreter
   local mySources = {}
   -- Use a custom local 'contains' since we're pissing around in _G[]

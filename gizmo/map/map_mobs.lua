@@ -1,10 +1,16 @@
 -- For now we're only using mobs in the Main session
-if SESSION == 1 then
+if SESSION == 1 and not mobData then
   -- Global "master table" to hold all mob data
   mobData = {}
+  -- Global table to hold fame data (maps mob shorts to fame values)
+  fameData = {}
   -- After scripts are loaded, call loadAllMobs to populate mobData
   tempTimer( 0, [[loadAllMobs()]] )
+  tempTimer( 0, [[loadFameData()]] )
 end
+-- A global table to store the IDs of the current area's temporary mob triggers
+areaMobTriggers = areaMobTriggers or {}
+
 -- Load all mobs from the Mob and SpecialAttacks Tables in the gizwrld.db database
 function loadAllMobs()
   local sql = "SELECT * FROM Mob"
@@ -47,6 +53,7 @@ function loadAllMobs()
       areaName         = "Unknown",
       -- Placeholder for special attacks
       specialAttacks   = {},
+      --tag              = createMobTag( mob.flags, mob.affects ),
     }
     -- See if the mob's logged R-Number corresponds to a mapped room and set Area data if so
     mobEntry.roomRNumber = getRoomRbyV( mobEntry.roomVNumber )
@@ -146,7 +153,7 @@ function displayMob( rNumber )
     return
   end
   local lng, shrt, kws = mob.longDescription, mob.shortDescription, mob.keywords
-  local hp, xp, gp     = mob.health, mob.xp, mob.gold
+  local hp, xp, gp     = mob.health, expandNumber( mob.xp ), expandNumber( mob.gold )
   local xpph, gpph     = round( mob.xpPerHealth, 0.01 ), round( mob.goldPerHealth, 0.01 )
   local dn, ds, dm, hr = mob.damageDice, mob.damageSides, mob.damageModifier, mob.hitroll
   local mavd           = round( mob.meleeDamage, 0.01 )
@@ -168,7 +175,7 @@ function displayMob( rNumber )
   cout( "  Area: {SC}{arn}{RC} ({NC}{arid}{RC})" )
   cout( "  HP: {NC}{hp}{RC}  XP: {NC}{xp}{RC}  ({DC}{xpph}{RC} xp/hp)" )
   cout( "  GP: {NC}{gp}{RC}  ({DC}{gpph}{RC} gp/hp)" )
-  cout( "  Dam: {NC}{dn}d{ds} +{dm} +{hr}{RC}{savd}{RC} ({DC}{tavd}{RC} avg)" )
+  cout( "  Dam: {NC}{dn}d{ds} +{dm} +<medium_sea_green>{hr}{RC}{savd}{RC} ({DC}{tavd}{RC} avg)" )
   cout( "  Flags: {FC}{flg}{RC}" )
   cout( "  Affects: {FC}{aff}{RC}" )
 
@@ -203,7 +210,7 @@ function displayAreaMobs( mobRNumber, areaRNumber, deadliness )
       return
     end
   else
-    referenceAreaRNumber = getRoomArea( currentRoomNumber )
+    referenceAreaRNumber = getRoomArea( CurrentRoomNumber )
   end
   -- Display mobs based on the determined area
   for _, mob in ipairs( mobData ) do
@@ -255,21 +262,6 @@ function findMobsLike( rNumber, attr, scale )
   end
 end
 
-function triggerHighlightMob( dangerLevel )
-  if dangerLevel == 3 then
-    local mobString = line
-    setFgColor( 220, 20, 60 )
-    creplaceLine( f "⚠️<tomato>{mobString}<reset>  ⚠️" )
-  elseif dangerLevel == 2 then
-    selectString( line, 1 )
-    setFgColor( 107, 142, 35 )
-  elseif dangerLevel == 1 then
-    selectString( line, 1 )
-    setFgColor( 65, 65, 65 )
-  end
-  resetFormat()
-end
-
 -- Deadly mobs are aggressive and exceed the specified damage threshold
 function isMobDeadly( mob, threshold )
   local aggro = string.find( mob.flags, "AGGRESSIVE" )
@@ -287,9 +279,117 @@ function isMobDeadly( mob, threshold )
   return aggro and dam > threshold
 end
 
+-- Create a temporary trigger for all mobs in the current area, matching keywords to long descriptions
+function loadMobTriggers()
+  -- Kill any existing triggers and reset the table
+  resetMobTriggers()
+
+  -- Create a temporary trigger for each mob in the current area
+  for _, mob in ipairs( mobData ) do
+    if mob.areaRNumber == CurrentAreaNumber then
+      -- Mob's in-game appearance
+      local mobLong, mobShort = mob.longDescription, mob.shortDescription
+      -- Keywords for interacting with mobs
+      local mobKeys = split( mob.keywords, " " )
+      local keywordFound = false
+
+      -- Iterate through the keywords looking for one that appears in the mob's long description
+      for _, keyword in ipairs( mobKeys ) do
+        -- Keywords are case insensitive, but we need to preserve the original case for the trigger pattern
+        local foundStart, foundEnd = mobLong:lower():find( keyword:lower() )
+        if foundStart then
+          local actualMatch = mobLong:sub( foundStart, foundEnd )
+
+          -- Create a regex from the mob's long description, then surround the matched keyword with parentheses so it can be captured
+          local mobPattern = createLineRegex( mobLong )
+          local escapedActualMatch = actualMatch:gsub( "([%(%)%.%%%+%-%*%?%[%^%$])", "%%%1" )
+          mobPattern = mobPattern:gsub( escapedActualMatch, "(" .. escapedActualMatch .. ")", 1 )
+
+          -- Pass the mob's tag to the matching trigger so it can be appended in-game
+          local triggerID = tempRegexTrigger( mobPattern, [[targetMatch()]] )
+
+          -- Hold the ID so we can kill previous triggers before loading new areas
+          table.insert( areaMobTriggers, triggerID )
+
+          keywordFound = true
+          -- To validate triggers, feed the mob's long description
+          --cfeedTriggers( mobLong )
+          break
+        end
+      end
+      if not keywordFound then
+        -- Report on mob's whose long description does not include one of its keywords
+        iout( "{EC}Missing keyword{RC}: {SC}{mobShort}{RC}" )
+      end
+    end
+  end
+end
+
+-- This function creates a "tag" designed to appear after a mob's long description when players encounter
+-- the mob in game; the tag will identify flags and affects of the mob that are not typically visible but
+-- help the player understand the mob's behavior and abilities.
+function createMobTag( flags, affects )
+  local AC, FC, DC, SAC, SPC, STC = "<tomato>", "<orange_red>", "<dodger_blue>", "<gold>", "<deep_pink>", "<slate_grey>"
+  local flagAttributes = {AGGRESSIVE = AC, FURY = FC, SANCTUARY = SAC, SPEC = SPC}
+  local affectAttributes = {FURY = FC, DUAL = DC, SANCTUARY = SAC, STATUE = STC}
+
+  local flagList = {}
+  local affectList = {}
+
+  -- Split the flags and affects strings into lists of attributes
+  if flags then
+    flagList = split( flags, " " )
+  end
+  if affects then
+    affectList = split( affects, " " )
+  end
+  local tag = ""
+
+  -- Iterate through flag attributes and add them to the tag string
+  for _, flag in ipairs( flagList ) do
+    local color = flagAttributes[flag]
+    if color then
+      tag = tag .. color .. flag:sub( 1, 1 ) .. "<reset>"
+    end
+  end
+  -- Iterate through affect attributes and add them to the tag string
+  for _, affect in ipairs( affectList ) do
+    local color = affectAttributes[affect]
+    if color then
+      tag = tag .. color .. affect:sub( 1, 1 ) .. "<reset>"
+    end
+  end
+  -- Wrap the tag string in square brackets (and add a leading space)
+  if tag ~= "" then
+    return " {" .. tag .. "}"
+  else
+    return ""
+  end
+end
+
+-- Reset temporary mob triggers; use before loading new ones to avoid over-capping trigger limit
+function resetMobTriggers()
+  -- Kill any existing temporary mob triggers
+  for _, id in ipairs( areaMobTriggers ) do
+    killTrigger( id )
+  end
+  -- Re-initialize the table
+  areaMobTriggers = {}
+end
+
+-- Called when a mob is encountered in the game which has a corresponding trigger
+function targetMatch()
+  -- Update markedTarget global which can be used elsewhere to interact with mobs (i.e., attacking, etc.)
+  markedTarget = matches[2]
+
+  -- Highlight the matching keyword on screen for visual distinction and to validate the trigger
+  selectString( matches[2], 1 )
+  setFgColor( 205, 92, 92 )
+end
+
 -- Use Mudlet's built-in Map search functionality and character/highlighting to identify
 -- deadly aggressive sentinel mobs and mark them on the map.
-function flagDeadlyMobs()
+local function flagDeadlyMobs()
   for _, mob in ipairs( mobData ) do
     -- Sentinels don't wander and are always in the same room
     local sentinel = string.find( mob.flags, "SENTINEL" )
@@ -311,27 +411,4 @@ function flagDeadlyMobs()
     end
   end
   updateMap()
-end
-
-function findAggroTest()
-  for _, mob in ipairs( mobData ) do
-    local areaid   = mob.areaRNumber
-    local aggro    = string.find( mob.flags, "AGGRESSIVE" )
-    local sentinel = string.find( mob.flags, "SENTINEL" )
-    local dam      = mob.meleeDamage
-    -- If the mob is FURIED, double it's melee damage
-    if string.find( mob.affects, 'FURY' ) then
-      dam = dam * 2
-    end
-    -- For mobs with DUAL, fudge another ~20%
-    if string.find( mob.affects, 'DUAL' ) then
-      dam = dam * 1.2
-    end
-    -- Then add any special attack damage into the mix
-    dam = dam + mob.specDamage
-    local safe = dam < 30
-    if aggro and sentinel and safe and areaid == currentAreaNumber then
-      displayMob( mob.rNumber )
-    end
-  end
 end

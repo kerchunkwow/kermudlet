@@ -187,23 +187,21 @@ triggerRouteChat()
 -- Strong
 local subdmg = matches[2]
 if subdmg == "crying for his mommy" then
-  cecho( "👶🏻")
+  cecho( "👶🏻" )
 elseif subdmg == "seeing little birdies" then
-  cecho("🕊️")
+  cecho( "🕊️" )
 elseif subdmg == "starts seeing double" then
-  cecho("👀")
+  cecho( "👀" )
 end
-
 -- Epic
 local subdmg = matches[2]
 if subdmg == "brink of death" then
-  cecho( "🪦")
+  cecho( "🪦" )
 elseif subdmg == "paints the walls" then
-  cecho("🖌️")
+  cecho( "🖌️" )
 elseif subdmg == "into dark oblivion" then
-  cecho("🌀")
+  cecho( "🌀" )
 end
-
 -- Ability Failures
 
 
@@ -211,11 +209,11 @@ end
 deleteLine()
 incap_delay = true
 tempTimer( 5, [[incap_delay = false]] )
-cecho( f"\n<brown>{matches[2]} appears to be in need of urgent medical attention.<reset>" )
+cecho( f "\n<brown>{matches[2]} appears to be in need of urgent medical attention.<reset>" )
 
 -- Criticals!
 deleteLine()
-cecho( f"\n<spring_green>{matches[3]} rolls a natural <deep_pink>20<reset>!" )
+cecho( f "\n<spring_green>{matches[3]} rolls a natural <deep_pink>20<reset>!" )
 
 -- Mute Hits
 deleteLine()
@@ -251,10 +249,10 @@ triggerGather()
 send( 'twiddle', false )
 
 -- PC Login
-runLuaFile(f"gizmo/config/login.lua")
+runLuaFile( f "gizmo/config/login.lua" )
 
 -- status
--- Triggers for capturing & updating data related to PC status such as health, 
+-- Triggers for capturing & updating data related to PC status such as health,
 -- location, and spell affects
 
 -- Affects
@@ -294,7 +292,6 @@ triggerCaptureRoom()
 if SESSION == 2 or SESSION == 3 then
   send( "gt My magic doesn't seem very useful against this enemy." )
 end
-
 -- autostand
 -- Editing & saving in-game causes sessions to inherit the enabled state; so adding some checks to the less frequent
 -- patterns to re-disable it.
@@ -302,13 +299,11 @@ if SESSION ~= 1 then
   disableTrigger( "Group XP" )
   return
 end
-
 local stander = matches[2]
 
-if ( SESSION == 1 ) and ( stander == gtank or stander == gleader )  then
+if (SESSION == 1) and (stander == gtank or stander == gleader) then
   expandAlias( "all stand", false )
 end
-
 -- autorest
 -- Editing & saving in-game causes sessions to inherit the enabled state; so adding some checks to the less frequent
 -- patterns to re-disable it.
@@ -316,11 +311,9 @@ if SESSION ~= 1 then
   disableTrigger( "Group XP" )
   return
 end
-
 if SESSION == 1 and matches[2] == gleader then
   expandAlias( "all rest", false )
 end
-
 --^(\w+) stops flying and rests.$
 --^(\w+) sits down and rests.$
 
@@ -346,33 +339,27 @@ if SESSION ~= 1 then
   disableTrigger( "Group XP" )
   return
 end
-
 if not assist_delay then
-
   mu_mn = math.max( pcStatus[2]["currentMana"], pcStatus[3]["currentMana"] )
 
   assist_delay = true
   tempTimer( 2.7, [[assist_delay = false]] )
-  expandAlias( f"all assist {gtank}", false )
+  expandAlias( f "all assist {gtank}", false )
 
   if not affectStatus[1]['Fury'] and pcStatus[1]["currentMana"] >= 150 then
     send( "cast 'fury'" )
   end
-
   -- If MU mana is high, open with a damage spell (unless the target is a cunt)
   if mu_mn >= 300 and not immune[target] then
-    cecho( "info", "\n".. f[[{target}]] )
-    cecho( "info", "\n".. f[[{immune[target]}]] )
+    cecho( "info", "\n" .. f [[{target}]] )
+    cecho( "info", "\n" .. f [[{immune[target]}]] )
     tempTimer( 2.6, [[aliasMUDps()]] )
   end
-
 end
-
 -- autosplit
 if gleader then
-  send( f"split {matches[2]}" )
+  send( f "split {matches[2]}" )
 end
-
 -- EoC
 autoManaTransfer()
 
@@ -382,26 +369,19 @@ if SESSION ~= 1 then
   disableTrigger( "Group XP" )
   return
 end
-
 -- Drebin Pummel
 if SESSION == 1 then
-
   if pcStatus[4]["currentMana"] >= 150 then
-
     expandAlias( "nan cast 'barrage of blades'", false )
-
   elseif not pummeled then
-  --else
+    --else
     expandAlias( "nan pummel", false )
     pummeled = true
     tempTimer( 2.8, [[pummeled = false]] )
     --if pummel_timer then killTimer(pummel_timer) end
     --pummel_timer = tempTimer( 2.8, [[expandAlias( 'nan pummel', false )]] )
-
   end
-
 end
-
 -- Tank Condition (automira)
 triggerAutoMira()
 
@@ -409,33 +389,29 @@ triggerAutoMira()
 if inCombat then
   backupMira = true
 end
-
 -- autoconfig
 if SESSION == 1 then
   local newLeader = matches[2]
-  expandAlias( f'sleader {newLeader}', false )
+  expandAlias( f 'sleader {newLeader}', false )
   if newLeader == "Drebin" then
     expandAlias( 'stank Nordberg', false )
   elseif newLeader == "Billy" then
     expandAlias( 'stank Blain', false )
   end
-  expandAlias( 'amira awful', false )  
+  expandAlias( 'amira awful', false )
 end
-
 -- Locate Resin
 local roomName = matches[2]
 if isUnique( roomName ) then
   local id = UNIQUE_ROOMS[roomName]
   creplaceLine( f "<olive_drab>resin<reset>: {getRoomString( id, 2 )}" )
 end
-
 -- Validate Move (Exits)
 if cmdPending then validateCmd( "move" ) end
-displayExits( currentRoomNumber )
+displayExits( CurrentRoomNumber )
 
 -- Validate Door (Ok)
 if cmdPending then validateCmd() end
-
 -- Cancel Queue
 -- Cancel a walk in progress if something goes wrong.
 clearQueue()
@@ -462,8 +438,7 @@ if gtank then
 else
   gtank = "Nandor"
 end
-
-cecho( "info", "\n"..f"[<slate_gray>Setting tank = <orange>{gtank}<reset>]" )
+cecho( "info", "\n" .. f "[<slate_gray>Setting tank = <orange>{gtank}<reset>]" )
 
 -- Set Leader
 gleader = matches[2]
@@ -474,29 +449,28 @@ if gleader then
 else
   gleader = "Colin"
 end
-
-cecho( "info", "\n"..f"[<slate_gray>Setting leader = <royal_blue>{gleader}<reset>]" )
+cecho( "info", "\n" .. f "[<slate_gray>Setting leader = <royal_blue>{gleader}<reset>]" )
 
 -- Set Pummeler
 gpummeler = matches[2]
-cecho( "info", f"\n[<slate_gray>Setting pummeler = <firebrick>{gpummeler}<reset>]" )
+cecho( "info", f "\n[<slate_gray>Setting pummeler = <firebrick>{gpummeler}<reset>]" )
 
 -- Set Mira
 local miraSet = matches[2] or "bleeding"
 miracleCondition = miraSet
-cecho( "info", f"\n[<slate_gray>Setting mira = <cyan>{miracleCondition}<reset>]" )
+cecho( "info", f "\n[<slate_gray>Setting mira = <cyan>{miracleCondition}<reset>]" )
 
 -- ass
-expandAlias( f"all assist {gtank}" )
+expandAlias( f "all assist {gtank}" )
 
 -- Inventory
 -- Before eq'ing; temporarily enable the eq database trigger family
 expandAlias( [[all lua tempEnableTrigger( "EQDB", 5 )]], false )
 expandAlias( "all inventory", false )
-expandAlias( f"col examine stocking", false )
-expandAlias( f"nad examine bag", false )
-expandAlias( f"nan examine bag", false )
-expandAlias( f"las examine bag", false )
+expandAlias( f "col examine stocking", false )
+expandAlias( f "nad examine bag", false )
+expandAlias( f "nan examine bag", false )
+expandAlias( f "las examine bag", false )
 
 -- Bakery Restock (food)
 expandAlias( "all buy 21 bread", false )
@@ -508,7 +482,7 @@ expandAlias( "all look", false )
 
 -- Inspect EQ (insp)
 tempEnableTrigger( "EQDB", 5 )
-send( f"look {matches[2]}" )
+send( f "look {matches[2]}" )
 
 -- Save
 expandAlias( "all save", false )
@@ -527,17 +501,12 @@ expandAlias( "all rest", false )
 
 -- Score (sc)
 if SESSION == 1 then
-
-  for pc = 1,4 do
-
+  for pc = 1, 4 do
     pcStatus[pc]["currentHP"] = 1
     pcStatus[pc]["currentMana"] = 1
     pcStatus[pc]["currentMoves"] = 1
-
   end
-
 end
-
 -- Before scoring; temporarily enable the score-capture trigger.
 expandAlias( [[all lua tempEnableTrigger( "Parse Score", 5 )]], false )
 expandAlias( "all score", false )
@@ -549,9 +518,9 @@ send( 'time', false )
 aliasMUDps()
 
 -- ID Worn
-send( f"remove {matches[2]}" )
-send( f"cast 'identify' {matches[2]}" )
-send( f"wear {matches[2]}" )
+send( f "remove {matches[2]}" )
+send( f "cast 'identify' {matches[2]}" )
+send( f "wear {matches[2]}" )
 
 -- Total Recall (wor)
 send( [[cast 'total recall']], false )
@@ -620,57 +589,56 @@ goArea( matches[2] )
 
 -- Fake Open
 local door = matches[2]
-cecho(f"\n<ansi_light_magenta>open {door}")
+cecho( f "\n<ansi_light_magenta>open {door}" )
 
 -- Fake Close
 local door = matches[2]
-cecho(f"\n<ansi_magenta>close {door}")
+cecho( f "\n<ansi_magenta>close {door}" )
 
 -- Fake Unlock
 local door = matches[2]
-cecho(f"\n<gold>unlock {door}")
+cecho( f "\n<gold>unlock {door}" )
 
 -- Look Full
-local desc = getRoomUserData( currentRoomNumber, 'roomDescription' )
-local extra = getRoomUserData( currentRoomNumber, 'roomExtraKeyword' )
-local flags = getRoomUserData( currentRoomNumber, 'roomFlags' )
-cecho( f"\n\n{getRoomString(currentRoomNumber,2)}" )
-cecho( f"\n<olive_drab>{desc}<reset>" )
-cecho( f"\n<dim_grey>Extra keywords:<reset> <medium_orchid>{extra}<reset>" )
-cecho( f"\n<dim_grey>Room flags:<reset> <gold>{flags}<reset>" )
+local desc = getRoomUserData( CurrentRoomNumber, 'roomDescription' )
+local extra = getRoomUserData( CurrentRoomNumber, 'roomExtraKeyword' )
+local flags = getRoomUserData( CurrentRoomNumber, 'roomFlags' )
+cecho( f "\n\n{getRoomString(CurrentRoomNumber,2)}" )
+cecho( f "\n<olive_drab>{desc}<reset>" )
+cecho( f "\n<dim_grey>Extra keywords:<reset> <medium_orchid>{extra}<reset>" )
+cecho( f "\n<dim_grey>Room flags:<reset> <gold>{flags}<reset>" )
 
 -- Look Room
-local desc = getRoomUserData( currentRoomNumber, 'roomDescription' )
-cecho( f"\n\n<olive_drab>{desc}" )
+local desc = getRoomUserData( CurrentRoomNumber, 'roomDescription' )
+cecho( f "\n\n<olive_drab>{desc}" )
 
 -- Look Exit
 trg = matches[2]
-inspectExit(currentRoomNumber,trg)
+inspectExit( CurrentRoomNumber, trg )
 
 -- Exits
-local exitTable = getRoomExits( currentRoomNumber )
-display(exitTable)
+local exitTable = getRoomExits( CurrentRoomNumber )
+display( exitTable )
 
 -- Set Player Location (spl)
-local trgRoom = tonumber(matches[2])
-setPlayerRoom(trgRoom)
+local trgRoom = tonumber( matches[2] )
+setPlayerRoom( trgRoom )
 displayRoom()
 
 -- Virtual Recall
 virtualRecall()
 
 -- Cull Exit (ce)
-local cullDir = tostring(matches[2])
-cullExit(cullDir)
+local cullDir = tostring( matches[2] )
+cullExit( cullDir )
 
 -- Set Room Char (src)
 local char = matches[2]
 if char then
-  setRoomChar( currentRoomNumber, char )
-  setRoomCharColor( currentRoomNumber, 0, 0, 0 )
+  setRoomChar( CurrentRoomNumber, char )
+  setRoomCharColor( CurrentRoomNumber, 0, 0, 0 )
   updateMap()
 end
-
 -- Add Label (lbl)
 addLabel()
 
@@ -682,8 +650,8 @@ aliasGetPath()
 
 -- Look Direction
 local dir = matches[2]
-send( f'look {dir}', false )
-inspectExit( currentRoomNumber, dir )
+send( f 'look {dir}', false )
+inspectExit( CurrentRoomNumber, dir )
 
 -- SetPlayerRoom (spr)
 aliasSetPlayerRoom()
@@ -706,30 +674,31 @@ expandAlias( [[all lua tempEnableTrigger( "Missing EQ", 5 )]], false )
 expandAlias( "all eq", false )
 
 -- Super Put
-send( f'put {matches[2]} {container}' )
+send( f 'put {matches[2]} {container}' )
 
 -- Super Get
-send( f'get {matches[2]} {container}' )
+send( f 'get {matches[2]} {container}' )
 
 -- kermudlet_init
 function reloadProfile()
   -- Let Mudlet know we've got our own Map script
   mudlet = mudlet or {}; mudlet.mapper_script = true
-  
-  homeDirectory = 'C:/dev/mud/mudlet/'
+
+  HOME_PATH = 'C:/dev/mud/mudlet/'
   luasql = require( "luasql.sqlite3" )
   -- Redefine this in your IDE for syntax checking
   function runLuaFile( file )
-  local filePath = f'{homeDirectory}{file}'
+    local filePath = f '{homeDirectory}{file}'
     if lfs.attributes( filePath, "mode" ) == "file" then
       dofile( filePath )
     else
       cecho( f "\n{filePath}<reset> not found." )
     end
   end
-  
+
   tempTimer( 0, [[runLuaFile("kermudlet_init.lua")]] )
 end
+
 reloadProfile()
 
 -- Movement (Map)
@@ -796,46 +765,46 @@ finishLabel( false )
 -- Move rooms around manually when creating new ones or rearranging areas
 
 -- Shift w
-mX, mY, mZ = getRoomCoordinates(currentRoomNumber)
+mX, mY, mZ = getRoomCoordinates( CurrentRoomNumber )
 mX = mX - 1
-setRoomCoordinates(currentRoomNumber, mX, mY, mZ )
+setRoomCoordinates( CurrentRoomNumber, mX, mY, mZ )
 updateMap()
-centerview(currentRoomNumber)
+centerview( CurrentRoomNumber )
 
 -- Shift e
-mX, mY, mZ = getRoomCoordinates(currentRoomNumber)
+mX, mY, mZ = getRoomCoordinates( CurrentRoomNumber )
 mX = mX + 1
-setRoomCoordinates(currentRoomNumber, mX, mY, mZ )
+setRoomCoordinates( CurrentRoomNumber, mX, mY, mZ )
 updateMap()
-centerview(currentRoomNumber)
+centerview( CurrentRoomNumber )
 
 -- Shift n
-mX, mY, mZ = getRoomCoordinates(currentRoomNumber)
+mX, mY, mZ = getRoomCoordinates( CurrentRoomNumber )
 mY = mY + 1
-setRoomCoordinates(currentRoomNumber, mX, mY, mZ )
+setRoomCoordinates( CurrentRoomNumber, mX, mY, mZ )
 updateMap()
-centerview(currentRoomNumber)
+centerview( CurrentRoomNumber )
 
 -- Shift s
-mX, mY, mZ = getRoomCoordinates(currentRoomNumber)
+mX, mY, mZ = getRoomCoordinates( CurrentRoomNumber )
 mY = mY - 1
-setRoomCoordinates(currentRoomNumber, mX, mY, mZ )
+setRoomCoordinates( CurrentRoomNumber, mX, mY, mZ )
 updateMap()
-centerview(currentRoomNumber)
+centerview( CurrentRoomNumber )
 
 -- Shift u
-mX, mY, mZ = getRoomCoordinates(currentRoomNumber)
+mX, mY, mZ = getRoomCoordinates( CurrentRoomNumber )
 mZ = mZ + 1
-setRoomCoordinates(currentRoomNumber, mX, mY, mZ )
+setRoomCoordinates( CurrentRoomNumber, mX, mY, mZ )
 updateMap()
-centerview(currentRoomNumber)
+centerview( CurrentRoomNumber )
 
 -- Shift d
-mX, mY, mZ = getRoomCoordinates(currentRoomNumber)
+mX, mY, mZ = getRoomCoordinates( CurrentRoomNumber )
 mZ = mZ - 1
-setRoomCoordinates(currentRoomNumber, mX, mY, mZ )
+setRoomCoordinates( CurrentRoomNumber, mX, mY, mZ )
 updateMap()
-centerview(currentRoomNumber)
+centerview( CurrentRoomNumber )
 
 -- Recenter (Num5)
 centerview( currentRoomData.roomRNumber )
@@ -844,10 +813,9 @@ centerview( currentRoomData.roomRNumber )
 startExploration()
 
 -- Save Map (Num+)
-cecho( f"\n<yellow_green>Saving...<reset>" )
+cecho( f "\n<yellow_green>Saving...<reset>" )
 saveMap()
 
 -- Load Map (Num-)
-cecho( f"\n<dark_orange>Loading...<reset>" )
+cecho( f "\n<dark_orange>Loading...<reset>" )
 loadMap()
-

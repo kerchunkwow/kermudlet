@@ -27,6 +27,6 @@ function showWarning( event_raised, pc, warning_type, extra_info )
   if not warningsDelayed and criticalWarnings[warning_type] then
     warningsDelayed = true
     tempTimer( 5, [[warningsDelayed = nil]] )
-    playSoundFile( {name = "bloop.wav"} )
+    --playSoundFile( {name = "bloop.wav"} )
   end
 end

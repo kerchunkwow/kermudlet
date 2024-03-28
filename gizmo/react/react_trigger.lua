@@ -41,6 +41,10 @@ function triggerRouteChat()
       print( "Error: 'message' is nil." )
       return
     end
+    if message == "recall" then
+      expandAlias( 'dw' )
+      return
+    end
     local spam_strings = {"expires in", "Sanct Out"}
 
     for _, spam_string in ipairs( spam_strings ) do
@@ -76,7 +80,7 @@ end
 -- A room name has been captured; synchronize the map and update the status table
 function triggerCaptureRoom()
   local matchedRoom = trim( matches[2] )
-  if isUnique( matchedRoom ) and matchedRoom ~= currentRoomName then setPlayerRoom( UNIQUE_ROOMS[matchedRoom] ) end
+  if isUnique( matchedRoom ) and matchedRoom ~= CurrentRoomName then setPlayerRoom( UNIQUE_ROOMS[matchedRoom] ) end
   if SESSION == 1 then
     pcStatusRoom( 1, matchedRoom )
   else
@@ -174,4 +178,12 @@ function captureTick()
   selectString( line, 1 )
   setFgColor( 102, 205, 170 )
   resetFormat()
+end
+
+-- Triggered by messages that indicate in-game inspection of items, containers, players, etc.
+-- Temporarily enable the triggers needed to append item stat strings to output from the game
+function triggerEnableItemQuery()
+  triggerHighlightLine( [[system]] )
+  tempEnableTrigger( [[EQ Stats]], 30 )
+  tempEnableTrigger( [[Missing EQ]], 30 )
 end

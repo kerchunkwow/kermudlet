@@ -853,6 +853,8 @@ areaDirs = areaDirs or {
 -- Retrieve then follow the path to an area; this uses the Wintin string but should
 -- probably skip this and iterate over the rawDirs
 function goArea( area )
+  -- For now, ignore this if we're not in Market Square
+  if CurrentRoomNumber ~= 1121 then return end
   local path, dstName, dstNumber = getDirs( area )
   local commands                 = expandWintinString( path )
   tempTrigger( dstName, f [[updateAfterSpeedwalk( {dstNumber} )]], 1 )
@@ -864,7 +866,7 @@ end
 
 -- An attempt to validate & update pc map position after a speedwalk completes
 function updateAfterSpeedwalk( roomNumber )
-  if currentRoomNumber ~= roomNumber then
+  if CurrentRoomNumber ~= roomNumber then
     iout( "Updating map location post speedwalk: {NC}{roomNumber}{RC}" )
     setPlayerRoom( roomNumber )
   else

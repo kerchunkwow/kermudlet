@@ -77,7 +77,7 @@ function refreshAffectLabels( pc )
 end
 
 -- Called when an affect application message is matched in game
-function triggerAffectApllied()
+function triggerAffectApplied()
   local keyword = matches[2]
   local affectApplied = affectKeywords[keyword]
   local ac = color_table[affectInfo[affectApplied].color]
@@ -87,16 +87,20 @@ function triggerAffectApllied()
   setFgColor( acr, acg, acb )
   resetFormat()
   cecho( affectInfo[affectApplied].char )
-  if SESSION == 1 then
-    updateAffect( 1, affectApplied, affectInfo[affectApplied].duration )
-    refreshAffectLabels( 1 )
-  else
-    raiseGlobalEvent( "eventPCStatusAffect", SESSION, affectApplied, affectInfo[affectApplied].duration )
-  end
+  enableTrigger( "Capture Affects" )
+  send( 'affect', false )
+  -- if SESSION == 1 then
+  --   updateAffect( 1, affectApplied, affectInfo[affectApplied].duration )
+  --   refreshAffectLabels( 1 )
+  -- else
+  --   raiseGlobalEvent( "eventPCStatusAffect", SESSION, affectApplied, affectInfo[affectApplied].duration )
+  -- end
 end
 
 -- Called when an affect expiration message is matched in game
 function triggerAffectExpired()
+  -- Spell expiration messages double as tick synchronization points
+  if SESSION == 1 then synchronizeTickTimer() end
   local affectRemoved = affectKeywords[matches[2]]
   if SESSION == 1 then
     updateAffect( 1, affectRemoved, -1 )
@@ -106,12 +110,21 @@ function triggerAffectExpired()
   end
 end
 
--- This resets/clears all affects; used before an aff to ensure a clean slate
-function resetAffects()
-  for pc = 1, 4 do
-    for affectName in pairs( affectStatus[pc] ) do
-      affectStatus[pc][affectName].active = false
-      affectStatus[pc][affectName].ticksRemaining = -1
+-- Reset the affect status table; use pc parameter to reset a specific pc or none for all pcs
+function resetAffects( pc )
+  if pc then
+    -- Reset affects for the specified pc
+    for affectName, affectData in pairs( affectStatus[pc] ) do
+      affectData.active = false
+      affectData.ticksRemaining = -1
+    end
+  else
+    -- Reset affects for all pcs
+    for currentPc = 1, 4 do
+      for affectName, affectData in pairs( affectStatus[currentPc] ) do
+        affectData.active = false
+        affectData.ticksRemaining = -1
+      end
     end
   end
 end
@@ -126,6 +139,15 @@ function triggerClearAffects()
       raiseGlobalEvent( "eventPCStatusAffect", SESSION, affectName, -1 )
     end
   end
+end
+
+-- During an 'aff' command, gag output related to permanent affects until the 'Spells:' line;
+-- Disable the entire affects capture group shortly afterward
+function triggerGagPermanents()
+  enableTrigger( "GagPermanents" )
+  tempRegexTrigger( "^Spells:", "disableTrigger( 'GagPermanents' )", 1 )
+  tempRegexTrigger( "^Spells:", "deleteLine()", 1 )
+  tempTimer( 1, [[disableTrigger( 'Capture Affects' )]] )
 end
 
 -- Get a string representation of the given PCs active affects w/ duration
@@ -151,13 +173,4 @@ function getAffectsString( pc )
     end
   end
   return trim( affectString )
-end
-
--- During an 'aff' command, gag output related to permanent affects until the 'Spells:' line;
--- Disable the entire affects capture group shortly afterward
-function triggerGagPermanents()
-  enableTrigger( "GagPermanents" )
-  tempRegexTrigger( "^Spells:", "disableTrigger( 'GagPermanents' )", 1 )
-  tempRegexTrigger( "^Spells:", "deleteLine()", 1 )
-  tempTimer( 1, [[disableTrigger( 'Capture Affects' )]] )
 end

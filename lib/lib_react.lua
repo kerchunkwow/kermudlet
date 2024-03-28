@@ -1,6 +1,7 @@
 -- Enable an alias for the specified duration then disable it again; useful for triggers that are only
 -- needed in niche circumstances like then viewing your 'eq' or interacting with a shopkeeper
 function tempEnableTrigger( trigger, duration )
+  -- Triggers that "exist" were created previous in the Mudlet client
   enableTrigger( trigger )
   tempTimer( duration, f [[disableTrigger( "{trigger}" )]] )
 end
@@ -35,43 +36,6 @@ function sureCast( spell, target )
     send( f "cast '{spell}'" )
   end
   sureCastTrigger = tempRegexTrigger( "^You lost your concentration!$", castCode, 1 )
-end
-
--- Make a temporary alias from the command line with
--- #alias p=pattern c=code; use *'s for wildcards
-local function makeAlias( aliasString )
-  -- Table to hold temporary alias IDs in case you want to kill 'em'
-  if not tempAliases then
-    tempAliases = {}
-  end
-  -- Parse the creation string
-  local pattern, code = aliasString:match( "p=(.-) c=(.*)" )
-
-  -- Replace incoming wildcard with regex
-  pattern = pattern:gsub( "%*", "(\\w+)" )
-
-  -- Replace outgoing wildcard with capture group
-  code = code:gsub( "%*", "{matches[2]}" )
-
-  -- Build the regex and code patterns
-  pattern = '^' .. pattern .. '$'
-  code = f [[send(f']] .. code .. [[')]]
-
-  -- Create the alias
-  local aliasID = tempAlias( pattern, code )
-
-  -- Store it's ID
-  table.insert( tempAliases, aliasID )
-
-  -- Get some info
-  cecho( f "\nCreated alias: {pattern} to execute code: {code} (#{#tempAliases} active temps)" )
-end
-
--- Send a command multiple times (alternative to sendAll?)
-local function repeatSend( cmd_string, count )
-  for c = 1, count do
-    send( cmd_string, false )
-  end
 end
 
 -- "Nuclear option" that kills all temporary timers and triggers; will probably interfere with
@@ -121,23 +85,103 @@ end
 -- Once the timer is synchronized with the first tick-bound message; tickTimer uses
 -- this function to animate the clock indefinitely until it's killed
 function updateTickTimer()
-  -- Reset the clock the after the final step
-  if tickStep == TICK_STEPS then tickStep = 0 end
+  -- Increment tickStep and reset the clock after the final step using modulo
+  tickStep = (tickStep % TICK_STEPS) + 1
+
   -- Update the label image to the image corresponding to the current step
-  local tickImage = f [[{ASSETS_DIR}/img/t/{tickStep}.png]]
+  local tickImage = f [[{ASSETS_PATH}/img/t/{tickStep}.png]]
   tickLabel:setBackgroundImage( tickImage )
-  tickStep = tickStep + 1
+
+  -- While in combat, 'look' every 10 seconds (20 steps) to see if we're being attacked
+  if inCombat and tickStep % 20 == 0 then
+    --send( 'look', false )
+    --cout( [[{NC}{tickStep}{RC}]] )
+  end
 end
 
+-- Calculate time until the next tick and sit down until then; set a timer to stand again
 function restUntilTick()
   if restTimer then killTimer( restTimer ) end
   -- Get time to tick plus a blink
-  local restTime = ((TICK_STEPS - tickStep) / 2) + 0.2
+  local restTime = ((TICK_STEPS - tickStep) / 2) + 0.25
   -- Rest and set a timer to stand again
   expandAlias( 'all rest' )
-  restTimer = tempTimer( restTime, [[resumeStand()]] )
+  restTimer = tempTimer( restTime, [[expandAlias( 'all stand' )]] )
 end
 
-function resumeStand()
-  expandAlias( 'all stand' )
+-- Use expandWintinString to execute WINTIN-style command lists
+-- Kind of just a generic "do command list" function
+-- [TODO] Improve/clarify how this and similar functions interact with the command queue;
+-- i.e., need a system to determine which commands should be queued vs. executed immediately
+function doWintin( wintinString, echo )
+  echo = echo or true
+  local commands = expandWintinString( wintinString )
+  for _, command in ipairs( commands ) do
+    nextCmd( command, echo )
+  end
+end
+
+CustomHighlights = CustomHighlights or {
+  system = {0, 80, 180},
+  troll = {95, 140, 0}
+}
+-- Highlight a line of output from the MUD using the specified colors
+function triggerHighlightLine( color )
+  local r, g, b
+  -- If the color is a string, look for it first in Mudlet's built-in color_table, then
+  -- our local custom color table
+  if type( color ) == 'string' then
+    if color_table[color] then
+      r, g, b = unpack( color_table[color] )
+    elseif CustomHighlights[color] then
+      r, g, b = unpack( CustomHighlights[color] )
+    else
+      iout( f [[{EC}Invalid color{RC} in triggerHighlightLine(): {SC}{color}{RC}]] )
+    end
+  elseif type( color ) == 'table' and #color == 3 then
+    r, g, b = unpack( color )
+  else
+    iout( f [[{EC}Invalid color{RC} in triggerHighlightLine(): {SC}{color}{RC}]] )
+  end
+  -- Select the line and highlight it with the specified color
+  selectString( line, 1 )
+  setFgColor( r, g, b )
+  resetFormat()
+end
+
+-- Make a temporary alias from the command line with
+-- #alias p=pattern c=code; use *'s for wildcards
+local function makeAlias( aliasString )
+  -- Table to hold temporary alias IDs in case you want to kill 'em'
+  if not tempAliases then
+    tempAliases = {}
+  end
+  -- Parse the creation string
+  local pattern, code = aliasString:match( "p=(.-) c=(.*)" )
+
+  -- Replace incoming wildcard with regex
+  pattern = pattern:gsub( "%*", "(\\w+)" )
+
+  -- Replace outgoing wildcard with capture group
+  code = code:gsub( "%*", "{matches[2]}" )
+
+  -- Build the regex and code patterns
+  pattern = '^' .. pattern .. '$'
+  code = f [[send(f']] .. code .. [[')]]
+
+  -- Create the alias
+  local aliasID = tempAlias( pattern, code )
+
+  -- Store it's ID
+  table.insert( tempAliases, aliasID )
+
+  -- Get some info
+  cecho( f "\nCreated alias: {pattern} to execute code: {code} (#{#tempAliases} active temps)" )
+end
+
+-- Send a command multiple times (alternative to sendAll?)
+local function repeatSend( cmd_string, count )
+  for c = 1, count do
+    send( cmd_string, false )
+  end
 end

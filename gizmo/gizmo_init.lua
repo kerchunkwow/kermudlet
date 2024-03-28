@@ -1,9 +1,9 @@
 -- Common to all sessions
 local commonScripts = {
+  'gizmo/config/config_gizmo.lua',
   'gizmo/react/react_trigger.lua',
   'gizmo/react/react_alias.lua',
-  'gizmo/config/config_local.lua',
-  'gizmo/config/config_shared.lua',
+  'gizmo/react/react_undead.lua',
   'gizmo/config/config_events.lua',
   'gizmo/gui/gui_warn.lua',
   'gizmo/eq/eq_db.lua',
@@ -23,8 +23,10 @@ local mainScripts = {
   'gizmo/gui/gui_create.lua',
   'gizmo/gui/gui.lua',
   'gizmo/status/status_update.lua',
-  'gizmo/eq/eq_inventory.lua',
+  --'gizmo/eq/eq_inventory.lua',
   'gizmo/map/map_mobs.lua',
+  'gizmo/map/map_path.lua',
+  'gizmo/map/map_sim.lua',
 }
 
 runLuaFiles( commonScripts )
@@ -63,4 +65,4 @@ function refreshModuleXML()
 end
 
 -- Once the final session is finished loading, alert the Main session to initialize the GUI
-if SESSION == 4 then tempTimer( 0, [[raiseGlobalEvent( 'eventProfilesLoaded' )]] ) end
+if SESSION == 1 then tempTimer( 0, [[raiseEvent( 'eventProfilesLoaded' )]] ) end

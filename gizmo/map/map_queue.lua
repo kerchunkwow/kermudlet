@@ -29,9 +29,12 @@ end
 
 -- "Request" to execute or queue a command
 function nextCmd( cmd )
+  if CreatingPath then
+    addCommandToPath( cmd )
+  end
   -- If we don't have a room number, the map isn't ready to handle the command queue yet
   -- [TODO] This is kind of a brute force hack need to figure out why the map is not setting/maintaining these values
-  if not currentRoomNumber or currentRoomNumber <= 0 then
+  if not CurrentRoomNumber or CurrentRoomNumber <= 0 then
     send( cmd, false )
   end
   -- If a move command is pending validation or commands are queued, queue this command
@@ -47,8 +50,8 @@ end
 -- Attempt to execute a queuable command
 function executeCmd( cmd )
   -- Make sure the map knows where we're at before using it to move
-  if DIRECTIONS[cmd] and currentRoomNumber > 0 then
-    local exits = getRoomExits( currentRoomNumber )
+  if DIRECTIONS[cmd] and CurrentRoomNumber > 0 then
+    local exits = getRoomExits( CurrentRoomNumber )
     if exits[LDIR[cmd]] then
       queueDst = tonumber( exits[LDIR[cmd]] )
     else
@@ -78,7 +81,6 @@ end
 
 -- Cancel any pending commands and empty the queue (i.e., stop speedwalking)
 function clearQueue()
-  if nextCmdTimer then killTimer( nextCmdTimer ) end
   cmdPending = nil
   queueDst = nil
   while not cmdQueue.isEmpty() do

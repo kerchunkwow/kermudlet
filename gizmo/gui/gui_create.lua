@@ -53,7 +53,7 @@ function createGizmoGUI()
   local function createConsoleStyles()
     uiHeight     = {
       ["label"]    = 24,
-      ["hp_gauge"] = 50,
+      ["hp_gauge"] = 64,
       ["mn_gauge"] = 18,
       ["mv_gauge"] = 18,
       ["gap"]      = 2,
@@ -77,7 +77,7 @@ function createGizmoGUI()
 
     uiColor      = {
       ["rm"]     = "#444444",
-      ["pc_1"]   = "#78e6f0",
+      ["pc_1"]   = "#5a5aff",
       ["pc_2"]   = "#c80a4b",
       ["pc_3"]   = "#8c28cd",
       ["pc_4"]   = "#fa7814",
@@ -209,8 +209,8 @@ function createGizmoGUI()
 
     combatIcons      = {} -- Combat icons (labels)
 
-    for pc = 1, 4 do
-      local nameLabelY = pc_y_top + (pc_area_h * (pc - 1))
+    for pc = 1, pcCount do
+      local nameLabelY = pc_y_top + (pc_area_h * (pc - 1)) + 400
       local affectLabelY = nameLabelY - 2
       local rm_label_y = nameLabelY + uiHeight["label"] + uiHeight["gap"]
 

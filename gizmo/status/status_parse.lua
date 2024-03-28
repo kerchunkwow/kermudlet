@@ -1,7 +1,12 @@
+pummelMode = pummelMode or false
+defendMode = defendMode or false
+wailMode = wailMode or false
 function triggerParsePrompt()
   -- Parse & typecast current & maximum stat values from the prompt
   -- HP
   local hpc, hpm = tonumber( matches[2] ), tonumber( matches[3] )
+
+
   -- Mana
   local mnc, mnm = tonumber( matches[4] ), tonumber( matches[5] )
   -- Moves
@@ -10,9 +15,26 @@ function triggerParsePrompt()
   -- Look for tank & target conditions; they're only present in combat
   local tnk, trg = matches[8], matches[9]
 
-  -- Each session has a "local global" for its own combat state
+  -- Each session has a "local global" for its own combaorder tt state
   inCombat = trg and #trg > 0
 
+  -- Temporary emergency egress logic
+  if inCombat then
+    -- Calculate current health percentage
+    local hpp = hpc / hpm
+    -- Calculate amount of health lost since last prompt
+    local hpl = pcStatus[1]["currentHP"] - hpc
+    if hpp < 0.4 or hpl > 500 then
+      send( 'recite recall' )
+      send( 'flee' )
+      send( 'order troll recall' )
+    end
+  end
+  if inCombat and wailMode and not wailDelay then
+    wailDelay = true
+    send( 'wail', false )
+    wailTimer = tempTimer( 3, [[wailDelay = false]] )
+  end
   -- The main session can compare directly against the master pcStatus table; Alt sessions use their local lastStatus table
   local currentStatus = (SESSION == 1) and pcStatus[1] or pcLastStatus
 

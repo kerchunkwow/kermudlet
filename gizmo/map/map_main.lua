@@ -78,27 +78,30 @@ end
 
 function setPlayerRoom( id )
   local resynch = false
-  if not currentRoomNumber or currentRoomNumber <= 0 then
+  if not CurrentRoomNumber or CurrentRoomNumber <= 0 then
     resynch = true
   end
   local newRoomNumber = tonumber( id )
   -- Ignore attempts to move to the room we're already in
-  if newRoomNumber == currentRoomNumber or not id then return end
+  if newRoomNumber == CurrentRoomNumber or not id then return end
   if roomExists( id ) then
     local roomArea = getRoomArea( id )
-    if roomArea ~= currentAreaNumber then
-      currentAreaNumber = roomArea
-      currentAreaName   = getRoomAreaName( currentAreaNumber )
+    if roomArea ~= CurrentAreaNumber then
+      -- If we were following a path in this area, reset/nil these settings
+      CurrentPath       = nil
+      PathPosition      = nil
+      CurrentAreaNumber = roomArea
+      CurrentAreaName   = getRoomAreaName( CurrentAreaNumber )
       cecho( f "\n<dim_grey>  Entering {getAreaTag()}" )
       setMapZoom( 28 )
     end
-    currentRoomNumber = id
-    currentRoomName   = getRoomName( currentRoomNumber )
-    roomExits         = getRoomExits( currentRoomNumber )
-    centerview( currentRoomNumber )
+    CurrentRoomNumber = id
+    CurrentRoomName   = getRoomName( CurrentRoomNumber )
+    roomExits         = getRoomExits( CurrentRoomNumber )
+    centerview( CurrentRoomNumber )
     -- For now, report when the map needs to be resynchronized just so we can keep an eye on how often it's necessary
     if SESSION == 1 and resynch then
-      cecho( "info", f "\nMap synchronized at {getRoomString( currentRoomNumber, 2 )}" )
+      cecho( "info", f "\nMap synchronized at {getRoomString( CurrentRoomNumber, 2 )}" )
     end
   end
 end
@@ -109,21 +112,12 @@ function cullExit( dir )
   if #dir == 1 and LDIR[dir] then
     dir = LDIR[dir]
   end
-  cecho( f "\nCulling <cyan>{dir}<reset> exit from <dark_orange>{currentRoomNumber}<reset>" )
-  culledExits[currentRoomNumber] = culledExits[currentRoomNumber] or {}
-  setExit( currentRoomNumber, -1, dir )
-  culledExits[currentRoomNumber][dir] = true
+  cecho( f "\nCulling <cyan>{dir}<reset> exit from <dark_orange>{CurrentRoomNumber}<reset>" )
+  culledExits[CurrentRoomNumber] = culledExits[CurrentRoomNumber] or {}
+  setExit( CurrentRoomNumber, -1, dir )
+  culledExits[CurrentRoomNumber][dir] = true
   table.save( 'gizmo/map/data/culledExits.lua', culledExits )
   updateMap()
-end
-
--- Designed to enable exploration of the map offline, but may be a little out of synch with recent changes
-function startMapSim()
-  runLuaFile( 'gizmo/map/map_sim.lua' )
-  disableAlias( 'Total Recall (rr)' )
-  enableAlias( 'Virtual Recall' )
-  enableAlias( 'Map Sim' )
-  startExploration()
 end
 
 -- Given the V-Number of a room, return it's R-Number

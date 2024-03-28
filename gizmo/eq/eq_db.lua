@@ -8,7 +8,7 @@ end
 function loadAllItems()
   local luasql = require "luasql.sqlite3"
   local env = luasql.sqlite3()
-  local conn = env:connect( "C:/Dev/mud/gizmo/data/gizwrld.db" )
+  local conn = env:connect( DB_PATH )
 
   if not conn then
     iout( "{EC}eq_db.lua{RC} failed database connection in loadAllItems()" )
@@ -124,7 +124,7 @@ function itemHasSpec( item_name )
   -- Connect to the database
   local luasql = require "luasql.sqlite3"
   local env = luasql.sqlite3()
-  local conn, cerr = env:connect( "C:/Dev/mud/gizmo/data/gizwrld.db" )
+  local conn, cerr = env:connect( DB_PATH )
 
   if not conn then
     iout( "{EC}eq_db.lua{RC} failed database connection in itemHasSpec()" )
@@ -176,7 +176,7 @@ local function itemQueryAppendDatabase()
   -- Connect to local db
   local luasql = require "luasql.sqlite3"
   local env = luasql.sqlite3()
-  local conn, cerr = env:connect( "C:/Dev/mud/gizmo/data/gizwrld.db" )
+  local conn, cerr = env:connect( DB_PATH )
 
   if not conn then
     iout( "{EC}eq_db.lua{RC} failed database connection in itemQueryAppend()" )

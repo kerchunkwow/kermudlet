@@ -80,12 +80,12 @@ local function poundDefine()
     d     = 10,
   }
 
-  currentAreaNumber = {}
-  currentAreaName   = ""
+  CurrentAreaNumber = {}
+  CurrentAreaName   = ""
   currentRoomData   = {}
-  currentRoomNumber = -1
-  currentRoomName   = nil
-  currentAreaNumber = -1
+  CurrentRoomNumber = -1
+  CurrentRoomName   = nil
+  CurrentAreaNumber = -1
   culledExits       = {}
   lastKey           = -1
 
