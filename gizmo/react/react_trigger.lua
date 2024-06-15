@@ -1,5 +1,6 @@
 -- A set to keep track of items collected via auto-gathering, like resin
 gathered = {}
+AlertsMuted = false
 
 -- Automatically cast 'miracle' on the tank under predefined conditions
 function triggerAutoMira()
@@ -33,7 +34,6 @@ function triggerRouteChat()
   deleteLine()
 
   if SESSION == 1 then
-    -- Assuming matches is previously defined and supposed to contain at least four elements...
     local speaker, channel, message = matches[2], matches[3], matches[4]
 
     -- Check if message is nil before proceeding
@@ -41,9 +41,17 @@ function triggerRouteChat()
       print( "Error: 'message' is nil." )
       return
     end
-    if message == "recall" then
-      expandAlias( 'dw' )
-      return
+    local normalizedMessage = string.lower( message )
+    -- Send a message to my phone if we get a tell or a chat mentions my name
+    local mentionsMe = string.find( normalizedMessage, "k[ae]yl?e+e?" )
+    mentionsMe = mentionsMe or string.find( normalizedMessage, "colin" )
+    mentionsMe = mentionsMe or string.find( normalizedMessage, "crimson" )
+    mentionsMe = mentionsMe or string.find( normalizedMessage, "robyn" )
+    local toMe = channel == "tells" or channel == "tell" or channel == "says" or channel == "say"
+    if AFK and AutoPathing and not AlertsMuted and (mentionsMe or toMe) then
+      local alertString = string.format( "%s [%s]: %s", speaker, channel, message )
+      sendAlert( alertString )
+      triggerEmergencySoft()
     end
     local spam_strings = {"expires in", "Sanct Out"}
 
@@ -65,13 +73,14 @@ function triggerRouteChat()
       end
     end
     local chat_color = messageColors[channel] or "<sandy_brown>"
-
+    local timeStamp = getCurrentTime()
+    timeStamp = "<dim_grey>  (<dark_slate_grey>" .. timeStamp .. ")<dim_grey><reset>"
     -- Pad the message out to the length of the longest channel name (whisper == 7) for an even margin
     local padl = fill( 6 - #speaker )
     local padr = fill( 7 - #channel )
 
     local chat_string = "<spring_green>" ..
-        speaker .. padl .. "<reset>  [" .. chat_color .. channel .. "<reset>] " .. padr .. message .. "\n"
+        speaker .. padl .. "<reset>  [" .. chat_color .. channel .. "<reset>] " .. padr .. message .. timeStamp .. "\n"
 
     cecho( "chat", chat_string )
   end
@@ -140,14 +149,8 @@ end
 -- Gather random resources; ensure your pattern captures a keyword that works for 'get'
 function triggerGather()
   local resource = matches[2]
-  send( f 'get {resource}' )
-
-  -- Keep track of what we collect just for fun
-  if gathered[resource] then
-    gathered[resource] = gathered[resource] + 1
-  else
-    gathered[resource] = 1
-  end
+  send( f 'get {resource}', false )
+  send( f 'put {resource} {container}', false )
 end
 
 -- Create a one-time temporary trigger that also expires after a certain period of time
@@ -186,4 +189,67 @@ function triggerEnableItemQuery()
   triggerHighlightLine( [[system]] )
   tempEnableTrigger( [[EQ Stats]], 30 )
   tempEnableTrigger( [[Missing EQ]], 30 )
+end
+
+function triggerValidateMove()
+  if cmdPending then validateCmd( "move" ) end
+  displayExits( CurrentRoomNumber )
+end
+
+function triggerHighlightCritical()
+  local actor = matches[2]
+  local critMsg = f "<spring_green>{actor} rolls a natural <dim_grey>[<deep_pink>20<dim_grey>]<reset>"
+  creplaceLine( critMsg )
+end
+
+function triggerLocateObject()
+  local obj = trim( matches[2] )
+  local loc = trim( matches[3] )
+  -- Ignore items already owned by players
+  if PlayerContainers[loc] or KnownPlayers[loc] then
+    deleteLine()
+    -- selectString( line, 1 )
+    -- fg( "dim_grey" )
+    -- resetFormat()
+    return
+  end
+  selectString( obj, 1 )
+  -- Sought after item
+  if DesiredItems[obj] then
+    fg( "gold" )
+    playSoundFile( {name = "whisper.wav"} )
+    -- In our database
+  elseif itemData[obj] then
+    fg( "dark_slate_grey" )
+    -- Unrecorded item
+  else
+    fg( "orchid" )
+  end
+  selectString( loc, 1 )
+  -- Check if it's a room in our map
+  local rooms = searchRoom( loc, true, true )
+  if next( rooms ) ~= nil then
+    -- It's a room
+    fg( "royal_blue" )
+  else
+    -- Unmapped room (or mob)
+    fg( "salmon" )
+  end
+  resetFormat()
+end
+
+-- Triggered when a mob is incapacitated in combat; a slight variant on "death" but still needs
+-- to be handled somewhat like the end of combat.
+function triggerMobIncap()
+  -- Use the in-game abort command to cancel any actions in progress
+  send( 'abort', false )
+  -- Replace the various different incap messages with a single generic highlighted message.
+  deleteLine()
+  cecho( f "\n<brown>{matches[2]} is mortally wounded.<reset>" )
+
+  -- Toggle this flag temporarily so other triggers know not to react to the sudden lack of tank.
+  IncapDelay = true
+  onNextPrompt( function ()
+    IncapDelay = false
+  end )
 end

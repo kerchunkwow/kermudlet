@@ -1,3 +1,71 @@
+nanMode = nanMode or nil
+
+function swapGear()
+  -- Define the swappable gear sets; the last two items must be 'wield' and 'hold'
+  local dpsGear = {"onyx", "onyx", "cape", "cape", "platemail", "masoch", "flaming", "flaming", "cudgel", "scalpel"}
+  local tankGear = {"one", "one", "skin", "skin", "vest", "kings", "fanra", "fanra", "cutlass", "bangle"}
+  local held, toHold = "", ""
+
+  -- These need to be global temporarily so subsequent swap functions can access them
+  currentGear, nextGear = {}, {}
+  doReady, finishReady = 0, 0
+
+  -- Figure out what we're swapping to/from
+  if nanMode == "dps" then
+    held, toHold = "a bloody scalpel", "a metal bangle"
+    nanMode = "tank"
+    currentGear = dpsGear
+    nextGear = tankGear
+  else
+    toHold, held = "a bloody scalpel", "a metal bangle"
+    nanMode = "dps"
+    currentGear = tankGear
+    nextGear = dpsGear
+  end
+  -- Set triggers to watch the swap and trigger next steps as each one completes
+  tempRegexTrigger( f [[Nandor stops using ]] .. held .. [[\.$]], [[doSwap()]], 1 )
+  tempRegexTrigger( f [[You get ]] .. toHold .. [[ from a Christmas Stocking\.$]], [[doSwap()]], 1 )
+  tempRegexTrigger( f [[Nandor gives you ]] .. held .. [[\.$]], [[finishSwap()]], 1 )
+  prepSwap()
+end
+
+-- Prepare the swap by removing the current gear set and getting the next set from storage
+function prepSwap()
+  for i = 1, #currentGear do
+    expandAlias( f 'nan remove {currentGear[i]}', false )
+    expandAlias( f 'col get {nextGear[i]} stocking', false )
+  end
+end
+
+-- Perform the swap through the sensual art of mutual giving
+function doSwap()
+  -- Ignore the first call of this function so we only proceed when both swappers are prepped
+  doReady = doReady + 1
+  if doReady < 2 then return end
+  -- Count "Ok." which indicates an item was given to the receiver; make sure we get one for every item before proceeding
+  tempRegexTrigger( [[Ok\.$]], [[finishSwap()]], #nextGear )
+  for i = 1, #nextGear do
+    expandAlias( f 'col give {nextGear[i]} Nandor', false )
+    expandAlias( f 'nan give {currentGear[i]} Colin', false )
+  end
+end
+
+function finishSwap()
+  -- Ignore calls to this function until all items have been given (and Nandor's holdable has been removed which is why +1)
+  finishReady = finishReady + 1
+  if finishReady < (#nextGear + 1) then return end
+  -- Most items need to be worn
+  local wearCommand = "wear"
+  for i = 1, #nextGear do
+    -- But use wield/hold for the last two
+    if i == #nextGear - 1 then wearCommand = "wield" elseif i == #nextGear then wearCommand = "hold" end
+    expandAlias( f 'col put {currentGear[i]} stocking', false )
+    expandAlias( f 'nan {wearCommand} {nextGear[i]}', false )
+  end
+  -- Clean up globals we don't need anymore
+  currentGear, nextGear, doReady, finishReady = nil, nil, nil, nil
+end
+
 function getFullDirs( srcID, dstID )
   -- Clear Mudlet's pathing globals
   speedWalkDir = nil
@@ -631,34 +699,6 @@ function statCapturedMobs()
   tempTimer( whereOffset, whereNextMob )
 end
 
-
-playerNames = {
-  ['Hayla']    = true,
-  ['Apollo']   = true,
-  ['Glory']    = true,
-  ['Anima']    = true,
-  ['Cyrus']    = true,
-  ['Vassago']  = true,
-  ['Malcolm']  = true,
-  ['Blain']    = true,
-  ['Dillon']   = true,
-  ['Mac']      = true,
-  ['Anna']     = true,
-  ['Rax']      = true,
-  ['Sly']      = true,
-  ['Tzu']      = true,
-  ['Organ']    = true,
-  ['Trachea']  = true,
-  ['Manwe']    = true,
-  ['Turambar'] = true,
-  ['Finarfin'] = true,
-  ['Irelia']   = true,
-  ['Elbryan']  = true,
-  ['Qxuilur']  = true,
-  ['Germ']     = true,
-  ['Digest']   = true,
-  ['Ace']      = true,
-}
 
 mobKeywords = {
   'aaron',
@@ -2860,27 +2900,8 @@ function isIgnoredItem( item )
   return false
 end
 
--- Virtually traverse an exit from the players' current location to an adjoining room;
--- This is the primary function used to "follow" the PCs position in the Map; it is synchronized
--- with the MUD through the use of the mapQueue
-function moveExit( direction )
-  -- Make sure direction is long-version like 'north' to align with getRoomExits()
-  local dir = LDIR[direction]
-  local exits = getRoomExits( currentRoomNumber )
 
-  if not exits[dir] then
-    cecho( "\n<dim_grey>Alas, you cannot go that way.<reset>" )
-    return false
-  end
-  local dst = tonumber( exits[dir] )
-  if roomExists( dst ) then
-    updatePlayerLocation( dst, direction )
-    return true
-  end
-  cecho( "\n<dim_grey>Alas, you cannot go that way.<reset>" )
-  return false
-end
-v
+
 function laswield()
   expandAlias( 'las rem ring', false )
   expandAlias( 'las rem leg', false )
@@ -3099,47 +3120,6 @@ function importWintinActions()
   end
 end
 
--- Create a new room in the Mudlet; by default operates on the "current" room being the one you just arrived in;
--- passing dir and id will create a room offset from the current room (which no associated user data)
-function createRoom( dir, id )
-  if not customColorsDefined then defineCustomEnvColors() end
-  local newRoomNumber = id or currentRoomNumber
-  local nX, nY, nZ = mX, mY, mZ
-  if dir == "east" then
-    nX = nX + 1
-  elseif dir == "west" then
-    nX = nX - 1
-  elseif dir == "north" then
-    nY = nY + 1
-  elseif dir == "south" then
-    nY = nY - 1
-  elseif dir == "up" then
-    nZ = nZ + 1
-  elseif dir == "down" then
-    nZ = nZ - 1
-  end
-  -- Create a new room in the Mudlet mapper in the Area we're currently mapping
-  addRoom( newRoomNumber )
-  if currentAreaNumber == 115 or currentAreaNumber == 116 then
-    currentAreaNumber = 115
-    currentAreaName = 'Undead Realm'
-  end
-  setRoomArea( newRoomNumber, currentAreaName )
-  setRoomCoordinates( currentRoomNumber, nX, nY, nZ )
-
-  if not dir and not id then
-    setRoomName( newRoomNumber, currentRoomData.roomName )
-    setRoomUserData( newRoomNumber, "roomVNumber", currentRoomData.roomVNumber )
-    setRoomUserData( newRoomNumber, "roomType", currentRoomData.roomType )
-    setRoomUserData( newRoomNumber, "roomSpec", currentRoomData.roomSpec )
-    setRoomUserData( newRoomNumber, "roomFlags", currentRoomData.roomFlags )
-    setRoomUserData( newRoomNumber, "roomDescription", currentRoomData.roomDescription )
-    setRoomUserData( newRoomNumber, "roomExtraKeyword", currentRoomData.roomExtraKeyword )
-  else
-    setRoomName( newRoomNumber, tostring( id ) )
-  end
-  setRoomStyle()
-end
 
 -- Clean up minimum room numbers corrupted by my dumb ass
 function fixMinimumRoomNumbers()
@@ -3429,12 +3409,6 @@ function buildAreaMap()
   end
 end
 
-function clearCharacters()
-  allRooms = getRooms()
-  for id, name in pairs( allRooms ) do
-    setRoomChar( id, "" )
-  end
-end
 
 function combinePhantom()
   local phantom1 = worldData[102].rooms
@@ -3684,99 +3658,6 @@ function highlightStairs()
   cecho( f "\nChecked {roomsChecked} rooms." )
 end
 
-function alignLabels( id )
-  local nc = MAP_COLOR["number"]
-  local areaLabels = getMapLabels( id )
-  local labelCount = #areaLabels
-  local modCount = 0
-  -- Ignore missing areas and ones w/ no labels
-  if areaLabels and labelCount > 0 then
-    -- getMapLabels is zero-based
-    for lbl = 0, labelCount do
-      local labelData = getMapLabel( id, lbl )
-      if labelData then
-        lT = labelData.Text
-        lX = labelData.X
-        lY = labelData.Y
-        cecho( f "\n<royal_blue>{lT}<reset>: {nc}{lX}<reset>, {nc}{lY}<reset>" )
-      end
-    end
-  end
-end
-
--- Globally update area labels from deep_pink to medium_violet_red
-function updateAllAreaLabels()
-  local areaID = 1
-  local modCount = 0
-  while worldData[areaID] do
-    modCount = modCount + updateLabelStyle( areaID, 255, 69, 0, 255, 99, 71, 10 )
-    areaID = areaID + 1
-    -- Skip area 107; it's missing from our database
-    if areaID == 107 then areaID = areaID + 1 end
-  end
-  cecho( f "\n<dark_orange>{modCount}<reset> room labels updated." )
-end
-
--- Globally update room labels from orange-ish to royal_blue
-function updateAllRoomLabels()
-  local areaID = 1
-  local modCount = 0
-  while worldData[areaID] do
-    modCount = modCount + updateLabelStyle( areaID, 255, 140, 0, 65, 105, 225, 8 )
-    areaID = areaID + 1
-    -- Skip area 107; it's missing from our database
-    if areaID == 107 then areaID = areaID + 1 end
-  end
-  cecho( f "\n<dark_orange>{modCount}<reset> room labels updated." )
-end
-
--- For a given area, update labels from an old color to a new color and size
-function updateLabelStyle( id, oR, oG, oB, nR, nG, nB, nS )
-  local areaLabels = getMapLabels( id )
-  local labelCount = #areaLabels
-  local modCount = 0
-  -- Ignore missing areas and ones w/ no labels
-  if areaLabels and labelCount > 0 then
-    -- getMapLabels is zero-based
-    for lbl = 0, labelCount do
-      local labelData = getMapLabel( id, lbl )
-      if labelData then
-        local lR = labelData.FgColor.r
-        local lG = labelData.FgColor.g
-        local lB = labelData.FgColor.b
-        -- Check for labels w/ old color
-        if lR == oR and lG == oG and lB == oB then
-          local lT = labelData.Text
-          -- Round the coordinates to the nearest 0.025
-          local lX = round( labelData.X )
-          local lY = round( labelData.Y )
-          local lZ = round( labelData.Z )
-          -- Delete existing label and create a new one in its place using the new color & size
-          deleteMapLabel( id, lbl )
-          createMapLabel( id, lT, lX, lY, lZ, nR, nG, nB, 0, 0, 0, 0, nS, true, true, "Bitstream Vera Sans Mono", 255, 0 )
-          modCount = modCount + 1
-        end
-      end
-    end
-    updateMap()
-  end
-  return modCount
-end
-
-function viewLabelData()
-  local areaLabels = getMapLabels( currentAreaNumber )
-  for lbl = 0, #areaLabels do
-    local labelData = getMapLabel( currentAreaNumber, lbl )
-    if labelData then
-      local lT = labelData.Text
-      local lR = labelData.FgColor.r
-      local lG = labelData.FgColor.g
-      local lB = labelData.FgColor.b
-      cecho( f "\n<royal_blue>{lT}<reset>: ({lR}, {lG}, {lB})" )
-    end
-  end
-end
-
 function showAreaPaths()
   cecho( f "\nGlobal Area Paths:\n" )
   for areaID, entryData in pairs( entryRooms ) do
@@ -3991,45 +3872,6 @@ function loadExitData()
   table.save( 'C:/Dev/mud/mudlet/gizmo/data/exitData.lua', exitData )
 end
 
--- Display the properties of an exit for mapping and validation purposes; displayed when I issue a virtual "look <direction>" command
-function inspectExit( direction )
-  local fullDirection
-  for dir, num in pairs( DIRECTIONS ) do
-    if DIRECTIONS[direction] == num and #dir > 1 then
-      fullDirection = dir
-      break
-    end
-  end
-  for _, exit in ipairs( currentRoomData.exits ) do
-    if exit.exitDirection == fullDirection then
-      local ec      = MAP_COLOR["exitDir"]
-      local es      = MAP_COLOR["exitStr"]
-      local esp     = MAP_COLOR["exitSpec"]
-      local nc      = MAP_COLOR["number"]
-
-      local exitStr = f "The {ec}{fullDirection}<reset> exit: "
-      if exit.exitKeyword and #exit.exitKeyword > 0 then
-        exitStr = exitStr .. f "\n  keywords: {es}{exit.exitKeyword}<reset>"
-      end
-      local isSpecial = false
-      if (exit.exitFlags and exit.exitFlags ~= -1) or (exit.exitKey and exit.exitKey ~= -1) then
-        isSpecial = true
-        exitStr = exitStr ..
-            (exit.exitFlags and exit.exitFlags ~= -1 and f "\n  flags: {esp}{exit.exitFlags}<reset>" or "") ..
-            (exit.exitKey and exit.exitKey ~= -1 and f "\n  key: {nc}{exit.exitKey}<reset>" or "")
-        if exit.exitKey and exit.exitKey > 0 then
-          lastKey = exit.exitKey
-        end
-      end
-      if exit.exitDescription and #exit.exitDescription > 0 then
-        exitStr = exitStr .. f "\n  description: {es}{exit.exitDescription}<reset>"
-      end
-      cecho( f "\n{exitStr}" )
-      return
-    end
-  end
-  cecho( f "\n{MAP_COLOR['roomDesc']}You see no exit in that direction.<reset>" )
-end
 
 -- Get the Area data for a given areaRNumber
 function getAreaData( areaRNumber )
@@ -4044,21 +3886,7 @@ function getRoomData( roomRNumber )
   end
 end
 
--- Get Exits from room with the given roomRNumber
-function getExitData( roomRNumber )
-  local roomData = getRoomData( roomRNumber )
-  return roomData and roomData.exits
-end
 
-function getAreaByRoom( roomRNumber )
-  local areaRNumber = roomToAreaMap[roomRNumber]
-  return getAreaData( areaRNumber )
-end
-
-function getAllRoomsByArea( areaRNumber )
-  local areaData = getAreaData( areaRNumber )
-  return areaData and areaData.rooms or {}
-end
 
 -- Use a breadth-first-search (BFS) to find the shortest path between two rooms
 function findShortestPath( srcRoom, dstRoom )
@@ -4216,54 +4044,6 @@ function setMinimumRoomNumber( areaID, newMinimum )
 end
 
 -- From the current room, search for neighboring rooms in this Area;
--- Good neighbors are those that have a corresponding return/reverse exit back to our current room; reposition those rooms near us
--- Bad neighbors have no return/reverse exit; cull those exits (remove them from the map and store them in the culledExits table)
-function findNearestNeighbors()
-  local currentExits = getRoomExits( currentRoomNumber )
-  local rc = MAP_COLOR["number"]
-
-  for dir, roomNumber in pairs( currentExits ) do
-    if roomExists( roomNumber ) and roomNumber ~= currentRoomNumber then
-      local reverseDir = REVERSE[dir]
-      local neighborExits = getRoomExits( roomNumber )
-
-      if neighborExits and neighborExits[reverseDir] == currentRoomNumber then
-        -- Good neighbor: reposition
-        repositionRoom( roomNumber, dir )
-        local path = createWintin( {dir} )
-        --cecho( f( "\n<cyan>{path}<reset> to room {rc}{roomNumber}<reset>" ) )
-      elseif neighborExits and (not neighborExits[reverseDir] or neighborExits[reverseDir] ~= currentRoomNumber) then
-        cecho( f "\nRoom {rc}{roomNumber}<reset> is bad neighbor to our <cyan>{dir}<reset>, consider <firebrick>culling<reset> it" )
-        --cullExit( dir )
-      end
-    end
-  end
-end
-
--- Move a room to a location relative to our current location (mX, mY, mZ)
-function repositionRoom( id, relativeDirection )
-  if not id or not relativeDirection then return end
-  local rc = MAP_COLOR["number"]
-  local mc = "<medium_orchid>"
-  local rX, rY, rZ = mX, mY, mZ
-  if relativeDirection == "north" then
-    rY = rY + 1
-  elseif relativeDirection == "south" then
-    rY = rY - 1
-  elseif relativeDirection == "east" then
-    rX = rX + 1
-  elseif relativeDirection == "west" then
-    rX = rX - 1
-  elseif relativeDirection == "up" then
-    rZ = rZ + 1
-  elseif relativeDirection == "down" then
-    rZ = rZ - 1
-  end
-  cecho( f "\nRoom {rc}{id}<reset> is good neighbor to our <cyan>{relativeDirection}<reset>, moving to {mc}{rX}<reset>, {mc}{rY}<reset>, {mc}{rZ}<reset>" )
-  setRoomCoordinates( id, rX, rY, rZ )
-  updateMap()
-end
-
 function auditAreaCoordinates()
   local nc = MAP_COLOR["number"]
   local areaCoordinates = {}
@@ -4296,154 +4076,6 @@ function countRooms()
     areaCounts[areaName] = (areaCounts[areaName] or 0) + 1
   end
   display( areaCounts )
-end
-
--- The "main" display function to print the current room as if we just moved into it or looked at it
--- in the game; prints the room name, description, and exits.
-function displayRoom( brief )
-  brief = brief or true
-  local rd = MAP_COLOR["roomDesc"]
-  cecho( f "\n\n{getRoomString(currentRoomNumber, 2)}" )
-  if not brief then
-    cecho( f "\n{rd}{currentRoomData.roomDescription}<reset>" )
-  end
-  if currentRoomData.roomSpec > 0 then
-    local renv = getRoomEnv( currentRoomNumber )
-    if renv ~= COLOR_PROC then
-      setRoomStyle()
-    end
-    cecho( f "\n\tThis room has a ~<ansi_light_yellow>special procedure<reset>~.\n" )
-  end
-  displayExits()
-end
-
-function setCurrentRoomxx( id )
-  -- If this is the first Area or the id is outside the current Area, update Area before Room
-  if currentAreaNumber < 0 or (not worldData[currentAreaNumber].rooms[id]) then
-    setCurrentArea( roomToAreaMap[id] )
-  end
-  -- Save our lastRoomNumber for back-linking
-  if currentRoomNumber > 0 then
-    lastRoomNumber = currentRoomNumber
-  end
-  currentRoomData   = currentAreaData.rooms[id]
-  currentRoomNumber = currentRoomData.roomRNumber
-  currentRoomName   = currentRoomData.roomName
-end
-
-function setCurrentRoom( id )
-  local roomNumber = tonumber( id )
-  local roomArea = getRoomArea( roomNumber )
-  roomArea = tonumber( roomArea )
-  -- If this is the first Area or the id is outside the current Area, update Area before Room
-  if currentAreaNumber ~= roomArea then
-    setCurrentArea( roomArea )
-  end
-  --currentRoomData   = currentAreaData.rooms[id]
-  currentRoomNumber = roomNumber                       -- currentRoomData.roomRNumber
-  currentRoomName   = getRoomName( currentRoomNumber ) -- currentRoomData.roomName
-  roomExits         = getRoomExits( currentRoomNumber )
-end
-
-function setCurrentAreax( id )
-  currentAreaData   = worldData[id]
-  currentAreaNumber = tonumber( currentAreaData.areaRNumber )
-  currentAreaName   = tostring( currentAreaData.areaName )
-end
-
-function setCurrentArea( id )
-  -- Store the room number of the "entrance" so we can easily reset to the start of an area when mapping
-  -- firstAreaRoomNumber = id
-  -- If we're leaving an Area, store information and report on the transition
-  if currentAreaNumber > 0 then
-    lastAreaNumber = currentAreaNumber
-    lastAreaName   = currentAreaName
-    mapInfo( f "Left: {areaTag()}" )
-  end
-  -- currentAreaData   = worldData[id]
-  -- currentAreaNumber = tonumber( currentAreaData.areaRNumber )
-  -- currentAreaName   = tostring( currentAreaData.areaName )
-  currentAreaNumber = getRoomArea( id )
-  currentAreaName   = getRoomAreaName( id )
-  mapInfo( f "Entered {areaTag()}" )
-  setMapZoom( 28 )
-end
-
-function setCurrentRoomNew( id )
-  if currentAreaNumber < 0 or getRoomArea( id ) ~= currentAreaNumber then
-    setCurrentArea( getRoomArea( id ) )
-  end
-end
-
-function setCurrentAreaNew( id )
-  -- If we're leaving an Area, store information and report on the transition
-  if currentAreaNumber > 0 then
-    lastAreaNumber = currentAreaNumber
-    lastAreaName   = currentAreaName
-    mapInfo( f "Left: {areaTag()}" )
-  end
-  currentAreaNumber = getRoomArea( id )
-  currentAreaName   = getRoomAreaName( id )
-  mapInfo( f "Entered {areaTag()}" )
-  setMapZoom( 28 )
-end
-
-function setCurrentRoomxx( id )
-  -- If this is the first Area or the id is outside the current Area, update Area before Room
-  if currentAreaNumber < 0 or (not worldData[currentAreaNumber].rooms[id]) then
-    setCurrentArea( roomToAreaMap[id] )
-  end
-  -- Save our lastRoomNumber for back-linking
-  if currentRoomNumber > 0 then
-    lastRoomNumber = currentRoomNumber
-  end
-  currentRoomData   = currentAreaData.rooms[id]
-  currentRoomNumber = currentRoomData.roomRNumber
-  currentRoomName   = currentRoomData.roomName
-end
-
--- Display all exits of the current room as they might appear in the MUD
-function displayExits( id )
-  local exitData = currentRoomData.exits
-  local exitString = ""
-  local isFirstExit = true
-
-  local minRNumber = currentAreaData.areaMinRoomRNumber
-  local maxRNumber = currentAreaData.areaMaxRoomRNumber
-
-  for _, exit in pairs( exitData ) do
-    local dir = exit.exitDirection
-    local to = exit.exitDest
-    local ec = MAP_COLOR["exitDir"]
-    local nc
-
-    -- Determine the color based on exit properties
-    if to == currentRoomNumber or (culledExits[currentRoomNumber] and culledExits[currentRoomNumber][dir]) then
-      -- "Dim" the exit if it leads to the same room or has been culled (because several exits lead to the same destination)
-      nc = "<dim_grey>"
-    elseif not isInArea( to, currentAreaNumber ) then --to < minRNumber or to > maxRNumber then
-      -- The room leads to a different area
-      nc = MAP_COLOR["area"]
-    else
-      local destRoom = currentAreaData.rooms[to]
-      if destRoom and destRoom.roomFlags:find( "DEATH" ) then
-        nc = MAP_COLOR["death"]
-      elseif (exit.exitFlags and exit.exitFlags ~= -1) or (exit.exitKey and exit.exitKey ~= -1) then
-        nc = MAP_COLOR["exitSpec"]
-      else
-        nc = MAP_COLOR["number"]
-      end
-    end
-    --local nextExit = f "{ec}{dir}<reset> ({nc}{to}<reset>)"
-    local nextExit = f "{nc}{dir}<reset>)"
-    if isFirstExit then
-      exitString = f "{MAP_COLOR['exitStr']}Exits:  [" .. nextExit .. f "{MAP_COLOR['exitStr']}]<reset>"
-      isFirstExit = false
-    else
-      exitString = exitString .. f " {MAP_COLOR['exitStr']}[<reset>" .. nextExit .. f "{MAP_COLOR['exitStr']}]<reset>"
-    end
-  end
-  cecho( f "\n   {exitString}" )
 end
 
 -- A function to determine whether a Room belongs to a given Area
@@ -4751,48 +4383,6 @@ function updateExits()
   end
 end
 
--- Get new coordinates based on the existing global coordinates and the recent direction of travel
-function getNextCoordinates( direction )
-  local nextX, nextY, nextZ = mX, mY, mZ
-  -- Increment by 2 to provide a buffer on the Map for moving rooms around (don't buffer in the Z dimension)
-  if direction == "north" then
-    nextY = nextY + 2
-  elseif direction == "south" then
-    nextY = nextY - 2
-  elseif direction == "east" then
-    nextX = nextX + 2
-  elseif direction == "west" then
-    nextX = nextX - 2
-  elseif direction == "up" then
-    nextZ = nextZ + 1
-  elseif direction == "down" then
-    nextZ = nextZ - 1
-  end
-  return nextX, nextY, nextZ
-end
-
-function setRoomStyleAlias()
-  local roomStyle = matches[2]
-  if roomStyle == "mana" then
-    unHighlightRoom( currentRoomNumber )
-    setRoomEnv( currentRoomNumber, COLOR_CLUB )
-    setRoomChar( currentRoomNumber, "💤" )
-  elseif roomStyle == "shop" then
-    unHighlightRoom( currentRoomNumber )
-    setRoomEnv( currentRoomNumber, COLOR_SHOP )
-    setRoomChar( currentRoomNumber, "💰" )
-    --setRoomCharColor( currentRoomNumber, 140, 130, 15, 255 )
-  elseif roomStyle == "death" then
-    unHighlightRoom( currentRoomNumber )
-    setRoomEnv( currentRoomNumber, COLOR_DEATH )
-    setRoomChar( currentRoomNumber, "💀 " )
-    lockRoom( currentRoomNumber, true )
-  elseif roomStyle == "proc" then
-    unHighlightRoom( id )
-    setRoomEnv( id, COLOR_PROC )
-    setRoomChar( id, "📁 " )
-  end
-end
 
 -- Cull redundant (leading to the same room) exits from a given room
 function cullRedundantExits( roomID )
@@ -5134,3 +4724,138 @@ local function initializeReactions()
 end
 
 initializeReactions()
+
+-- Override moveExit while offline to simulate movement and display virtual rooms
+function nextCmd( direction )
+  if CreatingPath then
+    addCommandToPath( direction )
+  end
+  -- Make sure direction is long-version like 'north' to align with getRoomExits()
+  local dir = LDIR[direction]
+  local exits = getRoomExits( CurrentRoomNumber )
+
+  if not exits[dir] then
+    cecho( "\n<dim_grey>Alas, you cannot go that way.<reset>" )
+    return false
+  end
+  local dst = tonumber( exits[dir] )
+  if roomExists( dst ) then
+    setPlayerRoom( dst )
+    displayRoom( dst, false )
+    return true
+  end
+  cecho( "\n<dim_grey>Alas, you cannot go that way.<reset>" )
+  return false
+end
+-- Simulate a 'scroll of recall'; magical item in game that returns the player to the starting room
+function virtualRecall()
+  cecho( f "\n\n<orchid>You recite a <deep_pink>scroll of recall<orchid>.<reset>\n" )
+  setPlayerRoom( 1121 )
+  displayRoom( 1121, true )
+end
+
+-- Display a full "simulated" room including name, description (if not brief), and exits
+-- By default, display the current room in brief mode (no room description)
+function displayRoom( id, brief )
+  local rd = MAP_COLOR["roomDesc"]
+  cfeedTriggers( f "\n\n{getRoomString(id, 2)}" )
+  if not brief then
+    local desc = getRoomUserData( id, "roomDescription" )
+    cfeedTriggers( f "{rd}{desc}<reset>" )
+  end
+  cecho( "\n\n<slate_grey>< 250(250) 400(400) 500(500) ><reset>" )
+end
+
+-- Virtually traverse an exit from the players' current location to an adjoining room;
+-- This is the primary function used to "follow" the PCs position in the Map; it is synchronized
+-- with the MUD through the use of the mapQueue
+function moveExit( direction )
+  -- Make sure direction is long-version like 'north' to align with getRoomExits()
+  local dir = LDIR[direction]
+  local exits = getRoomExits( currentRoomNumber )
+
+  if not exits[dir] then
+    cecho( "\n<dim_grey>Alas, you cannot go that way.<reset>" )
+    return false
+  end
+  local dst = tonumber( exits[dir] )
+  if roomExists( dst ) then
+    updatePlayerLocation( dst, direction )
+    return true
+  end
+  cecho( "\n<dim_grey>Alas, you cannot go that way.<reset>" )
+  return false
+end
+-- Build a "line" of all exits from the current room, color-coded based on the attributes of
+-- the exit or destination room.
+function getExitString( id )
+  local exitData    = getRoomExits( id )
+  local exitString  = ""
+  local isFirstExit = true
+  local sortedExits = {}
+  local dc          = MAP_COLOR["exitDir"]
+
+  for dir, to in pairs( exitData ) do
+    table.insert( sortedExits, {dir = dir, to = to} )
+  end
+  table.sort( sortedExits, function ( a, b )
+    local dirA = DIRECTIONS[a.dir]
+    local dirB = DIRECTIONS[b.dir]
+    return dirA < dirB
+  end )
+  for _, exit in ipairs( sortedExits ) do
+    local dir = exit.dir
+    local to = exit.to
+    local tc = getExitColor( to, dir )
+    local nextExit = f "{tc}{dir}<reset>"
+    if isFirstExit then
+      isFirstExit = false
+      exitString = f "<dim_grey>   Obvious Exits:   [" .. nextExit .. f "<dim_grey>]<reset>"
+    else
+      exitString = exitString .. f " <dim_grey>[<reset>" .. nextExit .. f "<dim_grey>]<reset>"
+    end
+  end
+  return exitString
+end
+
+-- Select one of the predefined colors to display an Exit based on Door and Destination status
+-- Prioritize colros and exit early as soon as the first condition is met
+function getExitColor( to, dir )
+  local isMissing = not roomExists( to )
+  if isMissing then return ERRC end
+  local toFlags = getRoomUserData( to, "roomFlags" )
+  local isDT    = toFlags and toFlags:find( "DEATH" )
+  if isDT then return DTC end
+  local isDoor = doorData[CurrentRoomNumber] and doorData[CurrentRoomNumber][LDIR[dir]]
+  local hasKey = isDoor and doorData[CurrentRoomNumber][LDIR[dir]].exitKey
+  if hasKey then return KEYC elseif isDoor then return DOORC end
+  local isBorder = CurrentAreaNumber ~= getRoomArea( to )
+  if isBorder then return ARC else return EXC end
+end
+
+-- Get a useful string representation of an Area including it's ID number for output (e.g., with cecho)
+function getAreaTag()
+  return f "<medium_violet_red>{CurrentAreaName}<reset> [<maroon>{CurrentAreaNumber}<reset>]"
+end
+
+-- Get a string representing a door depending on its status and key value
+function getDoorString( word, key )
+  -- Double declaration because VSCode is confused by f-string interpolation
+  local doorString, keyString, wordString = nil, nil, nil
+  doorString, keyString, wordString = "", "", ""
+  if word then wordString = f "<light_goldenrod>{word}<reset>" end
+  if key then keyString = f " (<lawn_green>{key}<reset>)" end
+  doorString = f " <dim_grey>past a {wordString}{keyString}"
+  return doorString
+end
+
+
+function displayExits( id )
+  local exitString = ""
+  if not id or id < 1 then
+    exitString = "<dim_grey>   Obvious Exits:   <dim_grey>[No Data]<reset>"
+  else
+    exitString = getExitString( id )
+  end
+  cecho( f "\n{exitString}" )
+end

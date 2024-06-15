@@ -40,4 +40,4 @@ def extract_lua_from_xml( input_xml, output_lua ):
         for name, script in scripts.items():
             lua_file.write(f"-- {name}\n{script}\n\n")
 
-extract_lua_from_xml( "C:/Dev/mud/mudlet/gizmo/gizmudlet.xml", "C:/Dev/mud/mudlet/gizmo/gizmudlet.lua" )
+extract_lua_from_xml( "C:/Dev/mud/mudlet/gizmo/gizmudlet2.xml", "C:/Dev/mud/mudlet/gizmo/gizmudlet2.lua" )

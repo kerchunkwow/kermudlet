@@ -1,39 +1,85 @@
-pummelMode = pummelMode or false
-defendMode = defendMode or false
-wailMode = wailMode or false
+RecallDelay = false
+StunDelay = StunDelay or false
+-- Keep track of how long we've been out of combat so we can resume AutoPathing if it gets interrupted
+TimeSinceCombat = TimeSinceCombat or 0
+TimeLeftCombat = TimeLeftCombat or getStopWatchTime( "timer" )
+TransferDelay = TransferDelay or false
 function triggerParsePrompt()
   -- Parse & typecast current & maximum stat values from the prompt
   -- HP
   local hpc, hpm = tonumber( matches[2] ), tonumber( matches[3] )
 
-
+  -- Calculate current health percentage
+  local hpp = hpc / hpm
+  local hpr, hpg, hpb = interpolateColor( FULL_HP_COLOR, EMPTY_HP_COLOR, hpp )
+  selectString( matches[2], 1 )
+  setFgColor( hpr, hpg, hpb )
+  resetFormat()
   -- Mana
-  local mnc, mnm = tonumber( matches[4] ), tonumber( matches[5] )
-  -- Moves
-  local mvc, mvm = tonumber( matches[6] ), tonumber( matches[7] )
+  local mnc, mnm      = tonumber( matches[4] ), tonumber( matches[5] )
+  -- Calculate current mana percentage
+  local mpp           = mnc / mnm
+  local mpr, mpg, mpb = interpolateColor( FULL_MN_COLOR, EMPTY_MN_COLOR, mpp )
+
+  local mvc, mvm      = tonumber( matches[6] ), tonumber( matches[7] )
+
 
   -- Look for tank & target conditions; they're only present in combat
-  local tnk, trg = matches[8], matches[9]
+  local tnk, trg    = matches[8], matches[9]
 
   -- Each session has a "local global" for its own combaorder tt state
-  inCombat = trg and #trg > 0
+  local wasInCombat = inCombat
+  inCombat          = trg and #trg > 0
 
-  -- Temporary emergency egress logic
-  if inCombat then
-    -- Calculate current health percentage
-    local hpp = hpc / hpm
-    -- Calculate amount of health lost since last prompt
-    local hpl = pcStatus[1]["currentHP"] - hpc
-    if hpp < 0.4 or hpl > 500 then
-      send( 'recite recall' )
-      send( 'flee' )
-      send( 'order troll recall' )
+  -- Keep track of how long it's been since our last combat; for now this is most useful to resume AutoPathing
+  local now         = getStopWatchTime( "timer" )
+  if not inCombat then
+    -- If we just left combat, mark the time so we can resume AutoPathing if needed
+    if wasInCombat then
+      TimeSinceCombat = 0
+      TimeLeftCombat = now
+    else
+      TimeSinceCombat = now - TimeLeftCombat
+      -- If we've been out of combat for 2 minutes and we're AutoPathing, something probably interrupted our
+      -- loop; try and resume with a lookCheck()
+      if (TimeSinceCombat > 120) and AutoPathing then
+        TimeSinceCombat = 0
+        lookCheck()
+      end
     end
   end
-  if inCombat and wailMode and not wailDelay then
-    wailDelay = true
-    send( 'wail', false )
-    wailTimer = tempTimer( 3, [[wailDelay = false]] )
+  RecallDeathwalkTimer = RecallDeathwalkTimer or nil
+  RecallTrollTimer     = RecallTrollTimer or nil
+  RecallShadeTimer     = RecallShadeTimer or nil
+  RecallSacrificeTimer = RecallSacrificeTimer or nil
+  StunDelayTimer       = StunDelayTimer or nil
+  if inCombat then
+    -- Highlight tank condition on the prompt line for quick visual distinction
+    if tnk then highlightCondition( tnk ) end
+    -- Check for low health conditions of both tank and ourselves; recall in emergencies
+    local tankDying = (tnk == 'bad' or tnk == 'awful' or tnk == 'bleeding')
+    local tankHurt = (tnk == 'fair' or tnk == 'wounded')
+    local meDying = (hpp < 0.66)
+    if (tankDying or meDying) and not RecallDelay and not IncapDelay then
+      RecallDelay = true
+      tempTimer( 3, function () RecallDelay = false end )
+      triggerEmergency()
+    elseif tankHurt and not TransferDelay and not IncapDelay then
+      TransferDelay = true
+      tempTimer( 6, function () TransferDelay = false end )
+      send( 'order nymph transfer health troll', true )
+    end
+    -- If we're in combat and our Troll tank is injured (below 'fine' condition) and not defending, swap to defending
+    -- Skip during incapacitate delay or if we're already attempting to swap modes
+    if not IncapDelay and not TrollSwapping and tnk and (tnk ~= "" and tnk ~= "full" and tnk ~= "fine") and TrollMode ~= "defend" then
+      aliasTrollDefend()
+      -- Otherwise, when we're trying to stun, sing our stun song periodically if we're not starting/ending combat
+    elseif not IncapDelay and AutoStunning and trg and (trg ~= "" and trg ~= "bleeding" and trg ~= "fine") and not StunDelay then
+      StunDelay = true
+      StunDelayTimer = tempTimer( 60, function () StunDelay = false end )
+      --guaranteeSong( [[where]], [[you ask yourself]] )
+      expandAlias( 'te' )
+    end
   end
   -- The main session can compare directly against the master pcStatus table; Alt sessions use their local lastStatus table
   local currentStatus = (SESSION == 1) and pcStatus[1] or pcLastStatus

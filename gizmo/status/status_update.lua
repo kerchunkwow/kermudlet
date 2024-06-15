@@ -57,7 +57,7 @@ function pcStatusPrompt( pc, hpc, hpm, mnc, mnm, mvc, mvm, tnk, trg )
         combatIcons[pc]:setBackgroundImage( [[C:/Dev/mud/mudlet/gizmo/assets/img/targeted.png]] )
 
         -- If we're not Nandor and we lost our tank mid-combat and we didn't recently incap a target
-        if pc ~= 4 and myStatus["tank"] and #myStatus["tank"] > 1 and not incap_delay then
+        if pc ~= 4 and myStatus["tank"] and #myStatus["tank"] > 1 and not IncapDelay then
           raiseEvent( "eventWarn", pc, "switched" )
         end
       end
@@ -86,6 +86,10 @@ end
 
 -- Update status for the given pc with data captured from secore; this is where we get the max values for hp/mn/mv
 function pcStatusScore( pc, dam, maxHP, hit, mnm, arm, mvm, mac, aln, exp, exh, exl, gld )
+  -- Report on how much XP we've gained since the last score
+  local previousXP = pcStatus[pc]["exp"]
+  local xpDelta    = expandNumber( exp - previousXP )
+  iout( "+XP since last score: {NC}{xpDelta}{RC}" )
   pcStatus[pc]["damageRoll"] = dam
   pcStatus[pc]["maxHP"]      = maxHP
   pcStatus[pc]["hitRoll"]    = hit
@@ -110,7 +114,7 @@ end
 local function initPCStatusTable()
   pcStatus = {}
 
-  for pc = 1, 4 do
+  for pc = 1, pcCount do
     pcStatus[pc] = {
 
       currentHP    = 100 * pc,

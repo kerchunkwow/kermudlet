@@ -5,6 +5,44 @@ local function configByUsername()
   elseif USERNAME == "12404" then
     cecho( "\n" .. f [[Configuring gizmo for USERNAME <green_yellow>{USERNAME}<reset> in config_gizmo.lua]] )
 
+    Buffs              = Buffs or {
+      ["Achilles"] = false,
+      ["Karma"] = false,
+    }
+
+    -- Toggle whether we automatically flee/recall from combat when we're in danger
+    AutoRecall         = AutoRecall or false -- (CTRL-R)
+
+    -- Toggle whether we're automatically following our current path
+    AutoPathing        = AutoPathing or false -- (CTRL-P)
+
+    -- Toggle whether we automatically re-buff when our spells wear off
+    AutoBuffing        = AutoBuffing or false -- (CTRL-B)
+
+    -- Toggle wheter we automatically "look" periodically during combat (to see if we're being attacked)
+    AutoLooking        = AutoLooking or false -- (CTRL-L)
+
+    -- Toggle whether we periodically sing our 'Where is My Mind' stun song when AutoPathing
+    AutoStunning       = AutoStunning or false -- (CTRL-W)
+
+    -- Toggle whether we're AFK (auto-shutdown on emergency/message)
+    AFK                = AFK or nil -- (CTRL-ALT-A)
+    -- Modal "flags" that that help to throttle certain commands or delay re-issuing commands to limit
+    -- spam or temporarily disable automatic reactions under certain conditions.
+
+    -- When mobs are incapacitated just before dying, the prompt indicates there is no tank which can
+    -- trigger certain panic reactions or warnings; this flag is enabled temporarily to suppress them.
+    IncapDelay         = IncapDelay or false
+
+    -- Use to throttle attempts to re-assist
+    AssistDelay        = AssistDelay or false
+
+    -- Is the Troll currently in the process of "swapping" between Defend and Pummel?
+    TrollSwapping      = TrollSwapping or false
+
+    -- Track whether the Troll minion is in our group
+    TrollGrouped       = TrollGrouped or false
+
     -- Local Paths
     ASSETS_PATH        = [[C:/Dev/mud/mudlet/gizmo/assets]]
     DB_PATH            = [[C:/Dev/mud/gizmo/data/gizwrld.db]]
@@ -12,7 +50,7 @@ local function configByUsername()
 
     -- Player Names, Containers, and Basic Consumables
     pcNames            = {"Kaylee", "Nadja", "Laszlo", "Nandor"}
-    containers         = {"stocking", "cradle", "cradle", "cradle"}
+    containers         = {"stocking", "stocking", "cradle", "cradle"}
     waterskin          = "waterskin"
     food               = "bread"
 
@@ -38,10 +76,10 @@ local function configByUsername()
     -- These are only needed to create the GUI/console and will be nil'd in deleteConsoleStyles()
     customChatFontFace = "Bitstream Vera Sans Mono"
     customChatFontSize = 14
-    customInfoFontFace = "Bitstream Vera Sans Mono"
-    customInfoFontSize = 14
-    customChatWrap     = 60
-    customInfoWrap     = 60
+    customInfoFontFace = "Consolas"
+    customInfoFontSize = 12
+    customChatWrap     = 80
+    customInfoWrap     = 120
     customConsoleFonts = {
       ["label"]     = "Ebrima",
       ["gauge_sm"]  = "Bitstream Vera Sans Mono",
@@ -53,6 +91,7 @@ local function configByUsername()
     -- Example instead of iout(f"<orange_red>text<reset>") you can use iout("{EC}text{RC}")
     -- Sacrifices some readiability for concise strings without overhead of a function call or table lookup
     NC                 = "<orange>"          -- Numbers
+    VC                 = "<dark_violet>"     -- Values (Boolean, etc.)
     EC                 = "<orange_red>"      -- Errors & Warnings
     DC                 = "<ansi_yellow>"     -- Derived or Calculated Values
     FC                 = "<maroon>"          -- Flags & Affects like 'Sanctuary'
@@ -65,7 +104,7 @@ local function configByUsername()
     -- Make sure to align these values with the order of your party (same as in pcNames, etc.)
     healthMonitor      = {
       --[#] = {low%, big%}
-      [1] = {50, 20},
+      [1] = {20, 25},
       [2] = {80, 10},
       [3] = {80, 10},
       [4] = {25, 20},
@@ -96,6 +135,7 @@ local function configByUsername()
       ["replies"] = "<pale_violet_red>",
       ["quest"]   = "<gold>",
       ["whisper"] = "<deep_pink>",
+      ["honor"]   = "<orange_red>",
     }
 
     -- You can send these messages to the "Info" window with the showWarning function; this
@@ -108,7 +148,7 @@ local function configByUsername()
       ["switched"]  = "👿 Targeted",
       ["hp"]        = "🤕 Critical <tomato>HP<reset> ",
       ["exhausted"] = "👟 No Moves",
-      ["norecall"]  = "🌀 Out of Recalls"
+      ["norecall"]  = "🌀 !Out of Recalls! 🌀"
     }
 
     -- Critical warnings will play bloop.wav when sent.
@@ -122,7 +162,9 @@ local function configByUsername()
 
     -- Customize your affect info to match the duration of your own buffs and desired colors & characters
     affectInfo         = {
-      ["Sanctuary"]            = {duration = 7, color = "lavender_blush", char = "🌟"},
+      --["Darkness"]             = {duration = 10, color = "lavender_blush", char = "🌙"},
+      ["Fireshield"]           = {duration = 5, color = "tomato", char = "🔥"},
+      ["Sanctuary"]            = {duration = 10, color = "lavender_blush", char = "🌟"},
       ["Bless"]                = {duration = 6, color = "light_goldenrod", char = "🙏"},
       ["Fury"]                 = {duration = 2, color = "tomato", char = "😡"},
       ["Armor"]                = {duration = 24, color = "steel_blue", char = "🛡️"},
@@ -146,7 +188,8 @@ local function configByUsername()
       ["calm"]              = "Fury",
       ["protecting"]        = "Armor",
       ["protected"]         = "Armor",
-      ["righteous feeling"] = "Protection from evil"
+      ["righteous feeling"] = "Protection from evil",
+      ["circle of fire"]    = "Fireshield",
     }
 
     -- Affects that do not need to be tracked or displayed on the Party/Player Console (and don't print a warning)
@@ -164,18 +207,19 @@ local function configByUsername()
     -- Keep this updated w/ who you're trying to equip so you don't get confused about 'missing' flags
     function customizeAntiString( antis )
       local includedFlags = {
-        ["!NEU"] = true,
-        ["!GOO"] = true,
-        ["!EVI"] = true,
-        ["!MU"] = true,
-        --["!CL"] = true,
-        --["!CO"] = true,
-        ["!BA"] = true,
-        ["!WA"] = true,
-        ["!TH"] = true,
-        ["!FEM"] = true,
-        --["!MAL"] = true,
-        ["!RENT"] = true
+        ["!NEU"] = false,
+        ["!GOO"] = false,
+        ["!EVI"] = false,
+        ["!MU"] = false,
+        ["!CL"] = false,
+        ["!CO"] = false,
+        ["!BA"] = false,
+        ["!WA"] = false,
+        ["!AP"] = false,
+        ["!TH"] = false,
+        ["!FEM"] = false,
+        ["!MAL"] = false,
+        ["!RENT"] = false
       }
 
       -- Match & replace any flag that isn't in the included table
@@ -211,10 +255,10 @@ local function configByUsername()
       {name = "Parse Score",               type = "trigger", state = false, scope = 'All'},
       {name = "List Fonts (lfonts)",       type = "alias",   state = false, scope = 'All'},
       {name = "Print Variables (pvars)",   type = "alias",   state = false, scope = 'All'},
+      {name = "Tank Condition (automira)", type = "trigger", state = false, scope = 'All'},
       -- ++ON for Main session
       {name = "Main Format",               type = "trigger", state = true,  scope = 'Main'},
       {name = "gather",                    type = "trigger", state = true,  scope = 'Main'},
-      {name = "Tank Condition (automira)", type = "trigger", state = true,  scope = 'Main'},
       {name = "map",                       type = "trigger", state = true,  scope = 'Main'},
       {name = "Movement (Map)",            type = "key",     state = true,  scope = 'Main'},
       -- --OFF for Main session
@@ -223,8 +267,8 @@ local function configByUsername()
       {name = "Movement (Raw)",            type = "key",     state = true,  scope = 'Alts'},
       {name = "Alt Gags",                  type = "trigger", state = true,  scope = 'Alts'},
       -- --OFF for Alts
+      {name = "status",                    type = "trigger", state = false, scope = 'Alts'},
       {name = "gather",                    type = "trigger", state = false, scope = 'Alts'},
-      {name = "Tank Condition (automira)", type = "trigger", state = false, scope = 'Alts'},
       {name = "Main Format",               type = "trigger", state = false, scope = 'Alts'},
       {name = "map",                       type = "trigger", state = false, scope = 'Alts'},
       {name = "Movement (Map)",            type = "key",     state = false, scope = 'Alts'},
@@ -277,22 +321,22 @@ local function configByUsername()
     -- Username exists, but no corresponding configuration settings were found
     cecho( f '\n<orange_red>No configuration<reset> for {USERNAME} in config_gizmo.lua' )
   end
+  cecho( f "\n<orange_red>REMINDER:<reset> status triggers disabled in Alt sessions temporarily" )
 end
 
 configByUsername()
-
-SESSION       = getProfileTabNumber()
-pcName        = pcNames[SESSION]
-container     = containers[SESSION]
+SESSION_NAME      = getProfileName()
+SESSION           = getProfileTabNumber()
+pcName            = pcNames[SESSION]
+container         = containers[SESSION]
 
 -- [TODO] An obviously incomplete set of variables that get used when grouping with
 -- different parties to set things like tank, co-pummeler, etc.
-backupMira    = false
-gtank         = "Troll"
+backupMira        = false
+gtank             = "Troll"
 
 -- Default query mode for the item database; modifies itemQueryAppend behavior
-itemQueryMode = 1
-
+itemQueryMode     = 1
 
 -- Used to hold IDs of temporary triggers so they can be disabled subsequently
 temporaryTriggers = {}
@@ -333,3 +377,230 @@ ALT_PC            = {
 -- Mob short descriptions that start with articles end up lowercase in some contexts;
 -- this table helps map between the two.
 ARTICLES          = {"A ", "An ", "The "}
+
+-- Table of constants to be used when highlighting player and enemy conditions in game
+CONDITION_COLORS  = {
+  ["full"]     = {125, 200, 25},  -- Vibrant Green
+  ["fine"]     = {175, 220, 120}, -- Lighter Green
+  ["good"]     = {220, 240, 100}, -- Yellow-Green
+  ["fair"]     = {240, 240, 85},  -- Yellow
+  ["wounded"]  = {255, 195, 0},   -- Orange
+  ["bad"]      = {255, 150, 0},   -- Darker Orange
+  ["awful"]    = {255, 100, 0},   -- Red-Orange
+  ["bleeding"] = {200, 50, 25}    -- Red
+}
+
+KnownPlayers      = {
+  ["Jubei"]          = true,
+  ["Crest"]          = true,
+  ["Cigarrillo"]     = true,
+  ["Aiden"]          = true,
+  ["Buffer"]         = true,
+  ["Tumble"]         = true,
+  ["Damage"]         = true,
+  ["Health"]         = true,
+  ["Cellulite"]      = true,
+  ["Gandalv"]        = true,
+  ["Tempus"]         = true,
+  ["Logain"]         = true,
+  ["Fitz"]           = true,
+  ["Gaea"]           = true,
+  ["Rogue"]          = true,
+  ["Ajathar"]        = true,
+  ["Terran"]         = true,
+  ["Acapela"]        = true,
+  ["Stp"]            = true,
+  ["Gus"]            = true,
+  ["Evo"]            = true,
+  ["Tek"]            = true,
+  ["Ranyk"]          = true,
+  ["Attis"]          = true,
+  ["Tormund"]        = true,
+  ["Wolgast"]        = true,
+  ["Connolly"]       = true,
+  ["Quark"]          = true,
+  ["Lepton"]         = true,
+  ["Muon"]           = true,
+  ["Boson"]          = true,
+  ["Blain"]          = true,
+  ["Dillon"]         = true,
+  ["Mac"]            = true,
+  ["Billy"]          = true,
+  ["Organ"]          = true,
+  ["Trachea"]        = true,
+  ["Digest"]         = true,
+  ["Germ"]           = true,
+  ["Glory"]          = true,
+  ["Anima"]          = true,
+  ["Cyrus"]          = true,
+  ["Vassago"]        = true,
+  ["Youko"]          = true,
+  ["Drago"]          = true,
+  ["Manwe"]          = true,
+  ["Turambar"]       = true,
+  ["Finarfin"]       = true,
+  ["Irelia"]         = true,
+  ["Nandor"]         = true,
+  ["Laszlo"]         = true,
+  ["Nadja"]          = true,
+  ["Colin"]          = true,
+  ["Elbryan"]        = true,
+  ["Qxuilur"]        = true,
+  ["Ace"]            = true,
+  ["Reedus"]         = true,
+  ["Rax"]            = true,
+  ["Sly"]            = true,
+  ["Tzu"]            = true,
+  ["Pastor"]         = true,
+  ["Jacob"]          = true,
+  ["Topaz"]          = true,
+  ["Caitlin"]        = true,
+  ["Saben"]          = true,
+  ["Chaliz"]         = true,
+  ["Acute"]          = true,
+  ["Bangle"]         = true,
+  ["Opal"]           = true,
+  ["Turil"]          = true,
+  ["Charneus"]       = true,
+  ["Alluran"]        = true,
+  ["Avernus"]        = true,
+  ["Killian"]        = true,
+  ["Nikki"]          = true,
+  ["Bongo"]          = true,
+  ["Youke"]          = true,
+  ["Viron"]          = true,
+  ["Youky"]          = true,
+  ["Anna"]           = true,
+  ["Celion"]         = true,
+  ["Harlae"]         = true,
+  ["Borsoi"]         = true,
+  ["Lever"]          = true,
+  ["Strap"]          = true,
+  ["Regret"]         = true,
+  ["Kaylee"]         = true,
+  ["ThunderCat"]     = true,
+  ["Codee"]          = true,
+  ["Aliya"]          = true,
+  ["Turbo"]          = true,
+  ["Nicolav"]        = true,
+  ["Presto"]         = true,
+  ["Sartre"]         = true,
+  ["Camma"]          = true,
+  ["Salieri"]        = true,
+  ["Drift"]          = true,
+  ["Blackjack"]      = true,
+  ["Tempest"]        = true,
+  ["Cyclone"]        = true,
+  ["Barrage"]        = true,
+  ["Torment"]        = true,
+  ["Tree"]           = true,
+  ["Poncho"]         = true,
+  ["Liono"]          = true,
+  ["Tygra"]          = true,
+  ["Panthro"]        = true,
+  ["Cheetara"]       = true,
+  ["Jaga"]           = true,
+  ["WilyKat"]        = true,
+  ["WilyKit"]        = true,
+  ["Spellfire"]      = true,
+  ["Tissue"]         = true,
+  ["Intestine"]      = true,
+  ["Raw"]            = true,
+  ["Banget"]         = true,
+  ["Padre"]          = true,
+  ["Izaur"]          = true,
+  ["Nikolas"]        = true,
+  ["Youku"]          = true,
+  ["a shade minion"] = true,
+  ["a troll minion"] = true,
+}
+
+PlayerContainers  = {
+  ["a plain brown parcel"]                  = true,
+  ["a Swingin' Udder"]                      = true,
+  ["a BMF wallet"]                          = true,
+  ["the inner sarcophagus"]                 = true,
+  ["a Vault of Lost war-cries (screaming)"] = true,
+  ["a bag"]                                 = true,
+  ["a large green sack"]                    = true,
+  ["King Crotus' sarcophagus"]              = true,
+  ["a Christmas Stocking"]                  = true,
+  ["Cradle of the Forest"]                  = true,
+  ["Legends Satchel"]                       = true,
+  ["an explorer's backpack"]                = true,
+  ["a black asbestos cloak"]                = true,
+  ["The Library of Sin"]                    = true,
+  ["The Shrine of The Prophets of Rage"]    = true,
+  ["a Legends Satchel"]                     = true,
+  ["a rift in space"]                       = true,
+  ["the UYAM stocking"]                     = true,
+}
+
+DesiredItems      = {
+  ["a flowing black cape"]                    = true,
+  ["cloak of the fiend"]                      = true,
+  ["a pair of chaos sleeves"]                 = true,
+  ["armbands of hell"]                        = true,
+  ["a Linen Bodice"]                          = true,
+  ["a Reptilian Scaled Plate"]                = true,
+  ["Boots of Harmony"]                        = true,
+  ["Boots of the Outer Planes"]               = true,
+  ["a Black Onyx Ring"]                       = true,
+  ["a blood red ruby ring"]                   = true,
+  ["an adamant ring encrusted with diamonds"] = true,
+  ["ring of the soul eater"]                  = true,
+  ["a Pair of Bloody gloves"]                 = true,
+  ["the Gloves of Agony"]                     = true,
+  ["the Gloves of the Void"]                  = true,
+  ["a drop of heart's blood"]                 = true,
+  ["a malachite"]                             = true,
+  ["a ships rutter"]                          = true,
+  ["a Long Cloth Skirt"]                      = true,
+  ["a pair of Zyca leg plates"]               = true,
+  ["a spyglass"]                              = true,
+  ["Fang of the Vadir"]                       = true,
+  ["Lantern of the Outer Planes"]             = true,
+  ["the Evil Globe of Hyless"]                = true,
+  ["the Hand of Glory"]                       = true,
+  ["the Medallion of Macabre"]                = true,
+  ["the Necklace of Ancient Power"]           = true,
+  ["a Plate from Ygaddrozil"]                 = true,
+  ["a Shield of Festering Mortal Skins"]      = true,
+  ["a spiked leather belt"]                   = true,
+  ["Belt of Burnt Flesh"]                     = true,
+  ["charred and bloody belt"]                 = true,
+  ["desecrated belt of holy symbols"]         = true,
+  ["a Fencing Foil"]                          = true,
+  ["a mammoth's tusk"]                        = true,
+  ["a Slender Dagger"]                        = true,
+  ["the Barbed Fishhook"]                     = true,
+  ["the Mace of Legend"]                      = true,
+  ["a Flaming Bracelet"]                      = true,
+  ["a Freezing Bracelet"]                     = true,
+  ["Bracelet of the Outer Planes"]            = true,
+}
+
+local DG          = "<dim_grey>"
+local MSB         = "<medium_slate_blue>"
+local OB          = "<olive_drab>"
+local DK          = "<dark_khaki>"
+local FB          = "<firebrick>"
+
+-- A global table of potion affects so we can see specific spell name/levels next
+-- to potion names in game.
+POTION_AFFECT     = {
+  ["Some Sea Essence"]                 = f " {DG}(L30 tiny mana x2){RC}",
+  ["a Pitcher Plant Potion"]           = f " {DG}(L33 lil miracle x2, vitality){RC}",
+  ["a Frosty Potion"]                  = f " {DG}(L30 lesser mana){RC}",
+  ["a jar of blackened blood"]         = f " {DG}(L45 lesser mana x2, strength){RC}",
+  ["a vibrant white potion(humming)"]  = f " {DG}(L30 pfe, heal, bless){RC}",
+  ["glowing potion(glowing)"]          = f " {DG}(L30 strength, heal, sanct){RC}",
+  ["a Seawater Potion"]                = f " {DG}(L30 tiny mana){RC}",
+  ["a swirling blue potion(glowing)"]  = f " {DG}(L30 pfe, strength, armor){RC}",
+  ["a bright magenta potion(glowing)"] = f " {DG}(L30 armor, bless){RC}",
+  ["a scroll of purification"]         = f " {DG}(L50 decurse, dispel evil, bless){RC}",
+  ["a golden stick(glowing)"]          = f " {DG}(L30 miracle){RC}",
+  ["a milky orange potion"]            = f " {DG}(L20 vitality, endure){RC}",
+  ["a thick brew"]                     = f " {DG}(L50 lil miracle){RC}",
+  ["a bloody brew"]                    = f " {DG}(L50 fury){RC}",
+}

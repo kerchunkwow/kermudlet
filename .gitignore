@@ -1,5 +1,7 @@
-# Temp datafile
+# Temp datafiles
 wheres.txt
+roomData.txt
+troll.txt
 
 # Localized configuration files; use templates to check in new functionality
 gizmo/config/login.lua
@@ -7,6 +9,7 @@ gizmo/config/config_local.lua
 
 # Contents of an unpacked .mpackage file
 gizmo/gizmudlet.xml
+gizmo/gizmudlet2.xml
 gizmo/config.lua
 gizmo/.mudlet
 
@@ -20,3 +23,4 @@ sandbox/
 gizmo/assets/tools/
 gizmo/assets/wiki/
 gizmo/assets/img/t/
+

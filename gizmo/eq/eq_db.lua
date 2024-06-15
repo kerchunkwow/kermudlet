@@ -14,7 +14,7 @@ function loadAllItems()
     iout( "{EC}eq_db.lua{RC} failed database connection in loadAllItems()" )
     return
   end
-  local cur, err = conn:execute( "SELECT name, statsString, antisString, clone, affectsString FROM Item" )
+  local cur, err = conn:execute( "SELECT name, statsString, antisString, clone, affectsString FROM LegacyItem" )
   if not cur then
     iout( "{EC}eq_db.lua{RC} failed query in loadAllItems(): {err}" )
     conn:close()
@@ -45,8 +45,8 @@ end
 
 -- Triggered by items seen in game (e.g., worn by players), this function pulls stats from the global
 -- itemData table and appends them to the item's name in the game window
-function itemQueryAppend()
-  local itemName        = matches[2]
+function itemQueryAppend( itemName )
+  itemName              = itemName or matches[2]
   local itemNameTrimmed = trimItemName( itemName )
   local itemNameLength  = #itemName
 
@@ -59,6 +59,8 @@ function itemQueryAppend()
   fg( "olive_drab" )
   selectString( "cloned", 1 )
   fg( "royal_blue" )
+  selectString( "blue", 1 )
+  fg( "medium_slate_blue" )
   resetFormat()
 
   local item = itemData[itemNameTrimmed]
@@ -100,23 +102,9 @@ function itemQueryAppend()
     if display_string then
       cecho( display_string )
     end
+    return true
   end
-end
-
--- Trim "flags" from the end of in-game items to create shorter, sanitized item names;
--- e.g., The Sword of Truth (glowing) (humming) -> The Sword of Truth
-function trimItemName( name )
-  -- Look for known flags
-  local flags = {"%(glowing%)", "%(humming%)", "%(invisible%)", "%(cloned%)", "%(lined%)"}
-
-  -- Strip them off the end of the name
-  for _, flag in ipairs( flags ) do
-    name = string.gsub( name, flag, '' )
-  end
-  -- Item names can also vary when they are modified by jewelcrafting (e.g., with a buckle);
-  -- here we trim that content so we can match the raw name in the database
-  name = string.gsub( name, ' with %w+ %w+ buckle', '' )
-  return trim( name )
+  return false
 end
 
 -- Inefficient method for determining if an item has a special proc (reconnect to the db and look at ID text)
@@ -184,7 +172,7 @@ local function itemQueryAppendDatabase()
   end
   -- Query for the item's stats, antis, and cloneability values
   local query = string.format(
-    [[SELECT name, statsString, antisString, clone, affectsString FROM Item WHERE name = '%s']],
+    [[SELECT name, statsString, antisString, clone, affectsString FROM LegacyItem WHERE name = '%s']],
     itemNameTrimmed:gsub( "'", "''" ) )
   local cur, qerr = conn:execute( query )
 

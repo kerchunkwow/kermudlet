@@ -13,44 +13,6 @@ function tempDisableTrigger( trigger, duration )
   tempTimer( duration, f [[enableTrigger( "{trigger}" )]] )
 end
 
--- Feed a line to the client as if it came from the MUD (great for testing triggers).
--- Suggested alias: ^sim (.*)$
-function simulateOutput( output )
-  local simString = output or matches[2]
-  simString = string.gsub( simString, "%$", "\n" )
-  cfeedTriggers( simString )
-end
-
--- Use a temporary trigger to recast on lost concentration
-function sureCast( spell, target )
-  local castCode
-
-  if sureCastTrigger then killTrigger( sureCastTrigger ) end
-  tempTimer( 5, function () killTrigger( sureCastTrigger ) end )
-
-  if target then
-    castCode = f [[send("cast '{spell}' {target}")]]
-    send( f "cast '{spell}' {target}" )
-  else
-    castCode = f [[send("cast '{spell}'")]]
-    send( f "cast '{spell}'" )
-  end
-  sureCastTrigger = tempRegexTrigger( "^You lost your concentration!$", castCode, 1 )
-end
-
--- "Nuclear option" that kills all temporary timers and triggers; will probably interfere with
--- third party packages if you have any.
-function killAllTemps()
-  local topTrigger = tempTrigger( "dummy", function () end )
-  local topTimer   = tempTimer( 0, function () end )
-  for i = 1, topTrigger do
-    killTrigger( i )
-  end
-  for j = 1, topTimer do
-    killTimer( j )
-  end
-end
-
 -- Reset the clock (called at load after script init)
 function resetClock()
   local resetTime = round( getStopWatchTime( "timer" ), 1 )
@@ -93,9 +55,8 @@ function updateTickTimer()
   tickLabel:setBackgroundImage( tickImage )
 
   -- While in combat, 'look' every 10 seconds (20 steps) to see if we're being attacked
-  if inCombat and tickStep % 20 == 0 then
-    --send( 'look', false )
-    --cout( [[{NC}{tickStep}{RC}]] )
+  if AutoLooking and inCombat and tickStep % 21 == 0 then
+    send( 'look', false )
   end
 end
 
@@ -121,32 +82,56 @@ function doWintin( wintinString, echo )
   end
 end
 
-CustomHighlights = CustomHighlights or {
-  system = {0, 80, 180},
-  troll = {95, 140, 0}
+-- Table of custom line highlights; use 6 values for fg and bg
+CustomHighlights = {
+  system     = {0, 80, 180},
+  trollminor = {55, 65, 0},
+  trollbasic = {80, 120, 0},
+  trollmajor = {180, 240, 0, 65, 110, 0},
+  trolldef   = {80, 180, 250, 10, 50, 80},
 }
 -- Highlight a line of output from the MUD using the specified colors
 function triggerHighlightLine( color )
-  local r, g, b
+  local r, g, b, br, bg, bb
   -- If the color is a string, look for it first in Mudlet's built-in color_table, then
   -- our local custom color table
   if type( color ) == 'string' then
     if color_table[color] then
       r, g, b = unpack( color_table[color] )
     elseif CustomHighlights[color] then
-      r, g, b = unpack( CustomHighlights[color] )
-    else
-      iout( f [[{EC}Invalid color{RC} in triggerHighlightLine(): {SC}{color}{RC}]] )
+      r, g, b, br, bg, bb = unpack( CustomHighlights[color] )
     end
   elseif type( color ) == 'table' and #color == 3 then
-    r, g, b = unpack( color )
-  else
-    iout( f [[{EC}Invalid color{RC} in triggerHighlightLine(): {SC}{color}{RC}]] )
+    r, g, b, br, bg, bb = unpack( color )
   end
   -- Select the line and highlight it with the specified color
   selectString( line, 1 )
   setFgColor( r, g, b )
+  -- If background values were in the parameter, use them
+  if br then setBgColor( br, bg, bb ) end
   resetFormat()
+end
+
+LastAlert = LastAlert or getStopWatchTime( "timer" )
+function sendAlert( message )
+  local now = getStopWatchTime( "timer" )
+  local sinceLast = now - LastAlert
+  if sinceLast > 3 then
+    LastAlert        = now
+    local bot_token  = [[7118770481:AAEMvomEAOiCFjoCu_fSdxlBmUZ8GSYG4Hs]]
+    local chat_id    = [[7155655445]]
+    local pythonPath = [[C:/Users/12404/AppData/Local/Programs/Python/Python310/python.exe]]
+    local scriptPath = [[C:/Dev/mud/mudlet/pyutils/gizmogram.py]]
+
+    -- Print info to the InfoWindow
+    iout( "{SC}Telegram Alert: {message}{RC}" )
+
+    -- Play a local warning too just in case we're at the keyboard and just distracted
+    playSoundFile( {name = [[bloop.wav]]} )
+
+    local command = string.format( '%s "%s" "%s" "%s" "%s"', pythonPath, scriptPath, bot_token, chat_id, message )
+    os.execute( command )
+  end
 end
 
 -- Make a temporary alias from the command line with

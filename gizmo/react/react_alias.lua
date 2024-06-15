@@ -236,29 +236,6 @@ function aliasSetMira()
   iout( "<slate_gray>Setting mira = {SC}{miracleCondition}{SC}" )
 end
 
-failTrigger = failTrigger or nil
-successTrigger = successTrigger or nil
-LAST_CMD = [[send('!', false)]]
--- For any command with failure conditions, repeat that command until success
-function sureCommand( cmd, succeedMsg, failMsg )
-  -- Kill any existing triggers
-  if failTrigger then killTrigger( failTrigger ) end
-  if successTrigger then killTrigger( successTrigger ) end
-  -- Create a temporary trigger to try again with ! if the command fails
-  failTrigger = tempTrigger( failMsg, [[send('!', false)]] )
-  -- Create a temporary trigger on success to kill the failTrigger (and itself)
-  successTrigger = tempTrigger( succeedMsg,
-    function ()
-      -- Kill both temporary triggers and nil their IDs
-      killTrigger( failTrigger )
-      failTrigger = nil
-      killTrigger( successTrigger )
-      successTrigger = nil
-    end )
-  -- Attempt the command to start the process
-  send( cmd, true )
-end
-
 -- If you haven't installed a package with basic lib aliases, create the important ones
 local function createLibAliasesOnce()
   if exists( 'lib', 'alias' ) == 0 then
@@ -267,7 +244,6 @@ local function createLibAliasesOnce()
     permAlias( 'Run Lua File (rf)', 'lib', '^rf (.+?)(?:\\.lua)?$', 'runLuaFile( matches[2] )' )
     permAlias( 'Run Lua (lua)', 'lib', '^lua (.*)$', 'runLuaLine( matches[2] )' )
     permAlias( 'Clear Screen (cls)', 'lib', '^cls$', 'clearScreen()' )
-    permAlias( 'Simulate Output (sim)', 'lib', '^sim (.+)$', 'simulateOutput()' )
     permAlias( 'Save Layout (swl)', 'lib', '^swl$', 'saveWindowLayout()' )
     permAlias( 'List Fonts (lfonts)', 'lib', '^lfonts$', 'listFonts()' )
     permAlias( 'Print Variables (pvars)', 'lib', '^pvars$', 'printVariables()' )
@@ -279,10 +255,32 @@ end
 createLibAliasesOnce()
 
 function aliasWaitFerry()
+  cout( "<yellow_green>Waiting for the ferry..." )
   tempRegexTrigger( "^The ferry approaches and ties up to the dock\\.$",
     function ()
       send( 'order troll enter ferry', false )
+      send( 'order shade enter ferry', false )
+      send( 'order nymph enter ferry', false )
       send( 'enter ferry', false )
       send( 'look', false )
     end, 1 )
+end
+
+-- Call this function once and supply it a pattern, when that pattern is seen by the MUD, the
+-- amount of time elapsed since you called this function will be appended to the line.
+function getDelta( pattern )
+  -- The stopwatch starts when this function is called
+  local startTime = getStopWatchTime( "timer" )
+
+  local function showDelta()
+    -- Calculate elapsed time when the pattern is triggered
+    local endTime = getStopWatchTime( "timer" )
+    local elapsed = endTime - startTime
+    elapsed = round( elapsed, 0.01 )
+
+    cecho( f ' [+{NC}{elapsed}{RC}]' )
+  end
+
+  -- Create a temporary trigger that will call showDelta when the pattern is seen
+  tempTrigger( pattern, showDelta, 1 )
 end

@@ -49,18 +49,29 @@ end
 
 -- Attempt to execute a queuable command
 function executeCmd( cmd )
+  -- Make sure the command is the "long" version of a direction
+  local longDir = LDIR[cmd]
   -- Make sure the map knows where we're at before using it to move
-  if DIRECTIONS[cmd] and CurrentRoomNumber > 0 then
+  if longDir and CurrentRoomNumber > 0 then
     local exits = getRoomExits( CurrentRoomNumber )
-    if exits[LDIR[cmd]] then
-      queueDst = tonumber( exits[LDIR[cmd]] )
+    if exits[longDir] then
+      queueDst = tonumber( exits[longDir] )
     else
       cecho( "\n<dim_grey>Alas, you cannot go that way.<reset>" )
       cmdPending = nil
       return false
     end
   end
+  -- If there's a door in the direction we're moving, open it before proceeding
+  local door = doorData[CurrentRoomNumber] and doorData[CurrentRoomNumber][longDir]
+  if door then
+    openDoor( longDir, door['exitKeyword'], door['exitKey'] )
+  end
   send( cmd, false )
+  -- Print a "real time" update of our position while auto-pathing
+  if AutoPathing then
+    tempTimer( 0.5, [[displayPath()]] )
+  end
   return true
 end
 

@@ -7,6 +7,7 @@ local commonScripts = {
   'gizmo/config/config_events.lua',
   'gizmo/gui/gui_warn.lua',
   'gizmo/eq/eq_db.lua',
+  'gizmo/eq/id_capture.lua',
   'gizmo/status/status_affect.lua',
   'gizmo/map/map_const.lua',
   'gizmo/map/map_ux.lua',
@@ -26,20 +27,21 @@ local mainScripts = {
   --'gizmo/eq/eq_inventory.lua',
   'gizmo/map/map_mobs.lua',
   'gizmo/map/map_path.lua',
-  'gizmo/map/map_sim.lua',
+  --'gizmo/map/map_sim.lua',
+  'gizmo/react/bq.lua',
 }
 
 runLuaFiles( commonScripts )
 
-if SESSION == 1 then
+if SESSION == 1 or SESSION == 2 then
   runLuaFiles( mainScripts )
 end
 -- Using Powershell, delete and re-extract the Mudlet module's XML file, then convert
 -- it to a Lua file that your IDE can interpret.
 function refreshModuleXML()
-  local modulePath  = "C:/Dev/mud/mudlet/gizmo/gizmudlet.mpackage"
-  local tempZipPath = "C:/Dev/mud/mudlet/gizmo/gizmudlet.zip"
-  local xmlPath     = "C:/Dev/mud/mudlet/gizmo/gizmudlet.xml"
+  local modulePath  = "C:/Dev/mud/mudlet/gizmo/gizmudlet2.mpackage"
+  local tempZipPath = "C:/Dev/mud/mudlet/gizmo/gizmudlet2.zip"
+  local xmlPath     = "C:/Dev/mud/mudlet/gizmo/gizmudlet2.xml"
   local extractDir  = "C:/Dev/mud/mudlet/gizmo/temp_extract"
 
   -- If there's already a copy of the .xml present, delete it first
@@ -54,7 +56,7 @@ function refreshModuleXML()
   os.execute( extractCmd )
 
   -- Relocate the .xml and delete the temporary stuff
-  local moveCmd = 'move "' .. extractDir:gsub( '/', '\\' ) .. '\\gizmudlet.xml" "' .. xmlPath:gsub( '/', '\\' ) .. '"'
+  local moveCmd = 'move "' .. extractDir:gsub( '/', '\\' ) .. '\\gizmudlet2.xml" "' .. xmlPath:gsub( '/', '\\' ) .. '"'
   os.execute( moveCmd )
   os.remove( tempZipPath )
   os.execute( 'rmdir "' .. extractDir:gsub( '/', '\\' ) .. '" /s /q' )

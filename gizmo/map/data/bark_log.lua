@@ -1,0 +1,2 @@
+return {{[1] = [[in the inner sarcophagus.,18:56]],[2] = [[in Windy Tunnel.,19:03]],[3] = [[in a Vault of Lost war-cries (screaming).,19:27]],[4] = [[in a black asbestos cloak.,19:28]],[5] = [[in a BMF wallet.,19:28]],[6] = [[in Cradle of the Forest.,20:11]],[7] = [[in a BMF wallet.,20:11]],[8] = [[in Cradle of the Forest.,20:41]],[9] = [[in a BMF wallet.,20:41]],},
+}

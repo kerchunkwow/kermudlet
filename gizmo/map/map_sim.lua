@@ -38,10 +38,10 @@ end
 -- By default, display the current room in brief mode (no room description)
 function displayRoom( id, brief )
   local rd = MAP_COLOR["roomDesc"]
-  simulateOutput( f "\n\n{getRoomString(id, 2)}" )
+  cfeedTriggers( f "\n\n{getRoomString(id, 2)}" )
   if not brief then
     local desc = getRoomUserData( id, "roomDescription" )
-    simulateOutput( f "{rd}{desc}<reset>" )
+    cfeedTriggers( f "{rd}{desc}<reset>" )
   end
   cecho( "\n\n<slate_grey>< 250(250) 400(400) 500(500) ><reset>" )
 end

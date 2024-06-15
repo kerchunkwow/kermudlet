@@ -40,3 +40,12 @@ end
 function affectsClicked( pc, pcName, event )
   cecho( "info", f "\nGot click on <violet>Affects<reset> @ {pcTags[pc]}" )
 end
+
+function highlightCondition( condition )
+  if CONDITION_COLORS[condition] then
+    selectString( condition, 1 )
+    local color = CONDITION_COLORS[condition]
+    setFgColor( color[1], color[2], color[3] )
+    resetFormat()
+  end
+end

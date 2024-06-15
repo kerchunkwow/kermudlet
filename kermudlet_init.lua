@@ -1,3 +1,16 @@
+-- If this isn't the first time we've loaded this session, make sure to kill temporary triggers
+-- on reload.
+if FirstTempTrigger then
+  cecho( "\n<deep_pink>...<reset>" )
+  crawlKillTriggers()
+end
+-- Then set/update the ID of the first temporary trigger
+local id = tempTrigger( [[dummy]], [[dummy]], 1 )
+FirstTempTrigger = id
+killTrigger( id )
+cfeedTriggers( "" )
+cecho( f [[Temporary triggers begin @ {FirstTempTrigger}]] )
+
 -- Uses the default Windows Mudlet directory to determine a username for this session
 local function setUserName()
   local path = lfs.currentdir()
@@ -41,6 +54,7 @@ function loadLibs()
   runLuaFile( 'lib/lib_react.lua' )
   runLuaFile( 'lib/lib_string.lua' )
   runLuaFile( 'lib/lib_db.lua' )
+  runLuaFile( 'lib/lib_trigger.lua' )
 
   -- Now branch into Gizmo-specific scripts
   runLuaFile( 'gizmo/gizmo_init.lua' )
@@ -87,3 +101,10 @@ local function addFileWatchers()
   -- addFileWatch( "C:/Dev/mud/mudlet/gizmo/gizmudlet.mpackage" )
 end
 addFileWatchers()
+
+if SESSION_NAME == "GMAP" then
+  disableTrigger( "gizmudlet2" )
+  disableAlias( "gizmudlet2" )
+  disableKey( "gizmudlet2" )
+end
+cout( [[Temporary triggers begin @ {NC}{FirstTempTrigger}{RC}]] )

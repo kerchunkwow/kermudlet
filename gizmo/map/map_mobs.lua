@@ -116,13 +116,13 @@ function getMob( rNumber )
       return mob
     end
   end
-  -- No such mob
+  iout( [[{EC}getMob{RC}(): No mob {NC}{rNumber}{RC}]] )
   return nil
 end
 
 -- Function to find and display mobs matching a given string in their descriptions
 -- Will display multiple mobs; searches against both short and long descriptions
-function findMob( searchString )
+function findMob( searchString, areaRNumber )
   -- Ensure searchString is lowercased for case-insensitive matching
   local searchLower = string.lower( searchString )
   local found = false
@@ -169,10 +169,9 @@ function displayMob( rNumber )
   else
     savd = ""
   end
-  cout( "[{NC}{rNumber}{RC}], (<royal_blue>{rmid}<reset>)" )
-  cout( "  {SC}{lng}{RC}" )
-  cout( "  {SC}{shrt}{RC} ({SC}{kws}{RC})" )
-  cout( "  Area: {SC}{arn}{RC} ({NC}{arid}{RC})" )
+  cout( "{SC}{shrt}{RC} ({SC}{kws}{RC}) [{NC}{rNumber}{RC}]" )
+  cout( "  Room <royal_blue>{rmid}<reset> in {SC}{arn}{RC} [{NC}{arid}{RC}]" )
+  --cout( "  {SC}{lng}{RC}" )
   cout( "  HP: {NC}{hp}{RC}  XP: {NC}{xp}{RC}  ({DC}{xpph}{RC} xp/hp)" )
   cout( "  GP: {NC}{gp}{RC}  ({DC}{gpph}{RC} gp/hp)" )
   cout( "  Dam: {NC}{dn}d{ds} +{dm} +<medium_sea_green>{hr}{RC}{savd}{RC} ({DC}{tavd}{RC} avg)" )
@@ -280,13 +279,21 @@ function isMobDeadly( mob, threshold )
 end
 
 -- Create a temporary trigger for all mobs in the current area, matching keywords to long descriptions
-function loadMobTriggers()
+-- If a parameter is passed, it is a table where mobRNumbers[rNumber] = true for mobs we want to load
+-- triggers for; if no parameter is passed triggers are created for all mobs in the current area
+-- Alias: ^lam$ for all mobs in the area
+function loadMobTriggers( mobRNumbers )
   -- Kill any existing triggers and reset the table
   resetMobTriggers()
 
+  -- Determine whether we are loading triggers for all mobs in the area, or just a subset
+  local isSubset = mobRNumbers and next( mobRNumbers ) ~= nil
+
   -- Create a temporary trigger for each mob in the current area
   for _, mob in ipairs( mobData ) do
-    if mob.areaRNumber == CurrentAreaNumber then
+    local inArea = mob.areaRNumber == CurrentAreaNumber
+    local needTrigger = (inArea and not isSubset) or (isSubset and mobRNumbers[mob.rNumber])
+    if needTrigger then
       -- Mob's in-game appearance
       local mobLong, mobShort = mob.longDescription, mob.shortDescription
       -- Keywords for interacting with mobs
@@ -312,8 +319,6 @@ function loadMobTriggers()
           table.insert( areaMobTriggers, triggerID )
 
           keywordFound = true
-          -- To validate triggers, feed the mob's long description
-          --cfeedTriggers( mobLong )
           break
         end
       end
@@ -379,12 +384,89 @@ end
 
 -- Called when a mob is encountered in the game which has a corresponding trigger
 function targetMatch()
+  -- Count matched targets and append target count to each matched mob
+  TargetCount = TargetCount + 1
+  cecho( f "({NC}{TargetCount}{RC})" )
   -- Update markedTarget global which can be used elsewhere to interact with mobs (i.e., attacking, etc.)
   markedTarget = matches[2]
-
   -- Highlight the matching keyword on screen for visual distinction and to validate the trigger
   selectString( matches[2], 1 )
   setFgColor( 205, 92, 92 )
+end
+
+MobList = {
+  628,
+  816,
+  855,
+  878,
+}
+function circuitHelper( mobList )
+  function circuitHelper( mobList )
+    for i = 1, #mobList do
+      -- Act on each number mobList[i] here
+    end
+  end
+end
+
+-- Function to help in locating mobs that are within reach both geographically and difficulty-wise by searching
+-- mobData and filtering based on a number of criteria
+function showMeTheMoney()
+  local ignoredMobs = {
+    185,  -- Sphen
+    389,  -- Music Shopkeeper
+    390,  -- Magic Shopkeeper
+    391,  -- Bakery Shopkeeper
+    392,  -- Grocer
+    393,  -- Weaponsmith
+    394,  -- Armorer
+    396,  -- Boat Captain
+    501,  -- Doljet (Treasure Vendor)
+    503,  -- Heckkingrel the Alchemist
+    1501, -- Oceanid
+    1502, -- Oceanid
+    1503, -- Oceanid
+    1504, -- Oceanid
+    2054, -- diamond ekitom lord
+    2053, -- iron ekitom lord
+    2052, -- granite ekitom lord
+    2048, -- diamond ekitom extractor
+    2047, -- diamond ekitom excavator
+    2046, -- iron ekitom extractor
+    2045, -- iron ekitom excavator
+    1991, -- Frost King's wolves...
+    1992,
+    1993,
+    1994,
+  }
+  local ignoredAreas = {
+    125, -- Midgaard Tar Pit
+  }
+
+  for _, mob in ipairs( mobData ) do
+    local mobRoom = mob.roomRNumber
+    local mobID = mob.rNumber
+    local mobName = mob.shortDescription
+    local areaID = mob.areaRNumber
+    local ignoredMob = contains( ignoredMobs, mobID ) or contains( ignoredAreas, areaID )
+    if mobRoom and not ignoredMob then
+      -- Reachable from Market Square
+      local isPathable      = getPath( 1121, mobRoom )
+      -- Has at least 250,000 coins
+      local isWealthy       = mob.gold >= 250000
+      -- Does not have some bullshit
+      local noSpec          = not string.find( mob.flags, 'SPEC' )
+      -- Won't take all f'ing day
+      local effectiveHealth = mob.health
+      if string.find( mob.affects, 'SANCTUARY' ) then
+        effectiveHealth = effectiveHealth * 2
+      end
+      if isPathable and isWealthy and effectiveHealth < 25000 then
+        displayMob( mob.rNumber )
+      end
+    else
+      --piout( "No room data for mob {SC}{mobName}{RC} ({NC}{mobID}{RC})" )
+    end
+  end
 end
 
 -- Use Mudlet's built-in Map search functionality and character/highlighting to identify
@@ -411,4 +493,68 @@ local function flagDeadlyMobs()
     end
   end
   updateMap()
+end
+
+-- Update the Mob database with values captured from Venzu
+function updateMobFame( description, fame )
+  -- Check incoming data against preloaded table; avoid db access if possible
+  if fameData[description] then
+    local dbFame = tonumber( fameData[description] )
+    if dbFame ~= fame then
+      iout( f 'Fame {EC}mismatch{RC}: {SC}{description}{RC}: {NC}{fame}{RC} game vs. {NC}{dbFame}{RC} db' )
+    else
+      iout( f 'Fame <olive_drab>confirmed: {SC}{description}{RC}, {NC}{fame}{RC}' )
+    end
+    return
+  end
+  -- For new/unknown mobs, update the database with observed values
+  local sql = "SELECT fame FROM Mob WHERE shortDescription = '%s'"
+  local cursor, conn, env = getCursor( sql, description )
+  if not cursor then
+    iout( '{EC}Connect failed{RC} in updateMobFame()' )
+    return
+  end
+  local row = cursor:fetch( {}, "a" )
+  local isUnique = row and not cursor:fetch( {}, "a" )
+
+  if not row then
+    iout( f '{EC}Missing mob{RC} for updateMobFame(): {SC}{description}{RC}' )
+  elseif not isUnique then
+    iout( f '{EC}Non-unique{RC} mob: {SC}{description}{RC}' )
+  elseif row.fame == nil then
+    local updateSql = "UPDATE Mob SET fame = %d WHERE shortDescription = '%s'"
+    if conn:execute( string.format( updateSql, fame, conn:escape( description ) ) ) then
+      iout( f "Fame <yellow_green>updated{RC}: {SC}{description}{RC}, {NC}{fame}{RC}" )
+      -- Keep the local table & counters up to date as we collect new data
+      fameData[description] = fame
+      fameCount             = fameCount + 1
+      fameSum               = fameSum + fame
+    else
+      iout( f "{EC}Update failed{RC} in updateMobFame()" )
+    end
+  end
+  cursor:close()
+  conn:close()
+  env:close()
+end
+
+-- Called by Mudlet trigger when Venzu reports fame turn-ins; used to capture and record fame
+-- values in the database (only needed when actively capturing new data)
+function triggerCaptureFame()
+  -- Grab the mob's description and fame (if present) from Venzu's chatter
+  local mobShortDescription = trim( matches[2] )
+  local fame = 0
+  if matches[3] then
+    fame = tonumber( matches[3] )
+  end
+  -- Highlight it in game for visual confirmation
+  selectString( mobShortDescription, 1 )
+  setFgColor( 176, 224, 230 ) -- powder blue
+  if fame > 0 then
+    selectString( matches[3], 1 )
+    setFgColor( 255, 165, 0 ) -- orange
+  end
+  resetFormat()
+  -- Update the table with new fame data
+  updateMobFame( mobShortDescription, fame )
 end

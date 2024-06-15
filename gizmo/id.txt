@@ -1,0 +1,7 @@
+Object 'dark spider mail plate', Item type: ARMOR
+Item is: ANTI-GOOD ANTI-NEUTRAL
+Weight: 40, Value: 0
+AC-apply is 14
+Can affect you as :
+    Affects : DEX By 2
+    Affects : HIT By 10

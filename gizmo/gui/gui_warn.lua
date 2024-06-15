@@ -19,7 +19,7 @@ warning_calls = createWarningCalls()
 
 -- Display a warning in the Info window; see Game Globals for a list of customizable messages
 function showWarning( event_raised, pc, warning_type, extra_info )
-  local msg = warningMessages[warning_type]
+  local msg = warningMessages[warning_type] or warning_type
 
   cecho( "info", f "\n{fill(1)}{pcTags[pc]} {msg}" )
 

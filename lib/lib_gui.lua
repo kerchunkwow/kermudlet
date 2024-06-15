@@ -35,6 +35,23 @@ function listFonts()
   end
 end
 
+FULL_HP_COLOR  = {125, 200, 25}
+EMPTY_HP_COLOR = {200, 50, 25}
+FULL_MN_COLOR  = {25, 100, 200}
+EMPTY_MN_COLOR = {5, 25, 50}
+-- Given max and min color values and a ratio, return a color linearly interpolated between the two
+function interpolateColor( highColor, lowColor, ratio )
+  local r1, g1, b1 = unpack( lowColor )
+  local r2, g2, b2 = unpack( highColor )
+
+  -- Calculate the interpolation based on the adjusted logic
+  local r = math.floor( r1 + (r2 - r1) * ratio + 0.5 )
+  local g = math.floor( g1 + (g2 - g1) * ratio + 0.5 )
+  local b = math.floor( b1 + (b2 - b1) * ratio + 0.5 )
+
+  return r, g, b
+end
+
 -- Create and/or open a basic user window into which you can echo output; uses _G to
 -- store the object in a variable of the same name
 local function openBasicWindow( name, title, fontFace, fontSize )
@@ -89,4 +106,12 @@ local function getModifiedColor( r, g, b, d )
   local newB = math.floor( clamp( b * scale, 0, 255 ) + 0.5 )
 
   return newR, newG, newB
+end
+
+-- Print a horizontal dividing line to the main console; useful in conjunction with
+-- large data outputs for visual distinction.
+function hline()
+  local CB = "<cadet_blue>"
+  local SG = "<dark_slate_grey>"
+  cout( "{CB}+{SG}------------------------------------------------{CB}+{RC}" )
 end

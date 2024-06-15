@@ -9,7 +9,7 @@ client. Mudlet enhances play through the use of Aliases, Triggers, and Keybinds.
 kermudlet leverages Mudlet's [event engine](https://wiki.mudlet.org/w/Manual:Event_Engine) to coordinate play across four
 player characters simultaneously.
 
-The design relies upon a single Main session and three Alternate (Alt) sessions which communicate using the event system.
+This multiplay design relies upon a single Main session and three Alternate (Alt) sessions which communicate using the event system.
 The Main session maintains data tables that hold the status of Alt sessions and is responsible for creating and updating
 various GUI elements that display this information to the user.
 
@@ -19,8 +19,9 @@ including Items, Areas/Rooms, and Enemies (Mobs).
 
 ### Python Support
 As needed, kermudlet will utilize Python scripts for supporting utilities in `./pyutils`. Currently, these include:
-`parse_xml.py`: Converts Mudlet's XML profiles to Lua for interpretation by the IDE.
-`find_colors.py`: Search globally for references to Mudlet colors to aid refactoring
+- `parse_xml.py`: Converts Mudlet's XML profiles to Lua for interpretation by the IDE
+- `find_colors.py`: Search globally for references to Mudlet colors to aid refactoring
+- `gizmogram.py`: Pass messages to a Telegram chatbot via command-line arguments (e.g., forward chat messages)
 
 ## Technical Details
 - Primary scripts are [Lua 5.1](https://www.lua.org/manual/5.1/)
@@ -164,6 +165,7 @@ any necessary door commands.
 - Use lowerCamelCase for variables and function names
 - Use UpperCamelCase for global variables and tables (NOTE: Mudlet has built-in global variables & tables which do not conform to the UpperCamelCase convention)
 - Use UPPER_SNAKE_CASE for global constants
+- Error handling is generally not needed as the Mudlet client clearly reports Lua errors in the console
 - Do not use comments to refer to our chat interactions; for example, if I ask for a change don't comment `--changed this`
 - Avoid using `print()`; use `cout()` or `iout()` for all output
 - `cout()` and `iout()` both encapsulate argument interpolation; `cout( "{GlobalVariable}" )` is valid syntax and will print the value of that variable to the console; you should rarely if ever need to use Lua's concatenation operator `..`

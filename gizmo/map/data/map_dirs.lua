@@ -857,20 +857,21 @@ function goArea( area )
   if CurrentRoomNumber ~= 1121 then return end
   local path, dstName, dstNumber = getDirs( area )
   local commands                 = expandWintinString( path )
-  tempTrigger( dstName, f [[updateAfterSpeedwalk( {dstNumber} )]], 1 )
-  iout( "<dim_grey>Path: <green_yellow>{path}<reset>" )
+  local updateCode               = f [[validateSpeedwalk( {dstNumber} )]]
+  addTrigger( 'substring', 'validate_speedwalk', dstName, updateCode, 1 )
+  iout( "<dim_grey>Walking: <green_yellow>{path}<reset>" )
   for _, cmd in ipairs( commands ) do
     send( cmd, false )
   end
 end
 
 -- An attempt to validate & update pc map position after a speedwalk completes
-function updateAfterSpeedwalk( roomNumber )
+function validateSpeedwalk( roomNumber )
   if CurrentRoomNumber ~= roomNumber then
-    iout( "Updating map location post speedwalk: {NC}{roomNumber}{RC}" )
+    iout( "{EC}Destination mismatch{RC}, updating: {NC}{roomNumber}{RC}" )
     setPlayerRoom( roomNumber )
   else
-    iout( "Map did not require an update after that speedwalk." )
+    iout( "<dim_grey>Map did not require an update after that speedwalk.{RC}" )
   end
 end
 

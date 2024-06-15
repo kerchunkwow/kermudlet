@@ -1,14 +1,17 @@
 -- Initiate the affect status table for all four PCs
 local function initAffectStatus()
   affectStatus = {}
-  for pc = 1, 4 do
+  for pc = 1, pcCount do
     affectStatus[pc] = {
+      --['Darkness']             = {active = false, ticksRemaining = -1},
+      ["Fireshield"]           = {active = false, ticksRemaining = -1},
+      ["Achilles' last stand"] = {active = false, ticksRemaining = -1},
       ['Sanctuary']            = {active = false, ticksRemaining = -1},
       ['Armor']                = {active = false, ticksRemaining = -1},
       ['Bless']                = {active = false, ticksRemaining = -1},
       ['Fury']                 = {active = false, ticksRemaining = -1},
       ['Endure']               = {active = false, ticksRemaining = -1},
-      ['Protection from evil'] = {active = false, ticksRemaining = -1},
+      --['Protection from evil'] = {active = false, ticksRemaining = -1},
     }
   end
 end
@@ -58,11 +61,6 @@ function triggerUpdateAffect()
   selectString( ticks, 1 )
   setFgColor( unpack( color_table['orange'] ) )
   resetFormat()
-  if affectName == "Poison" then
-    local poisoned = pcNames[SESSION]
-    expandAlias( f [[col cast 'remove poison' {poisoned}]], false )
-    return
-  end
   if SESSION == 1 then
     updateAffect( 1, affectName, ticks )
     refreshAffectLabels( 1 )
@@ -120,7 +118,7 @@ function resetAffects( pc )
     end
   else
     -- Reset affects for all pcs
-    for currentPc = 1, 4 do
+    for currentPc = 1, pcCount do
       for affectName, affectData in pairs( affectStatus[currentPc] ) do
         affectData.active = false
         affectData.ticksRemaining = -1

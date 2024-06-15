@@ -1,59 +1,78 @@
+# Module to generate a series of "clock" images which when animated create the effect of a timer gradually
+# progressing between two color values and providing a warning state at the end of each cycle.
 from PIL import Image, ImageDraw, ImageFont
 
-# Initial color definitions
+# Where you want the output images to be saved
+CLOCK_FOLDER   = 'C:/Dev/mud/mudlet/gizmo/assets/img/t'
+
+# Various size & appearance settings; make sure the font is available on your system
+CLOCK_DIAMETER  = 32
+CLOCK_STEPS     = 120
+CLOCK_FONT_FACE = "DUBAI-BOLD.TTF"
+CLICK_FONT_SIZE = 13
+
+# Each step of the clock will be an interpolated color value between these state and end points
 START_FG       = '#9ACD32'
 END_FG         = '#FF4500'
+
+# As the color of the clock face changes, it may help to alter the font color to maintain readability
+START_FONT     = "#4B0082"
+END_FONT       = "#FF4500"
+
+# Give the clock a border and BG color that works well for your UI
 CLOCK_BG       = '#202020'
 CLOCK_BORDER   = '#2F4F4F'
-CLOCK_STEPS    = 120
-CLOCK_DIAMETER = 32
-CLOCK_FOLDER   = 'c:/Dev/mud/mudlet/gizmo/assets/img/t'
 
+# In the final seconds of each minutes, the clock will briefly display these colors, alternating back to
+# normal to create a flashing "warning" effect
 WARNING_BORDER = '#FF1493'
 WARNING_BG     = '#353535'
 WARNING_FONT   = "#FF1493"
-EARLY_FONT     = "#4B0082"
-LATE_FONT      = "#FF4500"
 
-def hex_to_rgb(hex_color):
-    """Convert hex to RGB."""
-    hex_color = hex_color.lstrip('#')
-    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2 ,4))
 
-def rgb_to_hex(rgb_color):
-    """Convert RGB to hex."""
-    return '#{:02x}{:02x}{:02x}'.format(*rgb_color)
+def hex_to_rgb( hex_color ):
+    """Break a HEX color into DEC RGB"""
+    hex_color = hex_color.lstrip( '#' )
+    return tuple( int( hex_color[i:i+2], 16 ) for i in ( 0, 2 ,4 ) )
 
-def interpolate_color(start_color, end_color, fraction):
-    """Interpolate between two colors."""
-    start_rgb = hex_to_rgb(start_color)
-    end_rgb = hex_to_rgb(end_color)
-    interpolated_rgb = tuple(int(start + (end - start) * fraction) for start, end in zip(start_rgb, end_rgb))
-    return rgb_to_hex(interpolated_rgb)
+def rgb_to_hex( rgb_color ):
+    """Pack a DEC RGB color into its HEX equivalent"""
+    return '#{:02x}{:02x}{:02x}'.format( *rgb_color )
 
-def get_timer_colors(frame, total_frames, start_color, end_color, font_start_color, font_end_color):
-    """Get interpolated clock and font colors."""
-    fraction = frame / total_frames
-    clock_color = interpolate_color(start_color, end_color, fraction)
-    font_color = interpolate_color(font_start_color, font_end_color, fraction)
+def interpolate_color( start_color, end_color, fraction ):
+    """Given start and end colors, return one a fraction of the distance between them"""
+    start_rgb        = hex_to_rgb( start_color )
+    end_rgb          = hex_to_rgb( end_color )
+    interpolated_rgb = tuple( int( start + ( end - start ) * fraction ) for start, end in zip( start_rgb, end_rgb ) )
+
+    return rgb_to_hex( interpolated_rgb )
+
+def get_timer_colors( frame, total_frames, start_color, end_color, font_start_color, font_end_color ):
+    """Get colors adjusted for each frame of the animated timer"""
+    fraction    = frame / total_frames
+    clock_color = interpolate_color( start_color, end_color, fraction )
+    font_color  = interpolate_color( font_start_color, font_end_color, fraction )
+
     return clock_color, font_color
 
 def create_timer_images():
-    """Create timer images with interpolated colors and warning effect."""
-    image_size = (CLOCK_DIAMETER, CLOCK_DIAMETER)
+    """Create a series of clock face images"""
+    image_size = ( CLOCK_DIAMETER, CLOCK_DIAMETER )
 
     try:
-        font = ImageFont.truetype("DUBAI-BOLD.TTF", size=13)
+        font = ImageFont.truetype( CLOCK_FONT_FACE, size = CLICK_FONT_SIZE )
     except IOError:
         font = ImageFont.load_default()
 
-    for i in range(CLOCK_STEPS):
-        seconds_remaining = (CLOCK_STEPS - i + 1) // 2
+    for i in range( CLOCK_STEPS ):
+
+        seconds_remaining = ( CLOCK_STEPS - i + 1 ) // 2
+
         if i in [115, 117, 119]:
             fill_color, font_color = WARNING_BG, WARNING_FONT
             border_color = WARNING_BORDER
         else:
-            fill_color, font_color = get_timer_colors(i, CLOCK_STEPS-1, START_FG, END_FG, EARLY_FONT, LATE_FONT)
+            fill_color, font_color = get_timer_colors( i, CLOCK_STEPS - 1, START_FG, END_FG, START_FONT, END_FONT )
             border_color = CLOCK_BORDER
 
         img = Image.new('RGBA', image_size, (0, 0, 0, 0))

@@ -87,7 +87,7 @@ function generate_sim_stats()
     "awful",
     "bleeding",
   }
-  for pc = 1, 4 do
+  for pc = 1, pcCount do
     local tnk, trg = nil, nil
     local maxHP, hpc, mnm, mnc, mvm, mvc = 0, 0, 0, 0, 0, 0
 

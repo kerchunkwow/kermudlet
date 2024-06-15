@@ -87,9 +87,6 @@ function setPlayerRoom( id )
   if roomExists( id ) then
     local roomArea = getRoomArea( id )
     if roomArea ~= CurrentAreaNumber then
-      -- If we were following a path in this area, reset/nil these settings
-      CurrentPath       = nil
-      PathPosition      = nil
       CurrentAreaNumber = roomArea
       CurrentAreaName   = getRoomAreaName( CurrentAreaNumber )
       cecho( f "\n<dim_grey>  Entering {getAreaTag()}" )
@@ -99,6 +96,8 @@ function setPlayerRoom( id )
     CurrentRoomName   = getRoomName( CurrentRoomNumber )
     roomExits         = getRoomExits( CurrentRoomNumber )
     centerview( CurrentRoomNumber )
+    -- If we're currently searching rooms, remove the room we just entered from the result set (if it exists there)
+    if #FoundRooms > 0 then removeFoundRoom( CurrentRoomNumber ) end
     -- For now, report when the map needs to be resynchronized just so we can keep an eye on how often it's necessary
     if SESSION == 1 and resynch then
       cecho( "info", f "\nMap synchronized at {getRoomString( CurrentRoomNumber, 2 )}" )

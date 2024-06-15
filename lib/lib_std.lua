@@ -1,3 +1,7 @@
+function getCurrentTime()
+  return os.date( "%H:%M" )
+end
+
 -- Compile and execute a lua function directly from the command-line; used
 -- throughout other scripts and in aliases as 'lua <command> <args>'
 function runLuaLine()
@@ -120,7 +124,7 @@ end
 
 -- Feed the contents of a file line-by-line as if it came from the MUD
 function feedFile( feedPath )
-  local feedRate = 0.1
+  local feedRate = 0.01
   local file = io.open( feedPath, "r" )
 
   local lines = file:lines()
@@ -168,4 +172,38 @@ function fileModifiedEvent( _, path )
     -- Just reload the file; we know it's there since it had stuff in _G[]
     dofile( path )
   end
+end
+
+-- Transform a uniformly distributed random value to favor lower values
+function skewedRandom( min, max, skewFactor )
+  -- Generate a uniformly distributed random number between 0 and 1
+  local uniformRandom = math.random()
+
+  -- Apply a transformation to skew the distribution towards lower values
+  -- A higher skewFactor will now more aggressively bias towards lower values.
+  local skewedRandom = uniformRandom ^ skewFactor
+
+  -- Scale and shift the result to the desired range (min to max)
+  return min + (max - min) * skewedRandom
+end
+
+function testSkew()
+  -- Initialize variables for the accumulation and the loop
+  local sum        = 0
+  local trials     = 1000
+
+  -- Specify the parameters for the skewedRandom function
+  local min        = 2
+  local max        = 8
+  local skewFactor = 3
+
+  -- Loop 1000 times, calling skewedRandom and accumulating the results
+  for i = 1, trials do
+    local result = skewedRandom( min, max, skewFactor )
+    sum = sum + result
+  end
+  -- Calculate the average
+  local average = round( sum / trials, 0.01 )
+
+  iout( [[Average: {NC}{average}{RC}]] )
 end

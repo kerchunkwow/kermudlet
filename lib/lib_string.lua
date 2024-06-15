@@ -1,5 +1,6 @@
 -- Trim leading/trailing whitespace from a string
 function trim( s )
+  if not s then return end
   return s:match( "^%s*(.-)%s*$" )
 end
 
