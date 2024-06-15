@@ -1,3 +1,4 @@
+---@diagnostic disable: undefined-global, assign-type-mismatch
 nanMode = nanMode or nil
 
 function swapGear()
@@ -432,7 +433,6 @@ function insertSpecialAttacks()
   end
 end
 
-
 -- Triggered by a "multi-line match" as a result of the 'stat' command to trap all mob stats
 function parseStatBlock()
   local statBlock = {}
@@ -484,6 +484,7 @@ function parseStatBlock()
     cecho( "info", f "\nFailed to parse stats for: <orange_red>{currentKey}<reset>" )
   end
 end
+
 -- Return the area name of a captured/scanned mob (or string version of room number for unknown areas)
 function getWhereArea( number )
   for _, area in ipairs( whereMap ) do
@@ -575,6 +576,7 @@ function badKeyword()
   local errorString = f( "{currentMobKeyword} ({currentMobIndex-1}) returned no entities from 'where'" )
   cecho( "info", f "\n<orange_red>{errorString}<reset>" )
 end
+
 -- Some mobs have a special attack table that lists the chance, damage, and other data about special attacks
 -- a mob can perform; here we parse them and store them in the capturedMobs table; an example special attacks table:
 --[[
@@ -698,7 +700,6 @@ function statCapturedMobs()
   local whereOffset = statOffset + 2
   tempTimer( whereOffset, whereNextMob )
 end
-
 
 mobKeywords = {
   'aaron',
@@ -2599,6 +2600,7 @@ function captureWhereMobs()
     end
   end
 end
+
 -- Function to initiate stat command for the next unstated mob
 function statNextMob()
   cecho( f "\n<yellow_green>statNextMob()<reset>" )
@@ -2623,6 +2625,7 @@ function statNextMob()
     whereNextMob()
   end
 end
+
 -- Stat block seen with "PC" type; remove this entry from the capturedMobs table
 function removeCapturedPC( pcName )
   cecho( "info", f "\nRemoving <royal_blue>{pcName}<reset> from capturedMobs" )
@@ -2666,6 +2669,7 @@ function captureWhereMob()
     table.insert( mobIndicesToStat, {index = mobIndex, keyword = currentMobKeyword} )
   end
 end
+
 -- Mudlet has a built-in table.contains() function, you don't need to implement one.
 -- Print the content of the capturedMobs table filtered by the first letter of the mob's name
 function displayCapturedMobsByLetter( letter )
@@ -2696,6 +2700,7 @@ function displayCapturedMobsByLetter( letter )
     end
   end
 end
+
 -- Function to calculate duration
 function calculateDuration( pc, spellName )
   local endTime = getStopWatchTime( "timer" )
@@ -2724,7 +2729,7 @@ function feedFile()
   local filePath = "C:\\Dev\\mud\\mudlet\\wheres.txt" -- Update the path as necessary
   local file = io.open( filePath, "r" )               -- Open the file for reading
 
-  local lines = file:lines() -- Get an iterator over lines in the file
+  local lines = file:lines()                          -- Get an iterator over lines in the file
 
   local function feedLine()
     local nextLine = lines()          -- Read the next line
@@ -2841,7 +2846,7 @@ end
 
 -- Items to ignore when checking to see whether something has been added to the database;
 -- this is going to get way too long and needs another solution eventually.
-ignoredItems     = {
+ignoredItems = {
   ["a vanity chit"]                        = true,
   ["potion of healing"]                    = true,
   ["Cradle of the Forest"]                 = true,
@@ -2900,8 +2905,6 @@ function isIgnoredItem( item )
   return false
 end
 
-
-
 function laswield()
   expandAlias( 'las rem ring', false )
   expandAlias( 'las rem leg', false )
@@ -2937,6 +2940,7 @@ function nanwield()
   expandAlias( 'nan wear onyx', false )
   expandAlias( 'nan wear gloves', false )
 end
+
 -- Called repeatedly to iterate each list of cloning assignments until complete
 function doClone()
   -- First/last call condition
@@ -3052,7 +3056,6 @@ function colwield()
   expandAlias( 'col wear greaves', false )
 end
 
-
 -- Use with cecho etc. to colorize output without massively long f-strings
 function ec( s, c )
   local colors = {
@@ -3119,7 +3122,6 @@ function importWintinActions()
     triggerCounter = triggerCounter + 1
   end
 end
-
 
 -- Clean up minimum room numbers corrupted by my dumb ass
 function fixMinimumRoomNumbers()
@@ -3408,7 +3410,6 @@ function buildAreaMap()
     end
   end
 end
-
 
 function combinePhantom()
   local phantom1 = worldData[102].rooms
@@ -3872,7 +3873,6 @@ function loadExitData()
   table.save( 'C:/Dev/mud/mudlet/gizmo/data/exitData.lua', exitData )
 end
 
-
 -- Get the Area data for a given areaRNumber
 function getAreaData( areaRNumber )
   return worldData[areaRNumber]
@@ -3885,8 +3885,6 @@ function getRoomData( roomRNumber )
     return worldData[areaRNumber].rooms[roomRNumber]
   end
 end
-
-
 
 -- Use a breadth-first-search (BFS) to find the shortest path between two rooms
 function findShortestPath( srcRoom, dstRoom )
@@ -4383,7 +4381,6 @@ function updateExits()
   end
 end
 
-
 -- Cull redundant (leading to the same room) exits from a given room
 function cullRedundantExits( roomID )
   local roomExits = getRoomExits( roomID )
@@ -4747,6 +4744,7 @@ function nextCmd( direction )
   cecho( "\n<dim_grey>Alas, you cannot go that way.<reset>" )
   return false
 end
+
 -- Simulate a 'scroll of recall'; magical item in game that returns the player to the starting room
 function virtualRecall()
   cecho( f "\n\n<orchid>You recite a <deep_pink>scroll of recall<orchid>.<reset>\n" )
@@ -4786,6 +4784,7 @@ function moveExit( direction )
   cecho( "\n<dim_grey>Alas, you cannot go that way.<reset>" )
   return false
 end
+
 -- Build a "line" of all exits from the current room, color-coded based on the attributes of
 -- the exit or destination room.
 function getExitString( id )
@@ -4848,7 +4847,6 @@ function getDoorString( word, key )
   doorString = f " <dim_grey>past a {wordString}{keyString}"
   return doorString
 end
-
 
 function displayExits( id )
   local exitString = ""

@@ -141,18 +141,26 @@ function expandWintinString( wintinString )
 end
 
 -- Given a large number as str, return an abbreviated version like '1.2B'
-local function abbreviateNumber( numberString )
+function abbreviateNumber( numberString )
   local str = string.gsub( numberString, ",", "" )
   str = trim( str )
   local num = tonumber( str )
 
-  -- Truncuate based on 10 power and add matching label
+  local function formatNumber( n, unit )
+    if n % 1 == 0 then
+      return string.format( "%d%s", n, unit )
+    else
+      return string.format( "%.1f%s", n, unit )
+    end
+  end
+
+  -- Truncate based on 10 power and add matching label
   if num >= 10 ^ 9 then
-    return string.format( "%.1fB", num / 10 ^ 9 )
+    return formatNumber( num / 10 ^ 9, "B" )
   elseif num >= 10 ^ 6 then
-    return string.format( "%.1fM", num / 10 ^ 6 )
+    return formatNumber( num / 10 ^ 6, "M" )
   elseif num >= 10 ^ 3 then
-    return string.format( "%.1fK", num / 10 ^ 3 )
+    return formatNumber( num / 10 ^ 3, "K" )
   else
     return tostring( num )
   end

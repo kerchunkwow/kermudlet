@@ -142,7 +142,8 @@ function feedFile( feedPath )
   feedLine()
 end
 
--- Called when sysPathChanged events fire on files which were registered by addFileWatchers()
+-- Invoked when sysPathChanged event fires for files previously registered by addFileWatchers();
+-- nils all global definitions sourced from the modofied file then reloads its script from disk
 function fileModifiedEvent( _, path )
   -- Throttle this event 'cause VS-Code extensions fire extra modifications with each save
   local fileModifiedDelay = 5 -- seconds between auto-reloads

@@ -34,6 +34,10 @@ TargetCount   = TargetCount or 0
 
 -- Follow the current path; use 1 to move forward, -1 to go back
 function followPath( direction )
+  if inCombat then
+    iout( "{EC}Ignoring followPath() while in combat{RC}" )
+    return
+  end
   if not CurrentPath or not PathPosition then
     setPathByRoom()
     -- setPathByRoom didn't find a path; it will explain why
