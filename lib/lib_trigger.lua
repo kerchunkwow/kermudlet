@@ -273,7 +273,7 @@ function guaranteeSong( song, successPattern )
   guaranteeCommand( songCmd, successPattern, SONG_FAIL, SONG_ABORT, 1, 6.5 )
 end
 
--- "Next prompt" triggers follow a standard format, so we can use a helper function to make them
+-- All "next prompt" triggers follow the same format so here's a helper function
 function onNextPrompt( code )
   addTrigger( 'regex', 'next_prompt', PROMPT_PATTERN, code, 1 )
 end

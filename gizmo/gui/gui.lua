@@ -52,12 +52,15 @@ end
 
 function enableMetaTriggers()
   enableTrigger( [[Meta Shop]] )
+
   local t = "[       Metaphysician Services       ]"
+
   local hr = "+------------------------------------+"
   local ids = f "<orange>#{RC}"
   local its = f "<slate_blue>Item{RC}"
   local xps = f "<deep_pink>XP{RC}"
   local gps = f "<ansi_light_yellow>GP{RC}"
+
   creplaceLine( f "\n{hr}\n{t}\n{hr}\n|   {ids}  {its}              {xps}     {gps}   |\n{hr}" )
   onNextPrompt( function () disableTrigger( [[Meta Shop]] ) end )
 end

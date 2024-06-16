@@ -173,7 +173,7 @@ end
 
 function triggerPCActivity()
   local actor = trim( matches[2] )
-  if ALT_PC[actor] then deleteLine() end
+  --if ALT_PC[actor] then deleteLine() end
 end
 
 -- Build out from here to create a tick-tracker that keeps tracking of and reports on tick status
@@ -215,7 +215,7 @@ function triggerLocateObject()
   end
   selectString( obj, 1 )
   -- Sought after item
-  if DesiredItems[obj] then
+  if DesirableItems[obj] then
     fg( "gold" )
     playSoundFile( {name = "whisper.wav"} )
     -- In our database

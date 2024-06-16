@@ -344,36 +344,6 @@ temporaryTriggers = {}
 -- Neutral color for "ui" output like spacer lines, separators, etc.
 uiColor           = "<light_steel_blue>"
 
--- A list of Alts; used by filter triggers to limit spam from Alts
-ALT_PC            = {
-  ["Nadja"]    = true,
-  ["Blain"]    = true,
-  ["Cait"]     = true,
-  ["Glory"]    = true,
-  ["Hocken"]   = true,
-  ["Drago"]    = true,
-  ["Huck"]     = true,
-  ["Mac"]      = true,
-  ["Lemon"]    = true,
-  ["Iuck"]     = true,
-  ["Dillon"]   = true,
-  ["Jock"]     = true,
-  ["Nordberg"] = true,
-  ["Laszlo"]   = true,
-  ["Youke"]    = true,
-  ["Ludwig"]   = true,
-  ["Chaliz"]   = true,
-  ["Nandor"]   = true,
-  ["Acute"]    = true,
-  ["Cyrus"]    = true,
-  ["Topaz"]    = true,
-  ["Anima"]    = true,
-  ["Poncho"]   = true,
-  ["Anna"]     = true,
-  ["Elbryan"]  = true,
-  ["Qxuilur"]  = true,
-}
-
 -- Mob short descriptions that start with articles end up lowercase in some contexts;
 -- this table helps map between the two.
 ARTICLES          = {"A ", "An ", "The "}
@@ -390,217 +360,31 @@ CONDITION_COLORS  = {
   ["bleeding"] = {200, 50, 25}    -- Red
 }
 
-KnownPlayers      = {
-  ["Jubei"]          = true,
-  ["Crest"]          = true,
-  ["Cigarrillo"]     = true,
-  ["Aiden"]          = true,
-  ["Buffer"]         = true,
-  ["Tumble"]         = true,
-  ["Damage"]         = true,
-  ["Health"]         = true,
-  ["Cellulite"]      = true,
-  ["Gandalv"]        = true,
-  ["Tempus"]         = true,
-  ["Logain"]         = true,
-  ["Fitz"]           = true,
-  ["Gaea"]           = true,
-  ["Rogue"]          = true,
-  ["Ajathar"]        = true,
-  ["Terran"]         = true,
-  ["Acapela"]        = true,
-  ["Stp"]            = true,
-  ["Gus"]            = true,
-  ["Evo"]            = true,
-  ["Tek"]            = true,
-  ["Ranyk"]          = true,
-  ["Attis"]          = true,
-  ["Tormund"]        = true,
-  ["Wolgast"]        = true,
-  ["Connolly"]       = true,
-  ["Quark"]          = true,
-  ["Lepton"]         = true,
-  ["Muon"]           = true,
-  ["Boson"]          = true,
-  ["Blain"]          = true,
-  ["Dillon"]         = true,
-  ["Mac"]            = true,
-  ["Billy"]          = true,
-  ["Organ"]          = true,
-  ["Trachea"]        = true,
-  ["Digest"]         = true,
-  ["Germ"]           = true,
-  ["Glory"]          = true,
-  ["Anima"]          = true,
-  ["Cyrus"]          = true,
-  ["Vassago"]        = true,
-  ["Youko"]          = true,
-  ["Drago"]          = true,
-  ["Manwe"]          = true,
-  ["Turambar"]       = true,
-  ["Finarfin"]       = true,
-  ["Irelia"]         = true,
-  ["Nandor"]         = true,
-  ["Laszlo"]         = true,
-  ["Nadja"]          = true,
-  ["Colin"]          = true,
-  ["Elbryan"]        = true,
-  ["Qxuilur"]        = true,
-  ["Ace"]            = true,
-  ["Reedus"]         = true,
-  ["Rax"]            = true,
-  ["Sly"]            = true,
-  ["Tzu"]            = true,
-  ["Pastor"]         = true,
-  ["Jacob"]          = true,
-  ["Topaz"]          = true,
-  ["Caitlin"]        = true,
-  ["Saben"]          = true,
-  ["Chaliz"]         = true,
-  ["Acute"]          = true,
-  ["Bangle"]         = true,
-  ["Opal"]           = true,
-  ["Turil"]          = true,
-  ["Charneus"]       = true,
-  ["Alluran"]        = true,
-  ["Avernus"]        = true,
-  ["Killian"]        = true,
-  ["Nikki"]          = true,
-  ["Bongo"]          = true,
-  ["Youke"]          = true,
-  ["Viron"]          = true,
-  ["Youky"]          = true,
-  ["Anna"]           = true,
-  ["Celion"]         = true,
-  ["Harlae"]         = true,
-  ["Borsoi"]         = true,
-  ["Lever"]          = true,
-  ["Strap"]          = true,
-  ["Regret"]         = true,
-  ["Kaylee"]         = true,
-  ["ThunderCat"]     = true,
-  ["Codee"]          = true,
-  ["Aliya"]          = true,
-  ["Turbo"]          = true,
-  ["Nicolav"]        = true,
-  ["Presto"]         = true,
-  ["Sartre"]         = true,
-  ["Camma"]          = true,
-  ["Salieri"]        = true,
-  ["Drift"]          = true,
-  ["Blackjack"]      = true,
-  ["Tempest"]        = true,
-  ["Cyclone"]        = true,
-  ["Barrage"]        = true,
-  ["Torment"]        = true,
-  ["Tree"]           = true,
-  ["Poncho"]         = true,
-  ["Liono"]          = true,
-  ["Tygra"]          = true,
-  ["Panthro"]        = true,
-  ["Cheetara"]       = true,
-  ["Jaga"]           = true,
-  ["WilyKat"]        = true,
-  ["WilyKit"]        = true,
-  ["Spellfire"]      = true,
-  ["Tissue"]         = true,
-  ["Intestine"]      = true,
-  ["Raw"]            = true,
-  ["Banget"]         = true,
-  ["Padre"]          = true,
-  ["Izaur"]          = true,
-  ["Nikolas"]        = true,
-  ["Youku"]          = true,
-  ["a shade minion"] = true,
-  ["a troll minion"] = true,
-}
-
-PlayerContainers  = {
-  ["a plain brown parcel"]                  = true,
-  ["a Swingin' Udder"]                      = true,
-  ["a BMF wallet"]                          = true,
-  ["the inner sarcophagus"]                 = true,
-  ["a Vault of Lost war-cries (screaming)"] = true,
-  ["a bag"]                                 = true,
-  ["a large green sack"]                    = true,
-  ["King Crotus' sarcophagus"]              = true,
-  ["a Christmas Stocking"]                  = true,
-  ["Cradle of the Forest"]                  = true,
-  ["Legends Satchel"]                       = true,
-  ["an explorer's backpack"]                = true,
-  ["a black asbestos cloak"]                = true,
-  ["The Library of Sin"]                    = true,
-  ["The Shrine of The Prophets of Rage"]    = true,
-  ["a Legends Satchel"]                     = true,
-  ["a rift in space"]                       = true,
-  ["the UYAM stocking"]                     = true,
-}
-
-DesiredItems      = {
-  ["a flowing black cape"]                    = true,
-  ["cloak of the fiend"]                      = true,
-  ["a pair of chaos sleeves"]                 = true,
-  ["armbands of hell"]                        = true,
-  ["a Linen Bodice"]                          = true,
-  ["a Reptilian Scaled Plate"]                = true,
-  ["Boots of Harmony"]                        = true,
-  ["Boots of the Outer Planes"]               = true,
-  ["a Black Onyx Ring"]                       = true,
-  ["a blood red ruby ring"]                   = true,
-  ["an adamant ring encrusted with diamonds"] = true,
-  ["ring of the soul eater"]                  = true,
-  ["a Pair of Bloody gloves"]                 = true,
-  ["the Gloves of Agony"]                     = true,
-  ["the Gloves of the Void"]                  = true,
-  ["a drop of heart's blood"]                 = true,
-  ["a malachite"]                             = true,
-  ["a ships rutter"]                          = true,
-  ["a Long Cloth Skirt"]                      = true,
-  ["a pair of Zyca leg plates"]               = true,
-  ["a spyglass"]                              = true,
-  ["Fang of the Vadir"]                       = true,
-  ["Lantern of the Outer Planes"]             = true,
-  ["the Evil Globe of Hyless"]                = true,
-  ["the Hand of Glory"]                       = true,
-  ["the Medallion of Macabre"]                = true,
-  ["the Necklace of Ancient Power"]           = true,
-  ["a Plate from Ygaddrozil"]                 = true,
-  ["a Shield of Festering Mortal Skins"]      = true,
-  ["a spiked leather belt"]                   = true,
-  ["Belt of Burnt Flesh"]                     = true,
-  ["charred and bloody belt"]                 = true,
-  ["desecrated belt of holy symbols"]         = true,
-  ["a Fencing Foil"]                          = true,
-  ["a mammoth's tusk"]                        = true,
-  ["a Slender Dagger"]                        = true,
-  ["the Barbed Fishhook"]                     = true,
-  ["the Mace of Legend"]                      = true,
-  ["a Flaming Bracelet"]                      = true,
-  ["a Freezing Bracelet"]                     = true,
-  ["Bracelet of the Outer Planes"]            = true,
-}
-
 local DG          = "<dim_grey>"
 local MSB         = "<medium_slate_blue>"
 local OB          = "<olive_drab>"
 local DK          = "<dark_khaki>"
 local FB          = "<firebrick>"
 
--- A global table of potion affects so we can see specific spell name/levels next
--- to potion names in game.
-POTION_AFFECT     = {
-  ["Some Sea Essence"]                 = f " {DG}(L30 tiny mana x2){RC}",
-  ["a Pitcher Plant Potion"]           = f " {DG}(L33 lil miracle x2, vitality){RC}",
-  ["a Frosty Potion"]                  = f " {DG}(L30 lesser mana){RC}",
-  ["a jar of blackened blood"]         = f " {DG}(L45 lesser mana x2, strength){RC}",
-  ["a vibrant white potion(humming)"]  = f " {DG}(L30 pfe, heal, bless){RC}",
-  ["glowing potion(glowing)"]          = f " {DG}(L30 strength, heal, sanct){RC}",
-  ["a Seawater Potion"]                = f " {DG}(L30 tiny mana){RC}",
-  ["a swirling blue potion(glowing)"]  = f " {DG}(L30 pfe, strength, armor){RC}",
-  ["a bright magenta potion(glowing)"] = f " {DG}(L30 armor, bless){RC}",
-  ["a scroll of purification"]         = f " {DG}(L50 decurse, dispel evil, bless){RC}",
-  ["a golden stick(glowing)"]          = f " {DG}(L30 miracle){RC}",
-  ["a milky orange potion"]            = f " {DG}(L20 vitality, endure){RC}",
-  ["a thick brew"]                     = f " {DG}(L50 lil miracle){RC}",
-  ["a bloody brew"]                    = f " {DG}(L50 fury){RC}",
-}
+function saveCustomDataTables()
+  table.save( f '{HOME_PATH}/gizmo/map/data/player_containers.lua', PlayerContainers )
+  table.save( f '{HOME_PATH}/gizmo/map/data/potion_affects.lua', PotionAffects )
+  table.save( f '{HOME_PATH}/gizmo/map/data/desirable_items.lua', DesirableItems )
+  table.save( f '{HOME_PATH}/gizmo/map/data/known_players.lua', KnownPlayers )
+end
+
+function loadCustomDataTables()
+  table.load( f '{HOME_PATH}/gizmo/map/data/player_containers.lua', PlayerContainers )
+  table.load( f '{HOME_PATH}/gizmo/map/data/potion_affects.lua', PotionAffects )
+  table.load( f '{HOME_PATH}/gizmo/map/data/desirable_items.lua', DesirableItems )
+  table.load( f '{HOME_PATH}/gizmo/map/data/known_players.lua', KnownPlayers )
+end
+
+function printCustomDataTable( tbl )
+  for k, v in pairs( tbl ) do
+    cecho( f "\n<royal_blue>{k}<reset> = <violet>{v}<reset>" )
+  end
+end
+
+PlayerContainers, PotionAffects, DesirableItems, KnownPlayers = {}, {}, {}, {}
+loadCustomDataTables()

@@ -59,7 +59,7 @@ function triggerParsePrompt()
     -- Check for low health conditions of both tank and ourselves; recall in emergencies
     local tankDying = (tnk == 'bad' or tnk == 'awful' or tnk == 'bleeding')
     local tankHurt = (tnk == 'fair' or tnk == 'wounded')
-    local meDying = (hpp < 0.66)
+    local meDying = (hpp < 0.50)
     if (tankDying or meDying) and not RecallDelay and not IncapDelay then
       RecallDelay = true
       tempTimer( 3, function () RecallDelay = false end )
@@ -117,12 +117,19 @@ function triggerParseScore()
   local exp        = string.gsub( multimatches[6][2], ",", "" )
   local exh        = string.gsub( multimatches[7][2], ",", "" )
   local exl        = string.gsub( multimatches[8][2], ",", "" )
-  local gld        = string.gsub( multimatches[9][2], ",", "" )
+  local gld        = ""
 
-  exp              = tonumber( exp )
-  exh              = tonumber( exh )
-  exl              = tonumber( exl )
-  gld              = tonumber( gld )
+  -- At max level, chars don't have the "exp to next level" line so swap it for gold value which moves up a line
+  if not multimatches[9] then
+    gld = exl
+    exl = nil
+  else
+    gld = string.gsub( multimatches[9][2], ",", "" )
+  end
+  exp = tonumber( exp )
+  exh = tonumber( exh )
+  if exl then exl = tonumber( exl ) end
+  gld = tonumber( gld )
 
   -- From the main session, send parsed values directly to the status table, otherwise raise an event
   if SESSION == 1 then
