@@ -284,3 +284,13 @@ function getDelta( pattern )
   -- Create a temporary trigger that will call showDelta when the pattern is seen
   tempTrigger( pattern, showDelta, 1 )
 end
+
+-- Execute the specified script the specified number of times delaying rate between each call;
+-- Use tempTimer( time, code ) to execute each call, incrementing time by rate as needed to space out the calls
+function repeatCode( code, times, rate )
+  local time = 0
+  for i = 1, times do
+    tempTimer( time, code )
+    time = time + rate
+  end
+end

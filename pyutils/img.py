@@ -31,7 +31,7 @@ WARNING_FONT   = "#FF1493"
 
 
 def hex_to_rgb( hex_color ):
-    """Break a HEX color into DEC RGB"""
+    """Unpack a HEX color into DEC RGB components"""
     hex_color = hex_color.lstrip( '#' )
     return tuple( int( hex_color[i:i+2], 16 ) for i in ( 0, 2 ,4 ) )
 
@@ -40,7 +40,7 @@ def rgb_to_hex( rgb_color ):
     return '#{:02x}{:02x}{:02x}'.format( *rgb_color )
 
 def interpolate_color( start_color, end_color, fraction ):
-    """Given start and end colors, return one a fraction of the distance between them"""
+    """Given start and end colors, return a color a fraction of the distance between them"""
     start_rgb        = hex_to_rgb( start_color )
     end_rgb          = hex_to_rgb( end_color )
     interpolated_rgb = tuple( int( start + ( end - start ) * fraction ) for start, end in zip( start_rgb, end_rgb ) )
@@ -94,4 +94,4 @@ def create_timer_images():
         # Save the image with the original file naming convention
         img.save(f'{CLOCK_FOLDER}/{i}.png')
 
-create_timer_images()
+

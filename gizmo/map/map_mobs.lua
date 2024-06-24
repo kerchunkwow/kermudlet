@@ -8,11 +8,11 @@ if SESSION == 1 and not mobData then
   tempTimer( 0, [[loadAllMobs()]] )
   tempTimer( 0, [[loadFameData()]] )
 end
--- A global table to store the IDs of the current area's temporary mob triggers
-areaMobTriggers = areaMobTriggers or {}
+AreaMobs = AreaMobs or {}
 
 -- Load all mobs from the Mob and SpecialAttacks Tables in the gizwrld.db database
 function loadAllMobs()
+  mobData = {}
   local sql = "SELECT * FROM Mob"
   local cursor, conn, env = getCursor( sql )
 
@@ -22,45 +22,42 @@ function loadAllMobs()
   end
   local mob = cursor:fetch( {}, "a" )
   while mob do
-    local roomUserData = searchRoomUserData( "roomVNumber", tostring( mob.roomVNumber ) )
     -- Initialize the mob entry with database columns
     local mobEntry = {
       rNumber          = tonumber( mob.rNumber ),
       shortDescription = mob.shortDescription,
       longDescription  = mob.longDescription,
       keywords         = mob.keywords,
+      primaryKeyword   = nil, -- TBD calculated later
+      uniqueKeyword    = nil,
       level            = tonumber( mob.level ),
       health           = tonumber( mob.health ),
       ac               = tonumber( mob.ac ),
       gold             = tonumber( mob.gold ),
       xp               = tonumber( mob.xp ),
+      fame             = tonumber( mob.fame ) or 0,
       alignment        = tonumber( mob.alignment ),
       flags            = mob.flags,
       affects          = mob.affects,
+      aggro            = string.find( mob.flags, "AGG" ) and true or false,
       damageDice       = tonumber( mob.damageDice ),
       damageSides      = tonumber( mob.damageSides ),
       damageModifier   = tonumber( mob.damageModifier ),
       hitroll          = tonumber( mob.hitroll ),
       roomVNumber      = tonumber( mob.roomVNumber ),
       specialProcedure = mob.specialProcedure,
+      roomRNumber      = tonumber( mob.roomRNumber ) or -1,
+      areaRNumber      = tonumber( mob.areaRNumber ) or -1,
+      areaName         = mob.areaName or "Unknown",
       -- Fields to calculate or lookup later
-      meleeDamage      = 0,   -- TBD for average melee damage
-      specDamage       = 0,   -- TBD for damage from special attack (tables)
-      xpPerHealth      = 0,   -- TBD
-      goldPerHealth    = 0,   -- TBD
-      roomRNumber      = nil, -- TBD
-      areaRNumber      = nil, -- TBD
-      areaName         = "Unknown",
+      meleeDamage      = 0, -- TBD for average melee damage
+      specDamage       = 0, -- TBD for damage from special attack (tables)
+      xpPerHealth      = 0, -- TBD
+      goldPerHealth    = 0, -- TBD
       -- Placeholder for special attacks
       specialAttacks   = {},
       --tag              = createMobTag( mob.flags, mob.affects ),
     }
-    -- See if the mob's logged R-Number corresponds to a mapped room and set Area data if so
-    mobEntry.roomRNumber = getRoomRbyV( mobEntry.roomVNumber )
-    if mobEntry.roomRNumber then
-      mobEntry.areaRNumber = getRoomArea( mobEntry.roomRNumber )
-      mobEntry.areaName    = getRoomAreaName( mobEntry.areaRNumber )
-    end
     -- Calculate experience and gold per health w/ SANCT = 2x Health
     local mhp = mob.health
     if string.find( mob.affects, 'SANCTUARY' ) then
@@ -104,6 +101,32 @@ function loadAllMobs()
   env:close()
   -- This function is only needed once at startup
   loadAllMobs = nil
+  tempTimer( 0.1, [[setPrimaryKeyword()]] )
+end
+
+-- Populate AreaMobs with a subset of mobs from the mobData table; useful for functions that later
+-- operate within an area so we don't have to iterate over the whole mobData table again
+function loadAreaMobs( areaRNumber )
+  iout( f "Loading mobs for area {NC}{areaRNumber}{RC}" )
+  -- Clear any existing AreaMobs table
+  AreaMobs = nil
+  AreaMobs = {}
+
+  -- Populate AreaMobs with mobs from mobData where areaRNumber matches
+  for _, mob in ipairs( mobData ) do
+    if mob.areaRNumber == areaRNumber then
+      table.insert( AreaMobs, mob )
+    end
+  end
+end
+
+-- Function to display every mob in a particular room
+function displayMobsByRoom( roomRNumber )
+  for _, mob in ipairs( mobData ) do
+    if mob.roomRNumber == roomRNumber then
+      displayMob( mob.rNumber )
+    end
+  end
 end
 
 -- Retrieve data about a specific mob from the global mobData table
@@ -278,6 +301,14 @@ function isMobDeadly( mob, threshold )
   return aggro and dam > threshold
 end
 
+-- A global table to store the IDs of the current area's temporary mob triggers
+areaMobTriggers = areaMobTriggers or {}
+newAreaMobTriggers = newAreaMobTriggers or {}
+
+-- Create a temporary trigger for all mobs in the current area, matching keywords to long descriptions
+-- If a parameter is passed, it is a table where mobRNumbers[rNumber] = true for mobs we want to load
+-- triggers for; if no parameter is passed triggers are created for all mobs in the current area
+-- Alias: ^lam$ for all mobs in the area
 -- Create a temporary trigger for all mobs in the current area, matching keywords to long descriptions
 -- If a parameter is passed, it is a table where mobRNumbers[rNumber] = true for mobs we want to load
 -- triggers for; if no parameter is passed triggers are created for all mobs in the current area
@@ -330,6 +361,23 @@ function loadMobTriggers( mobRNumbers )
   end
 end
 
+-- Now that mobs have a primaryKeyword attribute, we should be able to greatly simplify this function
+-- Start simple:
+-- 1. Create a trigger for each mob in the current area using createLineRegex( mob.longDescription )
+-- 2. When the trigger fires, print the mob's shortDescription and matching keyword to the info window with iout()
+function newLoadMobTriggers( mobRNumbers )
+end
+
+-- Reset temporary mob triggers; use before loading new ones to avoid over-capping trigger limit
+function resetMobTriggers()
+  -- Kill any existing temporary mob triggers
+  for _, id in ipairs( areaMobTriggers ) do
+    killTrigger( id )
+  end
+  -- Re-initialize the table
+  areaMobTriggers = {}
+end
+
 -- This function creates a "tag" designed to appear after a mob's long description when players encounter
 -- the mob in game; the tag will identify flags and affects of the mob that are not typically visible but
 -- help the player understand the mob's behavior and abilities.
@@ -372,16 +420,6 @@ function createMobTag( flags, affects )
   end
 end
 
--- Reset temporary mob triggers; use before loading new ones to avoid over-capping trigger limit
-function resetMobTriggers()
-  -- Kill any existing temporary mob triggers
-  for _, id in ipairs( areaMobTriggers ) do
-    killTrigger( id )
-  end
-  -- Re-initialize the table
-  areaMobTriggers = {}
-end
-
 -- Called when a mob is encountered in the game which has a corresponding trigger
 function targetMatch()
   -- Count matched targets and append target count to each matched mob
@@ -392,6 +430,39 @@ function targetMatch()
   -- Highlight the matching keyword on screen for visual distinction and to validate the trigger
   selectString( matches[2], 1 )
   setFgColor( 205, 92, 92 )
+end
+
+function setPrimaryKeyword()
+  local areaKeywordCounts = {}
+
+  -- First pass: count keywords for each area
+  for _, mob in ipairs( mobData ) do
+    if mob.areaRNumber ~= -1 then
+      local mobKeys = split( mob.keywords, " " )
+      areaKeywordCounts[mob.areaRNumber] = areaKeywordCounts[mob.areaRNumber] or {}
+      local keywordCounts = areaKeywordCounts[mob.areaRNumber]
+      for _, keyword in ipairs( mobKeys ) do
+        keywordCounts[keyword] = (keywordCounts[keyword] or 0) + 1
+      end
+    end
+  end
+  -- Second pass: find the best keyword for each mob in each area
+  for _, mob in ipairs( mobData ) do
+    if mob.areaRNumber ~= -1 then
+      local mobKeys = split( mob.keywords, " " )
+      local keywordCounts = areaKeywordCounts[mob.areaRNumber]
+      local bestKeyword, minCount = nil, math.huge
+
+      for _, keyword in ipairs( mobKeys ) do
+        if keywordCounts[keyword] < minCount then
+          bestKeyword, minCount = keyword, keywordCounts[keyword]
+        end
+      end
+      -- Set the primaryKeyword and uniqueKeyword for the mob
+      mob.primaryKeyword = bestKeyword
+      mob.uniqueKeyword = (minCount == 1)
+    end
+  end
 end
 
 MobList = {
@@ -557,4 +628,143 @@ function triggerCaptureFame()
   resetFormat()
   -- Update the table with new fame data
   updateMobFame( mobShortDescription, fame )
+end
+
+-- Function to identify possible duplicate mobs based on shortDescription
+function suggestDuplicates()
+  -- Create a table to store mobs by their shortDescription
+  local mobsByDescription = {}
+
+  -- Populate the mobsByDescription table
+  for _, mob in ipairs( mobData ) do
+    local mobFlags = mob.flags
+    if not mobsByDescription[mob.shortDescription] then
+      mobsByDescription[mob.shortDescription] = {}
+    end
+    table.insert( mobsByDescription[mob.shortDescription], mob )
+  end
+  -- Iterate through mobsByDescription to find potential duplicates
+  for description, mobs in pairs( mobsByDescription ) do
+    if #mobs > 1 then
+      for _, mob in ipairs( mobs ) do
+        local sd = mob.shortDescription
+        local id = mob.rNumber
+        local ar = mob.areaName
+        iout( f "{SC}{sd}{RC} ({NC}{id}{RC}) in <maroon>{ar}{RC}" )
+      end
+    end
+  end
+end
+
+local function findBestKeywords( areaRNumber )
+  local keywordCounts = {}
+
+  -- First pass: count keywords in the specified area
+  for _, mob in ipairs( mobData ) do
+    if mob.areaRNumber == areaRNumber then
+      local mobKeys = split( mob.keywords, " " )
+      for _, keyword in ipairs( mobKeys ) do
+        keywordCounts[keyword] = (keywordCounts[keyword] or 0) + 1
+      end
+    end
+  end
+  -- Second pass: find the best keyword for each mob in the area
+  for _, mob in ipairs( mobData ) do
+    if mob.areaRNumber == areaRNumber then
+      local mobKeys = split( mob.keywords, " " )
+      local bestKeyword, minCount = nil, math.huge
+
+      for _, keyword in ipairs( mobKeys ) do
+        if keywordCounts[keyword] < minCount then
+          bestKeyword, minCount = keyword, keywordCounts[keyword]
+        end
+      end
+      -- Determine the color for the optimal keyword
+      local color = minCount == 1 and "<green_yellow>" or "<tomato>"
+
+      -- Output the results
+      iout( f "<royal_blue>{mob.shortDescription}<reset>: <cyan>{table.concat(mobKeys, ', ')}<reset> - Optimal Keyword: {color}{bestKeyword}<reset>" )
+    end
+  end
+end
+
+local function findBestKeywords()
+  local keywordCounts = {}
+
+  -- First pass: count keywords in the current area
+  for _, mob in ipairs( AreaMobs ) do
+    local mobKeys = split( mob.keywords, " " )
+    for _, keyword in ipairs( mobKeys ) do
+      keywordCounts[keyword] = (keywordCounts[keyword] or 0) + 1
+    end
+  end
+  -- Second pass: find the best keyword for each mob in the area
+  for _, mob in ipairs( AreaMobs ) do
+    local mobKeys = split( mob.keywords, " " )
+    local bestKeyword, minCount = nil, math.huge
+
+    for _, keyword in ipairs( mobKeys ) do
+      if keywordCounts[keyword] < minCount then
+        bestKeyword, minCount = keyword, keywordCounts[keyword]
+      end
+    end
+    -- Determine the color for the optimal keyword
+    local color = minCount == 1 and "<green_yellow>" or "<tomato>"
+
+    -- Output the results
+    iout( f "<royal_blue>{mob.shortDescription}<reset>: <cyan>{table.concat(mobKeys, ', ')}<reset> - Optimal Keyword: {color}{bestKeyword}<reset>" )
+  end
+end
+
+-- Using data in the mobData table, this function will label rooms on the map with emoji characters
+-- based on the fame value and aggro status of mobs in those rooms.
+local function setRoomCharByFame()
+  local lowFame     = 3
+  local mediumFame  = 6
+  local highFame    = 10
+
+  local safeChar    = "🐯"
+  local lowChar     = "😠"
+  local mediumChar  = "👿"
+  local highChar    = "😡"
+  local extremeChar = "👽"
+
+  for _, mob in ipairs( mobData ) do
+    local fame         = mob.fame
+    local isAggressive = mob.aggro
+    local room         = mob.roomRNumber
+
+    -- For all mobs with non-zero fame and room IDs, add a label to the Mudlet map according to
+    -- their fame value and aggro status
+    if (fame and fame > 0) and (room and room > 0) then
+      local char = ""
+      if not isAggressive then
+        char = safeChar
+      elseif fame <= lowFame then
+        char = lowChar
+      elseif fame <= mediumFame then
+        char = mediumChar
+      elseif fame <= highFame then
+        char = highChar
+      else
+        char = extremeChar
+      end
+      setRoomChar( room, char )
+      --iout( f "{NC}{room}{RC}: {SC}{short}{RC} == {char})" )
+    end
+  end
+end
+
+-- Remove pre-existing mob labels which were based on some arbitrary stats
+local function unlabelMapChars()
+  local clearCount = 0
+  local rooms = getRooms()
+  for id, name in pairs( rooms ) do
+    local char = getRoomChar( id )
+    if char and #char > 0 and char == "😈" or char == "👽" then
+      clearCount = clearCount + 1
+      setRoomChar( id, "" )
+    end
+  end
+  iout( f "Cleared {NC}{clearCount}{RC} mob labels" )
 end

@@ -1,18 +1,82 @@
+function doSpeedWalk()
+  iout( "Someone called <cyan>doSpeedWalk<medium_orchid>()<reset>" )
+end
+
 function setRoomOnClick()
   local dst = getMapSelection()["rooms"][1]
-  iout( "Updating current room: {NC}{dst}{RC}" )
+  iout( "Player Location Set: {NC}{dst}{RC}" )
   setPlayerRoom( dst )
 end
 
-registerAnonymousEventHandler( "setRoomOnClick", "setRoomOnClick" )
-addMapEvent( "Set Current Room", "setRoomOnClick" )
+function showMobOnClick()
+  local id = getMapSelection()["rooms"][1]
+  displayMobsByRoom( id )
+end
 
--- Follow a list of directions; also used by the click-to-walk functionality from the Mapper
-function doSpeedWalk()
-  for _, dir in ipairs( speedWalkDir ) do
-    if #dir > 1 then dir = SDIR[dir] end
-    expandAlias( dir )
+function showRoomOnClick()
+  local id = getMapSelection()["rooms"][1]
+  displayRoom( id )
+end
+
+function registerMapEvents()
+  registerAnonymousEventHandler( "setRoomOnClick", "setRoomOnClick" )
+  registerAnonymousEventHandler( "showMobOnClick", "showMobOnClick" )
+  registerAnonymousEventHandler( "showRoomOnClick", "showRoomOnClick" )
+  addMapEvent( "Set Current Room", "setRoomOnClick" )
+  addMapEvent( "Show Mobs", "showMobOnClick" )
+  addMapEvent( "Show Room", "showRoomOnClick" )
+end
+
+function displayRoom( id )
+  local name       = getRoomName( id )
+  local desc       = getRoomUserData( id, "roomDescription" )
+  local flags      = getRoomUserData( id, "roomFlags" )
+  local spec       = getRoomUserData( id, "roomSpec" )
+  local type       = getRoomUserData( id, "roomType" )
+
+  -- Use a special character to denote when a room has a procedure
+  spec             = spec == "1" and "ƒ" or ""
+
+  -- Format the room description as it might appear in the MUD
+  desc             = formatRoomDescription( desc )
+
+  -- Update each attribute with colorization tags
+  local nc         = MAP_COLOR["roomName"] or "<dim_grey>"
+  local tc         = MAP_COLOR[type] or "<dim_grey>"
+  local dc         = MAP_COLOR["roomDesc"] or "<dim_grey>"
+  local fc         = MAP_COLOR["mapui"] or "<dim_grey>"
+  local sc         = "<ansi_yellow>"
+  local ids        = f "({MAP_COLOR['number']}{id}{RC})"
+  desc             = f "{dc}{desc}{RC}"
+  flags            = f "{fc}{flags}{RC}"
+  spec             = f "{sc}{spec}{RC}"
+  name             = f "{nc}{name}{RC}"
+  type             = f "[{tc}{type}{RC}]"
+  local nameString = f "{name} {ids} {type} {spec}"
+  cecho( f "\n{nameString}\n{desc}\n{flags}" )
+end
+
+function formatRoomDescription( desc )
+  local maxLength = 80
+  local indent = "   "
+  local formattedDesc = indent
+  local lineLength = #indent
+
+  for word in string.gmatch( desc, "%S+" ) do
+    if lineLength + #word + 1 > maxLength then
+      formattedDesc = formattedDesc .. "\n" .. indent .. word
+      lineLength = #indent + #word
+    else
+      if lineLength > #indent then
+        formattedDesc = formattedDesc .. " " .. word
+        lineLength = lineLength + 1 + #word
+      else
+        formattedDesc = formattedDesc .. word
+        lineLength = lineLength + #word
+      end
+    end
   end
+  return formattedDesc
 end
 
 -- Get a complete Wintin-compatible path between two rooms including door commands
@@ -90,6 +154,7 @@ function setPlayerRoom( id )
       CurrentAreaNumber = roomArea
       CurrentAreaName   = getRoomAreaName( CurrentAreaNumber )
       cecho( f "\n<dim_grey>  Entering {getAreaTag()}" )
+      loadAreaMobs( CurrentAreaNumber )
       setMapZoom( 28 )
     end
     CurrentRoomNumber = id
@@ -169,4 +234,31 @@ local function getAreaUniques()
     end
   end
   cecho( f "\n<dark_orange>{areaUniques}<reset> rooms are unique to a single area." )
+end
+
+function findSafeRooms()
+  local allRooms = getRooms()
+  for rNumber, name in pairs( allRooms ) do
+    local roomFlags = getRoomUserData( rNumber, "roomFlags" )
+    if roomFlags then
+      -- if roomFlags contains the substring "NOMOB" then iout() it
+      if string.find( roomFlags, "NO_MOB" ) then
+        local char = getRoomChar( rNumber )
+        if char == "😈" then
+          iout( f "NO_MOB room has char: {char}" )
+          --iout( roomFlags )
+        end
+      end
+    end
+  end
+end
+
+function checkChests( n )
+  for i = 1, n do
+    send( f [[unlock {i}.chest]] )
+    send( f [[open {i}.chest]] )
+    send( f [[get all {i}.chest]] )
+    send( f [[close {i}.chest]] )
+    send( f [[lock {i}.chest]] )
+  end
 end

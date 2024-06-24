@@ -32,6 +32,15 @@ ActionTimer   = ActionTimer or nil
 LookTimer     = LookTimer or nil
 TargetCount   = TargetCount or 0
 
+
+-- This function should call followPath(1) n number of times delaying r seconds between each call;
+-- Use tempTimer( r, function() followPath( 1 ) end ) to delay each call, incrementing a counter by r
+function speedFollow( n, r )
+  for i = 1, n do
+    tempTimer( i * r, function () followPath( 1 ) end )
+  end
+end
+
 -- Follow the current path; use 1 to move forward, -1 to go back
 function followPath( direction )
   if inCombat then
@@ -133,25 +142,6 @@ function setPathByRoom()
     -- Otherwise, create triggers for all mobs in the same area as the path's origin
     loadMobTriggers()
   end
-end
-
--- Provide a simple visual representation of the current path and our position within
--- Alias: ^dpath$
-function displayPath()
-  if not CurrentPath or #CurrentPath == 0 then
-    iout( "{EC}No current path to display.{RC}" )
-    return
-  end
-  local pathString = ""
-  for i, direction in ipairs( CurrentPath ) do
-    local dirLetter = direction:sub( 1, 1 )
-    if i == PathPosition then
-      pathString = pathString .. "<deep_pink>" .. dirLetter .. "<dim_grey>"
-    else
-      pathString = pathString .. dirLetter
-    end
-  end
-  iout( "[<dim_grey>" .. pathString .. "<reset>]" )
 end
 
 --[[
@@ -362,6 +352,24 @@ function setPathToRoomNumber( roomRNumber )
   end
 end
 
+-- Set our path using Mudlet's built-in getPath function to find a path between rooms (in this case the room a mob is in)
+-- Alias: ^pmob (\d+)$
+function setPathToMob( mobRNumber )
+  local targetMob  = getMob( mobRNumber )
+  local targetRoom = targetMob.roomRNumber
+  local mobName    = targetMob.shortDescription
+  if getPath( CurrentRoomNumber, targetRoom ) then
+    local path = speedWalkPath
+    display( path )
+    local steps = #speedWalkDir
+    --iout( "Path set to {SC}{mobName}{RC} ({NC}{targetRoom}{RC}); currently {NC}{steps}{RC} away" )
+    iout( "Path to {SC}{mobName}{RC} set; {NC}{steps}{RC} steps from here" )
+    CurrentPath  = speedWalkDir
+    PathPosition = 1
+    displayPath()
+  end
+end
+
 -- If called with a number OR a room name that maps to a number in the UNIQUE_ROOMS table, we
 -- can path directly to the room. Otherwise, display the table of possible destinations.
 function setPathToRoom( destination )
@@ -374,20 +382,6 @@ function setPathToRoom( destination )
     -- The parameter was a string representing a non-unique room, display a table of possible destinations
     local dstRooms = searchRoom( destination, true, true )
     display( dstRooms )
-  end
-end
-
--- Set our path using Mudlet's built-in getPath function to find a path between rooms (in this case the room a mob is in)
--- Alias: ^pmob (\d+)$
-function setPathToMob( mobRNumber )
-  local targetMob  = getMob( mobRNumber )
-  local targetRoom = targetMob.roomRNumber
-  local mobName    = targetMob.shortDescription
-  if getPath( CurrentRoomNumber, targetRoom ) then
-    local steps = #speedWalkDir
-    iout( "Path set to {SC}{mobName}{RC} ({NC}{targetRoom}{RC}); currently {NC}{steps}{RC} away" )
-    CurrentPath  = speedWalkDir
-    PathPosition = 1
   end
 end
 
@@ -475,4 +469,17 @@ function displayAllRooms()
     end
   end
   file:close() -- Close the file
+end
+
+function isNoMob( id )
+  local roomFlags = getRoomUserData( id, "roomFlags" )
+  if roomFlags then
+    return string.find( roomFlags, "NO_MOB" )
+  end
+  return false
+end
+
+-- This function uses mob data to identify "fame" mobs and marks their rooms according to
+-- the value of fame awarded by the mob.
+function markFameRooms()
 end

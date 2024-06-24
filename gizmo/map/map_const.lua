@@ -95,7 +95,7 @@ local function poundDefine()
     -- Area, Room, Exit Data
     ["area"]      = "<maroon>",
     ["number"]    = "<dark_orange>",
-    ["roomName"]  = "<sky_blue>",
+    ["roomName"]  = "<dodger_blue>",
     ["roomNameU"] = "<royal_blue>",
     ["roomDesc"]  = "<olive_drab>",
     ["exitDir"]   = "<cyan>",

@@ -1,16 +1,133 @@
--- New module/file for reactions exclusive to Undead player characters
+if NymphTimer then killTimer( NymphTimer ) end
+if NymphTrigger then killTrigger( NymphTrigger ) end
+NymphTimer = nil
+NymphTrigger = nil
 
-TrollMode       = TrollMode or nil
-RescueDelay     = false
-TROLL_DMG       = [[crush]]
+function queueNymph()
+  if NymphTrigger then killTrigger( NymphTrigger ) end
+  NymphTrigger = tempTrigger( [[blood to the ground]], function ()
+    send( [[song 'damaged']], true )
+  end, 1 )
+end
+
+function summonNymph()
+  if NymphTimer then killTimer( NymphTimer ) end
+  NymphTimer = tempTimer( 2, function ()
+    send( [[song 'damaged']], true )
+  end )
+end
+
+-- Initialize CloneList, CloneCount, and CurrentClone
+CloneList = CloneList or {
+  ["kings"]        = 3,
+  ["helm"]         = 1,
+  ["lies"]         = 3,
+  ["sickle"]       = 1,
+  ["idiocy"]       = 2,
+  ["stone"]        = 1,
+  ["crocodile"]    = 1,
+  ["working"]      = 1,
+  ["waterwalking"] = 5,
+}
+
+-- Calculate total clones needed
+--if not CloneCount then
+if not CloneCount then
+  CloneCount = 0
+  for _, count in pairs( CloneList ) do
+    CloneCount = CloneCount + count
+  end
+end
+-- Set the current item to clone
+-- CurrentClone = CurrentClone or next( CloneList )
+CurrentClone = CurrentClone or next( CloneList )
+
+-- How long to wait between attempts to clone items
+CloneRate    = 2.6
+
+-- How long to rest when mana is needed
+CloneRest    = 182.6
+
+-- Invoked by an in-game alias to initiate the cloning process; combined with the triggers this should
+-- handle the entire process of cloning items from storage.
+function startCloning()
+  if not CurrentClone then return end
+  -- For each item, retrieve it from storage and start cloning
+  for item, _ in pairs( CloneList ) do
+    expandAlias( f "gett {item} stocking" )
+  end
+  -- Give it some time to get all the items out
+  tempTimer( 5.2, function ()
+    send( f "cast 'clone' {CurrentClone}", true )
+  end )
+end
+
+-- Invoked once cloning is complete to free up resources
+function endCloning()
+  -- Clean up global variables
+  CloneList    = nil
+  CurrentClone = nil
+  CloneCount   = nil
+  CloneRate    = nil
+  CloneRest    = nil
+
+  -- Kill the triggers
+  killTrigger( CloneSuccessTrigger )
+  killTrigger( CloneFailTrigger )
+  killTrigger( CloneRecoverTrigger )
+
+  -- Undefine the functions
+  startCloning = nil
+  endCloning   = nil
+end
+
+-- Handle successful cloning
+if CloneSuccessTrigger then killTrigger( CloneSuccessTrigger ) end
+CloneSuccessTrigger = tempTrigger( "You create a duplicate", function ()
+  CloneList[CurrentClone] = CloneList[CurrentClone] - 1
+  local remaining = CloneList[CurrentClone]
+  if CloneList[CurrentClone] == 0 then
+    CurrentClone = next( CloneList, CurrentClone )
+  end
+  if not CurrentClone then
+    endCloning()
+  else
+    tempTimer( CloneRate, function ()
+      send( f "cast 'clone' " .. CurrentClone, true )
+    end )
+  end
+end )
+
+-- Handle clone failure; attempt to clone the item again after a short delay
+if CloneFailTrigger then killTrigger( CloneFailTrigger ) end
+CloneFailTrigger = tempTrigger( "You lost your concentration", function ()
+  tempTimer( CloneRate, function ()
+    send( f "cast 'clone' " .. CurrentClone, true )
+  end )
+end )
+
+-- Handle mana recovery
+if CloneRecoverTrigger then killTrigger( CloneRecoverTrigger ) end
+CloneRecoverTrigger = tempTrigger( "can't summon enough energy", function ()
+  send( "rest", true )
+  tempTimer( CloneRest, function ()
+    send( "stand", true )
+    send( f "cast 'clone' " .. CurrentClone, true )
+  end )
+end )
+
+-- New module/file for reactions exclusive to Undead player characters
+TrollMode           = TrollMode or nil
+RescueDelay         = false
+TROLL_DMG           = [[crush]]
 
 -- My minions
-MINIONS         = {"troll", "shade", "nymph"}
+MINIONS             = {"troll", "shade", "nymph"}
 
 -- Current index to keep track of whose turn it is to eat
-CorpseIndex     = 1
+CorpseIndex         = 1
 
-TransferTrigger = TransferTrigger or nil
+TransferTrigger     = TransferTrigger or nil
 function orderTransferTroll()
   TransferTrigger = tempTrigger( [[stubbornly refuses]], function ()
     send( 'order nymph transfer health troll', true )
@@ -38,6 +155,8 @@ end
 PickTrigger = PickTrigger or nil
 PickedTrigger = PickedTrigger or nil
 function sharnPick( door )
+  if PickTrigger then killTrigger( PickTrigger ) end
+  if PickedTrigger then killTrigger( PickedTrigger ) end
   local pickCommand = f [[pick {door}]]
   if PickTrigger then
     killTrigger( PickTrigger )
@@ -64,7 +183,7 @@ function equipMinion( minion )
   minion                            = minion or trim( matches[2] )
   local minionGear                  = {}
   local holdCmd, lightCmd, wieldCmd = nil, nil, nil
-  local boat                        = 'waterwalking'
+  -- local boat                        = 'waterwalking'
   local gobletCmd                   = [[give goblet kaylee]]
   if minion == "nymph" then
     lightCmd   = 'hold hand'
@@ -84,7 +203,7 @@ function equipMinion( minion )
       "agony",
       "working",
       "lies",
-      "fiend",
+      "spider",
       "spiked",
       "freezing",
       "freezing",
@@ -109,7 +228,7 @@ function equipMinion( minion )
       "agony",
       "serpentine",
       "shield",
-      "night",
+      "spider",
       "order",
       "freezing",
       "freezing",
@@ -119,8 +238,11 @@ function equipMinion( minion )
     send( f [[get 12 red {container}]] )
     send( f [[give 12 red troll]] )
   elseif minion == 'shade' then
+    tempTrigger( [[Your shade will now attempt]], function ()
+      send( [[song 'march']] )
+    end, 1 )
     lightCmd   = 'hold fang'
-    holdCmd    = 'hold sap'
+    holdCmd    = 'hold drop'
     wieldCmd   = 'wield sickle'
     minionGear = {
       'goblet',
@@ -136,7 +258,7 @@ function equipMinion( minion )
       "bloody",
       "hell",
       "shield",
-      "fiend",
+      "spider",
       "flesh",
       "outer",
       "outer",
@@ -144,8 +266,6 @@ function equipMinion( minion )
       "drop",
     }
     tempTrigger( [[shade minion wields]], function ()
-      guaranteeOrder( minion, [[rem sap]], [[shade minion stops using]] )
-      guaranteeOrder( minion, [[give sap kaylee]], [[gives you]] )
       guaranteeOrder( minion, [[hold drop]], MINION_HOLD )
     end, 1 )
   end
@@ -154,8 +274,8 @@ function equipMinion( minion )
     send( f 'get {item} {container}', true )
     send( f 'give {item} {minion}', true )
   end
-  local getBoatCmd  = f [[get {boat} {container}]]
-  local giveBoatCmd = f [[give {boat} {minion}]]
+  -- local getBoatCmd  = f [[get {boat} {container}]]
+  -- local giveBoatCmd = f [[give {boat} {minion}]]
   -- Issue the orders to wear, wield, hold, and light
 
   tempTimer( 7, function ()
@@ -174,10 +294,10 @@ function equipMinion( minion )
   end
   tempTimer( 7.8, function ()
     guaranteeOrder( minion, gobletCmd, [[gives you]] )
-    tempTrigger( [[gives you]], function ()
-      send( getBoatCmd, true )
-      send( giveBoatCmd, true )
-    end, 1 )
+    -- tempTrigger( [[gives you]], function ()
+    --   send( getBoatCmd, true )
+    --   send( giveBoatCmd, true )
+    -- end, 1 )
   end )
 end
 
@@ -394,13 +514,18 @@ MinionEquipTrigger = MinionEquipTrigger or nil
 -- Function called when a new minion is summoned in game to initialize their behavior and
 -- trigger the commands to equip them with gear.
 function triggerMinionSummoned( minion )
+  local dt = 6
   if MinionEquipTrigger then killTrigger( MinionEquipTrigger ) end
   -- The shade minion must be turned "evil" by killing a large number of innocent enemies
   -- after summoning; delay for 6 seconds to allow for the summon song lag to expire, then
   -- group the shade and use an area ability to kill the mobs.
   if minion == "shade minion" then
-    tempTimer( 6, [[send( 'group shade' )]] )
-    tempTimer( 6.5, [[expandAlias( 'mm' )]] )
+    tempTimer( 6, [[send( 'get waterwalking stocking' )]] )
+    tempTimer( 6, [[send( 'get gate stocking' )]] )
+    tempTimer( 6.25, [[send( 'give waterwalking shade' )]] )
+    tempTimer( 6.25, [[send( 'give gate shade' )]] )
+    tempTimer( 6.5, [[send( 'group shade' )]] )
+    tempTimer( 6.75, [[expandAlias( 'mm' )]] )
     -- Allow another delay for the area damage song to take affect, then proceed.
     tempTimer( 13, [[expandAlias( 'equip shade' )]] )
     -- This trigger waits until the shade is done "wearing" then ungroups it and sets its default
@@ -410,19 +535,22 @@ function triggerMinionSummoned( minion )
       expandAlias( 'circle' )
     end, 1 )
   elseif minion == "troll minion" then
-    tempTimer( 6, [[expandAlias( 'equip troll' )]] )
+    tempTimer( 6, [[send( 'get waterwalking stocking' )]] )
+    tempTimer( 6, [[send( 'get gate stocking' )]] )
+    tempTimer( 6.25, [[send( 'give waterwalking troll' )]] )
+    tempTimer( 6.25, [[send( 'give gate troll' )]] )
+    tempTimer( 6.5, [[expandAlias( 'equip troll' )]] )
     MinionEquipTrigger = tempTrigger( [[A troll minion gives you a golden]], function ()
       expandAlias( 'def' )
     end, 1 )
+  elseif minion == "blood nymph" then
+    tempTimer( 6, [[send( 'get waterwalking stocking' )]] )
+    tempTimer( 6, [[send( 'get gate stocking' )]] )
+    tempTimer( 6.25, [[send( 'give waterwalking nymph' )]] )
+    tempTimer( 6.25, [[send( 'give gate nymph' )]] )
+    tempTimer( 6.5, [[send( 'group nymph' )]] )
+    tempTimer( 6.75, [[send( 'order nymph restore energy' )]] )
   end
-end
-
-NymphTimer = NymphTimer or nil
-function summonNymph()
-  if NymphTimer then killTimer( NymphTimer ) end
-  NymphTimer = tempTimer( 2, function ()
-    send( [[song 'damaged']], true )
-  end )
 end
 
 local function aliasThrow()

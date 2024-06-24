@@ -110,3 +110,53 @@ function translateMetaCosts()
     --iout( formattedString )
   end
 end
+
+-- Experimental function to test the creation of a new gui element to hold and update the path string
+-- dynamically; as an alternative to printing the string repeatedly in the info window this should
+-- allow a more visually dynamic output that updates as we traverse a path.
+PathConsole = PathConsole or Geyser.MiniConsole:new( {
+  name      = "PathConsole",
+  x         = 0,
+  y         = -20,
+  width     = "120c",
+  height    = 80,
+  scrollBar = false,
+  autoWrap  = false,
+  message   = "",
+  color     = "black",
+} )
+
+local function configurePathConsole()
+  PathConsole:setFont( "OCR A Extended" )
+  PathConsole:setFontSize( 16 )
+end
+
+configurePathConsole()
+
+-- Provide a simple visual representation of the current path and our position within
+-- Alias: ^dpath$
+function displayPath()
+  -- Local boolean to track whether we have reached the end of the path; TODO there's
+  -- probably a more elegant solution here and one that works better with looping paths
+  local onPath = false
+  PathConsole:clear()
+  if not CurrentPath or #CurrentPath == 0 then
+    iout( "{EC}No current path to display.{RC}" )
+    return
+  end
+  local pathString = "<dark_slate_blue>"
+  local idPath = "<dark_khaki>"
+  for i, direction in ipairs( CurrentPath ) do
+    local dirLetter = direction:sub( 1, 1 )
+    if i == PathPosition then
+      onPath = true
+      pathString = pathString .. "(<dodger_blue>" .. string.upper( dirLetter ) .. "<dark_slate_blue>)"
+    else
+      pathString = pathString .. dirLetter
+    end
+  end
+  if onPath then
+    PathConsole:cecho( pathString )
+    iout( idPath )
+  end
+end
