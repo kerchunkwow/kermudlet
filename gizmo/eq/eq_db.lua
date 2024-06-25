@@ -4,6 +4,13 @@ if not itemData then
   -- Load items on startup (after scripts have been initialized)
   tempTimer( 0, [[loadAllItems()]] )
 end
+ItemKeywordCounts = ItemKeywordCounts or nil
+-- This function should populate the ItemKeywordCounts table with a count of how many times each individual
+-- keyword appears on any item in the LegacyItem table; the goal will be to use this data to identify
+-- each item's "optimal" keyword.
+function countItemKeywords()
+end
+
 -- Load all items from the Item table into a globally-accessible table indexed by item name
 function loadAllItems()
   local luasql = require "luasql.sqlite3"
@@ -14,7 +21,7 @@ function loadAllItems()
     iout( "{EC}eq_db.lua{RC} failed database connection in loadAllItems()" )
     return
   end
-  local cur, err = conn:execute( "SELECT name, statsString, antisString, clone, affectsString FROM LegacyItem" )
+  local cur, err = conn:execute( "SELECT name, keywords, statsString, antisString, clone, affectsString FROM LegacyItem" )
   if not cur then
     iout( "{EC}eq_db.lua{RC} failed query in loadAllItems(): {err}" )
     conn:close()
@@ -28,6 +35,7 @@ function loadAllItems()
       name = row.name,
       nameTrimmed = trimmedName,
       nameLength = #row.name,
+      keywords = row.keywords,
       clone = row.clone == 1,
       statsString = row.statsString,
       antisString = row.antisString,
@@ -41,6 +49,62 @@ function loadAllItems()
   env:close()
   -- Only needed at load/reload
   loadAllItems = nil
+end
+
+ItemKeywordCounts = ItemKeywordCounts or {}
+-- This function should populate the ItemKeywordCounts table with a count of how many times each individual
+-- keyword appears on any item in the LegacyItem table; the goal will be to use this data to identify
+-- each item's "optimal" keyword.
+function countItemKeywords()
+  -- Initialize ItemKeywordCounts table
+  ItemKeywordCounts = {}
+
+  -- Iterate through each item in itemData
+  for _, item in pairs( itemData ) do
+    -- Split the keywords string into individual keywords
+    local keywords = split( item.keywords, " " )
+
+    -- Iterate through each keyword
+    for _, keyword in ipairs( keywords ) do
+      -- Increment the count for this keyword in ItemKeywordCounts
+      ItemKeywordCounts[keyword] = (ItemKeywordCounts[keyword] or 0) + 1
+    end
+  end
+end
+
+function findOptimizedKeyword( item )
+  -- Using these colors and remembering that Mudlet Lua supports f-strings, add logic
+  -- to this function to print a report using iout() that displays a colorized string
+  -- based on how many times this item's optimal keyword appears on other items; output
+  -- should include the item name itself and the colorized optimal keyword; remember to
+  -- close Mudlet colors with <reset> not </color> or </reset>
+  local ic = "<royal_blue>" -- color for the name of the item itself
+
+  -- Colors for the optimized keyword based on frequency
+  local uc = "<green_yellow>" -- unique keywords
+  local sc = "<goldenrod>"    -- "strong" keywords appearing less than 3 or fewer times
+  local cc = "<orange>"       -- "common" keywords appearing 4 or more times
+
+  -- Split the keywords string into individual keywords
+  local keywords = split( item.keywords, " " )
+
+  -- Initialize the best keyword and its count
+  local bestKeyword = nil
+  local bestCount = 0
+
+  -- Iterate through each keyword
+  for _, keyword in ipairs( keywords ) do
+    -- Get the count for this keyword from ItemKeywordCounts
+    local count = ItemKeywordCounts[keyword] or 0
+
+    -- If this keyword has a higher count than the current best keyword, update the best keyword and count
+    if count > bestCount then
+      bestKeyword = keyword
+      bestCount = count
+    end
+  end
+  -- Return the best keyword
+  return bestKeyword
 end
 
 -- Triggered by items seen in game (e.g., worn by players), this function pulls stats from the global
@@ -67,6 +131,9 @@ function itemQueryAppend( itemName )
 
   -- Proceed if the item was found
   if item then
+    -- Temporarily sneak some code in here to get items out of storage (for sorting/archiving); this
+    -- wills separate armor and weapons from potions and other items
+
     -- Some shorthanded color codes
     local sc       = "<sea_green>"   -- Item stats
     local ec       = "<ansi_cyan>"   -- +Affects

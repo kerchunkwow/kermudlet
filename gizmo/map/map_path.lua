@@ -360,7 +360,7 @@ function setPathToMob( mobRNumber )
   local mobName    = targetMob.shortDescription
   if getPath( CurrentRoomNumber, targetRoom ) then
     local path = speedWalkPath
-    display( path )
+    --display( path )
     local steps = #speedWalkDir
     --iout( "Path set to {SC}{mobName}{RC} ({NC}{targetRoom}{RC}); currently {NC}{steps}{RC} away" )
     iout( "Path to {SC}{mobName}{RC} set; {NC}{steps}{RC} steps from here" )

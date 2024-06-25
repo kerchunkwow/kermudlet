@@ -4,23 +4,6 @@ function trim( s )
   return s:match( "^%s*(.-)%s*$" )
 end
 
--- Given a large number as n, return a comma-delimited string like '1,234,567'
-function expandNumber( n )
-  local commaNumber  = ""
-  local counter      = 0
-  local numberString = tostring( math.floor( n ) )
-
-  for i = #numberString, 1, -1 do
-    counter = counter + 1
-    commaNumber = string.sub( numberString, i, i ) .. commaNumber
-
-    if counter % 3 == 0 and i ~= 1 then
-      commaNumber = "," .. commaNumber
-    end
-  end
-  return commaNumber
-end
-
 -- Output number char(s) in a color; useful e.g., to add padding to formatted output by printing
 -- a series of <black> characters.
 function fill( number, char, color )
@@ -54,12 +37,14 @@ function split( s, delim )
   return substrings
 end
 
--- Print a formatted string to the main console
+-- Print a formatted string to the "main" console; mainly used to report on in-game events or
+-- alert the player to important events or necessary actions
 function cout( s )
   cecho( "\n" .. f( s ) )
 end
 
--- Print a formatted string to the "Info" console
+-- Print a formatted string to the "Info" console; used more like a status or debug window for Mudlet
+-- to report on internal functionality and provide additional context for certain functions
 function iout( s )
   cecho( "info", "\n" .. f( s ) )
 end
@@ -164,6 +149,23 @@ function abbreviateNumber( numberString )
   else
     return tostring( num )
   end
+end
+
+-- Given a large number as n, return a comma-delimited string like '1,234,567'
+function expandNumber( n )
+  local commaNumber  = ""
+  local counter      = 0
+  local numberString = tostring( math.floor( n ) )
+
+  for i = #numberString, 1, -1 do
+    counter = counter + 1
+    commaNumber = string.sub( numberString, i, i ) .. commaNumber
+
+    if counter % 3 == 0 and i ~= 1 then
+      commaNumber = "," .. commaNumber
+    end
+  end
+  return commaNumber
 end
 
 -- Given a raw string, return a regex that would match that string if it appears

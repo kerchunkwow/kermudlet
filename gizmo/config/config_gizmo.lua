@@ -207,19 +207,19 @@ local function configByUsername()
     -- Keep this updated w/ who you're trying to equip so you don't get confused about 'missing' flags
     function customizeAntiString( antis )
       local includedFlags = {
-        ["!NEU"] = false,
-        ["!GOO"] = false,
-        ["!EVI"] = false,
-        ["!MU"] = false,
-        ["!CL"] = false,
-        ["!CO"] = false,
-        ["!BA"] = false,
-        ["!WA"] = false,
-        ["!AP"] = false,
-        ["!TH"] = false,
-        ["!FEM"] = false,
-        ["!MAL"] = false,
-        ["!RENT"] = false
+        ["!NEU"] = true,
+        ["!GOO"] = true,
+        ["!EVI"] = true,
+        ["!MU"] = true,
+        ["!CL"] = true,
+        ["!CO"] = true,
+        ["!BA"] = true,
+        ["!WA"] = true,
+        ["!AP"] = true,
+        ["!TH"] = true,
+        ["!FEM"] = true,
+        ["!MAL"] = true,
+        ["!RENT"] = true
       }
 
       -- Match & replace any flag that isn't in the included table

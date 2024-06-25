@@ -10,6 +10,8 @@ if SESSION == 1 and not mobData then
 end
 AreaMobs = AreaMobs or {}
 
+-- A global table to store the IDs of the current area's temporary mob triggers
+areaMobTriggers = areaMobTriggers or {}
 -- Load all mobs from the Mob and SpecialAttacks Tables in the gizwrld.db database
 function loadAllMobs()
   mobData = {}
@@ -200,6 +202,7 @@ function displayMob( rNumber )
   cout( "  Dam: {NC}{dn}d{ds} +{dm} +<medium_sea_green>{hr}{RC}{savd}{RC} ({DC}{tavd}{RC} avg)" )
   cout( "  Flags: {FC}{flg}{RC}" )
   cout( "  Affects: {FC}{aff}{RC}" )
+  cout( "what" )
 
   -- Printing special attacks
   if mob.specialAttacks and #mob.specialAttacks > 0 then
@@ -301,15 +304,11 @@ function isMobDeadly( mob, threshold )
   return aggro and dam > threshold
 end
 
--- A global table to store the IDs of the current area's temporary mob triggers
-areaMobTriggers = areaMobTriggers or {}
-newAreaMobTriggers = newAreaMobTriggers or {}
-
--- Create a temporary trigger for all mobs in the current area, matching keywords to long descriptions
+-- Create a temporary trigger for all mobs in the current area, matching primaryKeyword to long descriptions
 -- If a parameter is passed, it is a table where mobRNumbers[rNumber] = true for mobs we want to load
 -- triggers for; if no parameter is passed triggers are created for all mobs in the current area
 -- Alias: ^lam$ for all mobs in the area
--- Create a temporary trigger for all mobs in the current area, matching keywords to long descriptions
+-- Create a temporary trigger for all mobs in the current area, matching primaryKeyword to long descriptions
 -- If a parameter is passed, it is a table where mobRNumbers[rNumber] = true for mobs we want to load
 -- triggers for; if no parameter is passed triggers are created for all mobs in the current area
 -- Alias: ^lam$ for all mobs in the area
@@ -321,51 +320,21 @@ function loadMobTriggers( mobRNumbers )
   local isSubset = mobRNumbers and next( mobRNumbers ) ~= nil
 
   -- Create a temporary trigger for each mob in the current area
-  for _, mob in ipairs( mobData ) do
-    local inArea = mob.areaRNumber == CurrentAreaNumber
-    local needTrigger = (inArea and not isSubset) or (isSubset and mobRNumbers[mob.rNumber])
+  for _, mob in ipairs( AreaMobs ) do
+    local needTrigger = not isSubset or (isSubset and mobRNumbers[mob.rNumber])
     if needTrigger then
-      -- Mob's in-game appearance
-      local mobLong, mobShort = mob.longDescription, mob.shortDescription
-      -- Keywords for interacting with mobs
-      local mobKeys = split( mob.keywords, " " )
-      local keywordFound = false
+      -- Create a regex from the mob's long description
+      local mobPattern = createLineRegex( mob.longDescription )
 
-      -- Iterate through the keywords looking for one that appears in the mob's long description
-      for _, keyword in ipairs( mobKeys ) do
-        -- Keywords are case insensitive, but we need to preserve the original case for the trigger pattern
-        local foundStart, foundEnd = mobLong:lower():find( keyword:lower() )
-        if foundStart then
-          local actualMatch = mobLong:sub( foundStart, foundEnd )
+      -- Create a trigger that calls targetMatch with the mob's primary keyword and uniqueness when it fires
+      local triggerID = tempRegexTrigger( mobPattern, function ()
+        targetMatch( mob.primaryKeyword, mob.uniqueKeyword )
+      end )
 
-          -- Create a regex from the mob's long description, then surround the matched keyword with parentheses so it can be captured
-          local mobPattern = createLineRegex( mobLong )
-          local escapedActualMatch = actualMatch:gsub( "([%(%)%.%%%+%-%*%?%[%^%$])", "%%%1" )
-          mobPattern = mobPattern:gsub( escapedActualMatch, "(" .. escapedActualMatch .. ")", 1 )
-
-          -- Pass the mob's tag to the matching trigger so it can be appended in-game
-          local triggerID = tempRegexTrigger( mobPattern, [[targetMatch()]] )
-
-          -- Hold the ID so we can kill previous triggers before loading new areas
-          table.insert( areaMobTriggers, triggerID )
-
-          keywordFound = true
-          break
-        end
-      end
-      if not keywordFound then
-        -- Report on mob's whose long description does not include one of its keywords
-        iout( "{EC}Missing keyword{RC}: {SC}{mobShort}{RC}" )
-      end
+      -- Hold the ID so we can kill previous triggers before loading new areas
+      table.insert( areaMobTriggers, triggerID )
     end
   end
-end
-
--- Now that mobs have a primaryKeyword attribute, we should be able to greatly simplify this function
--- Start simple:
--- 1. Create a trigger for each mob in the current area using createLineRegex( mob.longDescription )
--- 2. When the trigger fires, print the mob's shortDescription and matching keyword to the info window with iout()
-function newLoadMobTriggers( mobRNumbers )
 end
 
 -- Reset temporary mob triggers; use before loading new ones to avoid over-capping trigger limit
@@ -374,62 +343,35 @@ function resetMobTriggers()
   for _, id in ipairs( areaMobTriggers ) do
     killTrigger( id )
   end
-  -- Re-initialize the table
+  for _, id in ipairs( areaMobTriggers ) do
+    killTrigger( id )
+  end
+  -- Re-initialize the tables
+  areaMobTriggers = {}
   areaMobTriggers = {}
 end
 
--- This function creates a "tag" designed to appear after a mob's long description when players encounter
--- the mob in game; the tag will identify flags and affects of the mob that are not typically visible but
--- help the player understand the mob's behavior and abilities.
-function createMobTag( flags, affects )
-  local AC, FC, DC, SAC, SPC, STC = "<tomato>", "<orange_red>", "<dodger_blue>", "<gold>", "<deep_pink>", "<slate_grey>"
-  local flagAttributes = {AGGRESSIVE = AC, FURY = FC, SANCTUARY = SAC, SPEC = SPC}
-  local affectAttributes = {FURY = FC, DUAL = DC, SANCTUARY = SAC, STATUE = STC}
-
-  local flagList = {}
-  local affectList = {}
-
-  -- Split the flags and affects strings into lists of attributes
-  if flags then
-    flagList = split( flags, " " )
-  end
-  if affects then
-    affectList = split( affects, " " )
-  end
-  local tag = ""
-
-  -- Iterate through flag attributes and add them to the tag string
-  for _, flag in ipairs( flagList ) do
-    local color = flagAttributes[flag]
-    if color then
-      tag = tag .. color .. flag:sub( 1, 1 ) .. "<reset>"
-    end
-  end
-  -- Iterate through affect attributes and add them to the tag string
-  for _, affect in ipairs( affectList ) do
-    local color = affectAttributes[affect]
-    if color then
-      tag = tag .. color .. affect:sub( 1, 1 ) .. "<reset>"
-    end
-  end
-  -- Wrap the tag string in square brackets (and add a leading space)
-  if tag ~= "" then
-    return " {" .. tag .. "}"
-  else
-    return ""
-  end
-end
-
 -- Called when a mob is encountered in the game which has a corresponding trigger
-function targetMatch()
-  -- Count matched targets and append target count to each matched mob
+function targetMatch( keyword, uniqueKeyword )
+  -- Count matched targets
   TargetCount = TargetCount + 1
-  cecho( f "({NC}{TargetCount}{RC})" )
-  -- Update markedTarget global which can be used elsewhere to interact with mobs (i.e., attacking, etc.)
-  markedTarget = matches[2]
-  -- Highlight the matching keyword on screen for visual distinction and to validate the trigger
-  selectString( matches[2], 1 )
-  setFgColor( 205, 92, 92 )
+
+  -- Highlight the mob's long description
+  selectString( line, 1 )
+  setFgColor( 160, 100, 130 )
+  resetFormat()
+
+  -- Determine the color for the keyword
+  local color = uniqueKeyword and "<olive_drab>" or "<tomato>"
+
+  -- Composite string with the colorized keyword and count
+  local outputString = f " ({color}{keyword}<reset> {NC}{TargetCount}{RC})"
+
+  -- Append the composite string to the line
+  cecho( outputString )
+
+  -- Update markedTarget to the parameter of the function (the keyword of the matched mob)
+  markedTarget = keyword
 end
 
 function setPrimaryKeyword()
@@ -444,6 +386,12 @@ function setPrimaryKeyword()
       for _, keyword in ipairs( mobKeys ) do
         keywordCounts[keyword] = (keywordCounts[keyword] or 0) + 1
       end
+    end
+  end
+  -- Debug output for keyword counts
+  for area, keywords in pairs( areaKeywordCounts ) do
+    for keyword, count in pairs( keywords ) do
+      iout( f "Area {area} - Keyword {keyword} count: {count}" )
     end
   end
   -- Second pass: find the best keyword for each mob in each area
@@ -461,8 +409,12 @@ function setPrimaryKeyword()
       -- Set the primaryKeyword and uniqueKeyword for the mob
       mob.primaryKeyword = bestKeyword
       mob.uniqueKeyword = (minCount == 1)
+
+      -- Debug output for each mob
+      iout( f "Mob: {mob.shortDescription} - Primary Keyword: {bestKeyword} - Unique: {mob.uniqueKeyword}" )
     end
   end
+  setPrimaryKeyword = nil
 end
 
 MobList = {
@@ -477,93 +429,6 @@ function circuitHelper( mobList )
       -- Act on each number mobList[i] here
     end
   end
-end
-
--- Function to help in locating mobs that are within reach both geographically and difficulty-wise by searching
--- mobData and filtering based on a number of criteria
-function showMeTheMoney()
-  local ignoredMobs = {
-    185,  -- Sphen
-    389,  -- Music Shopkeeper
-    390,  -- Magic Shopkeeper
-    391,  -- Bakery Shopkeeper
-    392,  -- Grocer
-    393,  -- Weaponsmith
-    394,  -- Armorer
-    396,  -- Boat Captain
-    501,  -- Doljet (Treasure Vendor)
-    503,  -- Heckkingrel the Alchemist
-    1501, -- Oceanid
-    1502, -- Oceanid
-    1503, -- Oceanid
-    1504, -- Oceanid
-    2054, -- diamond ekitom lord
-    2053, -- iron ekitom lord
-    2052, -- granite ekitom lord
-    2048, -- diamond ekitom extractor
-    2047, -- diamond ekitom excavator
-    2046, -- iron ekitom extractor
-    2045, -- iron ekitom excavator
-    1991, -- Frost King's wolves...
-    1992,
-    1993,
-    1994,
-  }
-  local ignoredAreas = {
-    125, -- Midgaard Tar Pit
-  }
-
-  for _, mob in ipairs( mobData ) do
-    local mobRoom = mob.roomRNumber
-    local mobID = mob.rNumber
-    local mobName = mob.shortDescription
-    local areaID = mob.areaRNumber
-    local ignoredMob = contains( ignoredMobs, mobID ) or contains( ignoredAreas, areaID )
-    if mobRoom and not ignoredMob then
-      -- Reachable from Market Square
-      local isPathable      = getPath( 1121, mobRoom )
-      -- Has at least 250,000 coins
-      local isWealthy       = mob.gold >= 250000
-      -- Does not have some bullshit
-      local noSpec          = not string.find( mob.flags, 'SPEC' )
-      -- Won't take all f'ing day
-      local effectiveHealth = mob.health
-      if string.find( mob.affects, 'SANCTUARY' ) then
-        effectiveHealth = effectiveHealth * 2
-      end
-      if isPathable and isWealthy and effectiveHealth < 25000 then
-        displayMob( mob.rNumber )
-      end
-    else
-      --piout( "No room data for mob {SC}{mobName}{RC} ({NC}{mobID}{RC})" )
-    end
-  end
-end
-
--- Use Mudlet's built-in Map search functionality and character/highlighting to identify
--- deadly aggressive sentinel mobs and mark them on the map.
-local function flagDeadlyMobs()
-  for _, mob in ipairs( mobData ) do
-    -- Sentinels don't wander and are always in the same room
-    local sentinel = string.find( mob.flags, "SENTINEL" )
-    -- Define deadlieness with appropriate criteria
-    local deadly   = isMobDeadly( mob, 100 )
-    -- Deadly aggressive sentinel mobs can be treated as a property of the room and marked on the map
-    if sentinel and deadly then
-      -- Find the room the mob is in
-      local room = mob.roomRNumber
-      -- If the room is found, display the mob
-      if room then
-        local roomChar = getRoomChar( room )
-        if roomChar and #roomChar > 0 and #roomChar ~= "" then
-          setRoomChar( room, "👽" )
-        else
-          setRoomChar( room, "😈" )
-        end
-      end
-    end
-  end
-  updateMap()
 end
 
 -- Update the Mob database with values captured from Venzu
@@ -630,8 +495,34 @@ function triggerCaptureFame()
   updateMobFame( mobShortDescription, fame )
 end
 
+-- Use Mudlet's built-in Map search functionality and character/highlighting to identify
+-- deadly aggressive sentinel mobs and mark them on the map.
+local function flagDeadlyMobs()
+  for _, mob in ipairs( mobData ) do
+    -- Sentinels don't wander and are always in the same room
+    local sentinel = string.find( mob.flags, "SENTINEL" )
+    -- Define deadlieness with appropriate criteria
+    local deadly   = isMobDeadly( mob, 100 )
+    -- Deadly aggressive sentinel mobs can be treated as a property of the room and marked on the map
+    if sentinel and deadly then
+      -- Find the room the mob is in
+      local room = mob.roomRNumber
+      -- If the room is found, display the mob
+      if room then
+        local roomChar = getRoomChar( room )
+        if roomChar and #roomChar > 0 and #roomChar ~= "" then
+          setRoomChar( room, "👽" )
+        else
+          setRoomChar( room, "😈" )
+        end
+      end
+    end
+  end
+  updateMap()
+end
+
 -- Function to identify possible duplicate mobs based on shortDescription
-function suggestDuplicates()
+local function suggestDuplicates()
   -- Create a table to store mobs by their shortDescription
   local mobsByDescription = {}
 
@@ -767,4 +658,107 @@ local function unlabelMapChars()
     end
   end
   iout( f "Cleared {NC}{clearCount}{RC} mob labels" )
+end
+
+-- This function creates a "tag" designed to appear after a mob's long description when players encounter
+-- the mob in game; the tag will identify flags and affects of the mob that are not typically visible but
+-- help the player understand the mob's behavior and abilities.
+local function createMobTag( flags, affects )
+  local AC, FC, DC, SAC, SPC, STC = "<tomato>", "<orange_red>", "<dodger_blue>", "<gold>", "<deep_pink>", "<slate_grey>"
+  local flagAttributes = {AGGRESSIVE = AC, FURY = FC, SANCTUARY = SAC, SPEC = SPC}
+  local affectAttributes = {FURY = FC, DUAL = DC, SANCTUARY = SAC, STATUE = STC}
+
+  local flagList = {}
+  local affectList = {}
+
+  -- Split the flags and affects strings into lists of attributes
+  if flags then
+    flagList = split( flags, " " )
+  end
+  if affects then
+    affectList = split( affects, " " )
+  end
+  local tag = ""
+
+  -- Iterate through flag attributes and add them to the tag string
+  for _, flag in ipairs( flagList ) do
+    local color = flagAttributes[flag]
+    if color then
+      tag = tag .. color .. flag:sub( 1, 1 ) .. "<reset>"
+    end
+  end
+  -- Iterate through affect attributes and add them to the tag string
+  for _, affect in ipairs( affectList ) do
+    local color = affectAttributes[affect]
+    if color then
+      tag = tag .. color .. affect:sub( 1, 1 ) .. "<reset>"
+    end
+  end
+  -- Wrap the tag string in square brackets (and add a leading space)
+  if tag ~= "" then
+    return " {" .. tag .. "}"
+  else
+    return ""
+  end
+end
+
+-- Function to help in locating mobs that are within reach both geographically and difficulty-wise by searching
+-- mobData and filtering based on a number of criteria
+local function showMeTheMoney()
+  local ignoredMobs = {
+    185,  -- Sphen
+    389,  -- Music Shopkeeper
+    390,  -- Magic Shopkeeper
+    391,  -- Bakery Shopkeeper
+    392,  -- Grocer
+    393,  -- Weaponsmith
+    394,  -- Armorer
+    396,  -- Boat Captain
+    501,  -- Doljet (Treasure Vendor)
+    503,  -- Heckkingrel the Alchemist
+    1501, -- Oceanid
+    1502, -- Oceanid
+    1503, -- Oceanid
+    1504, -- Oceanid
+    2054, -- diamond ekitom lord
+    2053, -- iron ekitom lord
+    2052, -- granite ekitom lord
+    2048, -- diamond ekitom extractor
+    2047, -- diamond ekitom excavator
+    2046, -- iron ekitom extractor
+    2045, -- iron ekitom excavator
+    1991, -- Frost King's wolves...
+    1992,
+    1993,
+    1994,
+  }
+  local ignoredAreas = {
+    125, -- Midgaard Tar Pit
+  }
+
+  for _, mob in ipairs( mobData ) do
+    local mobRoom = mob.roomRNumber
+    local mobID = mob.rNumber
+    local mobName = mob.shortDescription
+    local areaID = mob.areaRNumber
+    local ignoredMob = contains( ignoredMobs, mobID ) or contains( ignoredAreas, areaID )
+    if mobRoom and not ignoredMob then
+      -- Reachable from Market Square
+      local isPathable      = getPath( 1121, mobRoom )
+      -- Has at least 250,000 coins
+      local isWealthy       = mob.gold >= 250000
+      -- Does not have some bullshit
+      local noSpec          = not string.find( mob.flags, 'SPEC' )
+      -- Won't take all f'ing day
+      local effectiveHealth = mob.health
+      if string.find( mob.affects, 'SANCTUARY' ) then
+        effectiveHealth = effectiveHealth * 2
+      end
+      if isPathable and isWealthy and effectiveHealth < 25000 then
+        displayMob( mob.rNumber )
+      end
+    else
+      --piout( "No room data for mob {SC}{mobName}{RC} ({NC}{mobID}{RC})" )
+    end
+  end
 end

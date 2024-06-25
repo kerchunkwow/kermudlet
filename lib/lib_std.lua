@@ -1,8 +1,4 @@
-function getCurrentTime()
-  return os.date( "%H:%M" )
-end
-
--- Compile and execute a lua function directly from the command-line; used
+-- Compile and execute a lua function directly from the Mudlet command-line; used
 -- throughout other scripts and in aliases as 'lua <command> <args>'
 function runLuaLine()
   local args = matches[2]
@@ -30,6 +26,8 @@ function runLuaLine()
   runFunc( func() )
 end
 
+-- Run (interpret) a lua file using doFile(); this function frees us up from using the in-client editor in Mudlet
+-- to write and organize our scripts.
 function runLuaFile( file )
   local filePath = f '{homeDirectory}{file}'
   if lfs.attributes( filePath, "mode" ) == "file" then
@@ -80,27 +78,16 @@ function round( n, s )
   return math.floor( n / s + 0.5 ) * s
 end
 
--- Print all variables currently in _G (Lua's table for all variables); probably
--- not very readable but might be helpful
-function printVariables()
-  for k, v in pairs( _G ) do
-    local nameStr, typeStr, valStr = nil, nil, nil
-    local vName, vType, vVal       = nil, nil, nil
+-- Where n is the number of dice, s is the number of sides, and m is the modifier,
+-- return the average exepected outcome of a dice roll; e.g., for the average of 3d8+2
+-- invoke as averageDice( 3, 8, 2 )
+function averageDice( n, s, m )
+  return (((n * s) + n) / 2) + m
+end
 
-    vType                          = type( v )
-    vName                          = tostring( k )
-    vVal                           = tostring( v )
-
-    nameStr                        = "<sea_green>" .. vName .. "<reset>"
-    typeStr                        = "<ansi_magenta>" .. vType .. "<reset>"
-    valStr                         = "<cyan>" .. vVal .. "<reset>"
-
-    if vType == "number" or vType == "boolean" then
-      cecho( f "\n{nameStr} ({typeStr}) == {valStr}\n-----" )
-    elseif vType == "string" then
-      cecho( f "\n{nameStr} ({typeStr}) ==\n{valStr}\n-----" )
-    end
-  end
+-- Get a formatted timestamp.
+function getCurrentTime()
+  return os.date( "%H:%M" )
 end
 
 -- Delete the current line then any of the subsequent 3 lines that are either empty or "prompt only"
@@ -115,31 +102,6 @@ function completeDelete()
   if justAPrompt or #line <= 0 then
     deleteLine()
   end
-end
-
--- Given a set of dice values as n, s, m, return the average roll (e.g., 3d8+2 = 3, 8, 2)
-function averageDice( n, s, m )
-  return (((n * s) + n) / 2) + m
-end
-
--- Feed the contents of a file line-by-line as if it came from the MUD
-function feedFile( feedPath )
-  local feedRate = 0.01
-  local file = io.open( feedPath, "r" )
-
-  local lines = file:lines()
-
-  local function feedLine()
-    local nextLine = lines()
-    if nextLine then
-      cfeedTriggers( nextLine )
-      tempTimer( feedRate, feedLine )
-    else
-      file:close()
-    end
-  end
-
-  feedLine()
 end
 
 -- Invoked when sysPathChanged event fires for files previously registered by addFileWatchers();
@@ -175,7 +137,7 @@ function fileModifiedEvent( _, path )
   end
 end
 
--- Transform a uniformly distributed random value to favor lower values
+-- Transform a uniformly distributed random value and skew it in favor of lower values
 function skewedRandom( min, max, skewFactor )
   -- Generate a uniformly distributed random number between 0 and 1
   local uniformRandom = math.random()
@@ -188,23 +150,45 @@ function skewedRandom( min, max, skewFactor )
   return min + (max - min) * skewedRandom
 end
 
-function testSkew()
-  -- Initialize variables for the accumulation and the loop
-  local sum        = 0
-  local trials     = 1000
+-- Print all variables currently in _G (Lua's table for all variables); probably
+-- not very readable but might be helpful
+local function printVariables()
+  for k, v in pairs( _G ) do
+    local nameStr, typeStr, valStr = nil, nil, nil
+    local vName, vType, vVal       = nil, nil, nil
 
-  -- Specify the parameters for the skewedRandom function
-  local min        = 2
-  local max        = 8
-  local skewFactor = 3
+    vType                          = type( v )
+    vName                          = tostring( k )
+    vVal                           = tostring( v )
 
-  -- Loop 1000 times, calling skewedRandom and accumulating the results
-  for i = 1, trials do
-    local result = skewedRandom( min, max, skewFactor )
-    sum = sum + result
+    nameStr                        = "<sea_green>" .. vName .. "<reset>"
+    typeStr                        = "<ansi_magenta>" .. vType .. "<reset>"
+    valStr                         = "<cyan>" .. vVal .. "<reset>"
+
+    if vType == "number" or vType == "boolean" then
+      cecho( f "\n{nameStr} ({typeStr}) == {valStr}\n-----" )
+    elseif vType == "string" then
+      cecho( f "\n{nameStr} ({typeStr}) ==\n{valStr}\n-----" )
+    end
   end
-  -- Calculate the average
-  local average = round( sum / trials, 0.01 )
+end
 
-  iout( [[Average: {NC}{average}{RC}]] )
+-- Feed the contents of a file line-by-line as if it came from the MUD
+local function feedFile( feedPath )
+  local feedRate = 0.01
+  local file = io.open( feedPath, "r" )
+
+  local lines = file:lines()
+
+  local function feedLine()
+    local nextLine = lines()
+    if nextLine then
+      cfeedTriggers( nextLine )
+      tempTimer( feedRate, feedLine )
+    else
+      file:close()
+    end
+  end
+
+  feedLine()
 end

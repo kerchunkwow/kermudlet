@@ -61,13 +61,19 @@ function formatRoomDescription( desc )
   local indent = "   "
   local formattedDesc = indent
   local lineLength = #indent
+  local firstLine = true
 
   for word in string.gmatch( desc, "%S+" ) do
     if lineLength + #word + 1 > maxLength then
-      formattedDesc = formattedDesc .. "\n" .. indent .. word
-      lineLength = #indent + #word
+      if firstLine then
+        formattedDesc = formattedDesc .. "\n" .. word
+        firstLine = false
+      else
+        formattedDesc = formattedDesc .. "\n" .. word
+      end
+      lineLength = #word
     else
-      if lineLength > #indent then
+      if lineLength > (firstLine and #indent or 0) then
         formattedDesc = formattedDesc .. " " .. word
         lineLength = lineLength + 1 + #word
       else
@@ -155,6 +161,7 @@ function setPlayerRoom( id )
       CurrentAreaName   = getRoomAreaName( CurrentAreaNumber )
       cecho( f "\n<dim_grey>  Entering {getAreaTag()}" )
       loadAreaMobs( CurrentAreaNumber )
+      loadMobTriggers()
       setMapZoom( 28 )
     end
     CurrentRoomNumber = id

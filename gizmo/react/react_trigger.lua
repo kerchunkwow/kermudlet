@@ -207,13 +207,13 @@ function triggerLocateObject()
   local obj = trim( matches[2] )
   local loc = trim( matches[3] )
   -- Ignore items already owned by players
-  if PlayerContainers[loc] or KnownPlayers[loc] then
-    deleteLine()
-    -- selectString( line, 1 )
-    -- fg( "dim_grey" )
-    -- resetFormat()
-    return
-  end
+  --if PlayerContainers[loc] or KnownPlayers[loc] then
+  --deleteLine()
+  -- selectString( line, 1 )
+  -- fg( "dim_grey" )
+  -- resetFormat()
+  --   return
+  -- end
   selectString( obj, 1 )
   -- Sought after item
   if DesirableItems[obj] then
@@ -253,4 +253,51 @@ function triggerMobIncap()
   onNextPrompt( function ()
     IncapDelay = false
   end )
+end
+
+-- Highlights key milestones within a specific context such as an important quest
+
+-- Define a table called QuestHighlights which is a table of strings; each string may be associated with
+-- one or both of an info string and command string; define the table with a sample entry
+QuestHighlights = {
+  ["You see a rat"] = {info = "A rat is here!", command = "kill rat"},
+}
+function highlightQuest( string )
+  -- Highlight the triggering string in bright orange on dark purple
+  selectString( string, 1 )
+  bg( "dark_slate_blue" )
+  fg( "goldenrod" )
+
+  -- If the string has info associated with it, use onNextPrompt() to create a trigger with function () that will
+  -- cecho that content after the next prompt.
+  if QuestHighlights[string].info then
+    local info = QuestHighlights[string].info
+    onNextPrompt( function ()
+      cecho( "\n\t<:dark_slate_blue><goldenrod>" .. {QuestHighlights[string].info} )
+      resetFormat()
+    end )
+  end
+  -- If the string has an associated command, use iout to report on the triggered command incl. the triggering text,
+  -- then send the command with send().
+  if QuestHighlights[string].command then
+    local command = QuestHighlights[string].command
+    --iout( f "<deep_pink>{cmd} triggered on <royal_blue>{string}<reset>" )
+    send( QuestHighlights[string].command, true )
+  end
+end
+
+-- This function should start by populating tableOfPatterns with the triggering patterns from QuestHighlights
+-- It should then use permRegexTrigger() to create a trigger that calls highlightQuest(string) when triggered.
+-- The passed parameter should be the string from QuestHighlights.
+function createQuestHighlightTriggers()
+  local tableOfPatterns = {}
+
+  -- Populate tableOfPatterns with the keys from QuestHighlights
+  for pattern, _ in pairs( QuestHighlights ) do
+    table.insert( tableOfPatterns, pattern )
+  end
+  -- Create a single permanent trigger for all patterns
+  permRegexTrigger( "Quest Highlights", "", tableOfPatterns, [[
+highlightQuest( matches[1] )
+]] )
 end
