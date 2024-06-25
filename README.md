@@ -11,10 +11,7 @@ Using Lua's sqlite3 library, kermudlet interacts with external databases that ho
 including Items, Areas/Rooms, and Enemies (Mobs).
 
 ### Python Support
-As needed, kermudlet will utilize Python scripts for supporting utilities in `./pyutils`. Currently, these include:
-- `parse_xml.py`: Converts Mudlet's XML profiles to Lua for interpretation by the IDE
-- `find_colors.py`: Search globally for references to Mudlet colors to aid refactoring
-- `gizmogram.py`: Pass messages to a Telegram chatbot via command-line arguments (e.g., forward chat messages)
+As needed, kermudlet will utilize Python scripts to maintain supporting utilities whenever Python is a more appropriate tool for the job.
 
 ## Technical Details
 - Primary scripts are [Lua 5.1](https://www.lua.org/manual/5.1/)
@@ -26,66 +23,31 @@ databases; some database work will be done directly in SQL through [DBeaver](htt
 
 ## Function Reference
 
-### trim(s)
+`getMaxStringLength`: Returns the length of the longest string in a list.
 
-Trims leading and trailing whitespace from a string.
-Usage: trim(" example ") -- returns "example"
-### fill(number, char, color)
+`split`: Get a list of substrings by splitting a string at a delimiter.
 
-Outputs number of char in a specified color. Useful for adding padding with colored characters.
-Defaults: color = "<black>", char = "."
-Usage: fill(10, ".", "<red>") -- returns "<red>..........</reset>"
-### getMaxStringLength(stringList)
+`cout`: Print a formatted string to the "main" console; mainly used to report on in-game events or alert the player to important events or necessary actions.
 
-Returns the length of the longest string in a list.
-Usage: getMaxStringLength({"one", "three", "twenty"}) -- returns 6
-### split(s, delim)
+`iout`: Print a formatted string to the "Info" console; used more like a status or debug window for Mudlet to report on internal functionality and provide additional context for certain functions.
 
-Splits a string s at each occurrence of delim and returns a list of substrings.
-Usage: split("a,b,c", ",") -- returns {"a", "b", "c"}
-### capitalize(s)
+`runLuaLine`: Compile and execute a Lua function directly from the Mudlet command-line; used throughout other scripts and in aliases as 'lua <command> <args>'.
 
-Capitalizes the first letter of a string.
-Usage: capitalize("hello") -- returns "Hello"
-### startsWith(str, start)
+`runLuaFile`: Compile and execute a Lua file. If the file contains an expression, it tries to compile and execute it; if it contains a statement, it attempts to execute it.
 
-Checks if a string str starts with the substring start.
-Usage: startsWith("hello", "he") -- returns true
-### endsWith(str, ending)
+`runLuaFiles`: Use runLuaFile to run a table of Lua files.
 
-Checks if a string str ends with the substring ending.
-Usage: endsWith("world", "ld") -- returns true
-### toTitleCase(str)
+`contains`: Check if a value is in a list or table.
 
-Converts a string to title case (each word capitalized).
-Usage: toTitleCase("hello world") -- returns "Hello World"
-### tableLength(tbl)
+`clamp`: Ensure a value remains within a fixed range.
 
-Returns the length of a table.
-Usage: tableLength({1, 2, 3}) -- returns 3
-### tableKeys(tbl)
-- Returns a list of keys from a table.
-- Usage: tableKeys({a=1, b=2}) -- returns {"a", "b"}
+`randomFloat`: Get a random floating-point value between lower and upper bounds.
 
-### tableValues(tbl)
-- Returns a list of values from a table.
-- Usage: tableValues({a=1, b=2}) -- returns {1, 2}
+`round`: Round a number to the nearest integer.
 
-### deepCopy(original)
-- Creates a deep copy of a table.
-- Usage: deepCopy({a={1,2}}) -- returns a new table with the same structure
+`averageDice`: Calculate the average expected outcome of a dice roll; for example, averageDice(3, 8, 2) calculates the average of rolling 3d8+2.
 
-### mergeTables(t1, t2)
-- Merges two tables, t2 into t1.
-- Usage: mergeTables({a=1}, {b=2}) -- returns {a=1, b=2}
-
-### printTable(tbl, indent)
-- Recursively prints a table for debugging.
-- Usage: printTable({a=1, b={c=2}}) -- prints the structure of the table
-
-### getCurrentTime()
-- Returns the current time as a string in the format YYYY-MM-DD HH:MM:SS.
-- Usage: getCurrentTime() -- returns current timestamp
+`getCurrentTime`: Get a formatted timestamp.
 
 ## Development Guidelines & Tips for ChatGPT
 - Avoid rewriting entire modules or functions unless asked; limit changes to snippets whenever possible
@@ -99,7 +61,6 @@ Usage: tableLength({1, 2, 3}) -- returns 3
 - Avoid using `print()`; use `cout()` or `iout()` for all output
 - `cout()` and `iout()` both encapsulate argument interpolation; `cout( "{GlobalVariable}" )` is valid syntax and will print the value of that variable to the console; you should rarely if ever need to use Lua's concatenation operator `..`
 - `cout()` and `iout()` take care of newlines, no need to include newline characters when calling these functions
-
 - Mudlet supports color tags within strings in most contexts; the format for coloring strings is `<red>String<reset>`; do not use `<red>String</red>` or `<red>String</reset>` etc. there is no forward-slash closing tag syntax for Mudlet colors
 - Do not modify the content of string literals in code that I provide unless explicitly necessary to accomplish the task requested; do not remove {arguments} from strings or replace them with Lua's concatenate operator `..`
 - The following global constants can be used as shortened versions of their respective color tags:
