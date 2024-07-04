@@ -6,8 +6,10 @@ local commonScripts = {
   'gizmo/react/react_undead.lua',
   'gizmo/config/config_events.lua',
   'gizmo/gui/gui_warn.lua',
+  'gizmo/eq/item_const.lua',
+  'gizmo/eq/item_data.lua',
+  'gizmo/eq/item_capture.lua',
   'gizmo/eq/eq_db.lua',
-  'gizmo/eq/id_capture.lua',
   'gizmo/status/status_affect.lua',
   'gizmo/map/map_const.lua',
   'gizmo/map/map_ux.lua',
@@ -17,6 +19,7 @@ local commonScripts = {
   'gizmo/map/map_queue.lua',
   'gizmo/map/map_main.lua',
   'gizmo/status/status_parse.lua',
+  '/gizmo/eq/item_const.lua',
 }
 
 -- Specific to the main session
@@ -24,17 +27,17 @@ local mainScripts = {
   'gizmo/gui/gui_create.lua',
   'gizmo/gui/gui.lua',
   'gizmo/status/status_update.lua',
-  --'gizmo/eq/eq_inventory.lua',
   'gizmo/map/map_mobs.lua',
   'gizmo/map/map_path.lua',
-  --'gizmo/map/map_sim.lua',
-  'gizmo/react/bq.lua',
 }
 
 runLuaFiles( commonScripts )
 
 if SESSION == 1 or SESSION == 2 then
   runLuaFiles( mainScripts )
+end
+if SESSION == 2 then
+  runLuaFile( 'gizmo/eq/eq_cloner.lua' )
 end
 -- Using Powershell, delete and re-extract the Mudlet module's XML file, then convert
 -- it to a Lua file that your IDE can interpret.

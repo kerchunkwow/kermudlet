@@ -1,3 +1,186 @@
+-- Mapper UI menu function to update current player location; useful when
+-- map gets out of synch (e.g., flee, teleported).
+function setRoomOnClick()
+  local dst = getMapSelection()["rooms"][1]
+  iout( "Player Location Set: {NC}{dst}{RC}" )
+  setPlayerRoom( dst )
+end
+
+-- Mapper UI menu function to displayMob() for all mobs in a room
+function showMobOnClick()
+  local function displayMobsByRoom( roomRNumber )
+    for _, mob in ipairs( mobData ) do
+      if mob.roomRNumber == roomRNumber then
+        displayMob( mob.rNumber )
+      end
+    end
+  end
+  local id = getMapSelection()["rooms"][1]
+  displayMobsByRoom( id )
+end
+
+-- Mapper UI to display a "virtual" version of a room
+function showRoomOnClick()
+  local id = getMapSelection()["rooms"][1]
+  displayRoom( id )
+  cecho( "\n" )
+end
+
+-- Mapper UI to label mobs in a room that award fame
+-- [TODO] Will not work for rooms with multiple fame mobs (rare)
+function labelMobOnClick()
+  local id = getMapSelection()["rooms"][1]
+  -- Find each mob in a room that awards fame and add a corresponding label using their short desc
+  for _, mob in ipairs( mobData ) do
+    local inRoom = mob.roomRNumber == id
+    local hasFame = mob.fame > 0
+    if inRoom and hasFame then
+      local labelText = trimArticle( mob.shortDescription )
+      addLabel( "n", "mob", labelText )
+    end
+  end
+end
+
+-- Triggered when the Mapper UI is opened for the first time to register event handlers for
+-- custom menu items & functions; only needed once per client session.
+function mapperOpenedEvent()
+  iout( "{SYC}Registering Mapper UI menu events{RC}" )
+  registerAnonymousEventHandler( "setRoomOnClick", "setRoomOnClick" )
+  registerAnonymousEventHandler( "showMobOnClick", "showMobOnClick" )
+  registerAnonymousEventHandler( "showRoomOnClick", "showRoomOnClick" )
+  registerAnonymousEventHandler( "labelMobOnClick", "labelMobOnClick" )
+  addMapEvent( "Set Current Room", "setRoomOnClick" )
+  addMapEvent( "Show Mobs", "showMobOnClick" )
+  addMapEvent( "Show Room", "showRoomOnClick" )
+  addMapEvent( "Label Mob", "labelMobOnClick" )
+  mapperOpenedEvent = nil
+end
+
+-- Register a one-shot event to call the above function when the Mapper UI is opened
+registerAnonymousEventHandler( 'mapOpenEvent', mapperOpenedEvent, 1 )
+
+function displayRoom( id )
+  local name       = getRoomName( id )
+  local exit       = getExitString( id )
+  local desc       = getRoomUserData( id, "roomDescription" )
+  --local flags      = getRoomUserData( id, "roomFlags" )
+  local flags      = getFormattedFlags( id )
+  local spec       = getRoomUserData( id, "roomSpec" )
+  local type       = getRoomUserData( id, "roomType" )
+
+  -- Use a special character to denote when a room has a procedure
+  spec             = spec == "1" and " ƒ" or ""
+
+  -- Format the room description as it might appear in the MUD
+  desc             = formatRoomDescription( desc )
+
+  -- Update each attribute with colorization tags
+  local nc         = MAP_COLOR["roomName"] or "<dim_grey>"
+  local tc         = MAP_COLOR[type] or "<dim_grey>"
+  local dc         = MAP_COLOR["roomDesc"] or "<dim_grey>"
+  --local fc         = MAP_COLOR["mapui"] or "<dim_grey>"
+  local sc         = "<ansi_yellow>"
+  local ids        = f "({MAP_COLOR['number']}{id}{RC})"
+  --flags            = f "|{fc}{flags}{RC}|"
+  type             = f "[{tc}{type}{RC}]"
+  desc             = f "{dc}{desc}{RC}"
+  spec             = f "{sc}{spec}{RC}"
+  name             = f "{nc}{name}{RC}"
+  local nameString = f "{name}{spec} {ids} {type} {flags}"
+  cecho( f "\n{nameString}\n{desc}\n{exit}" )
+  listMobsInRoom( id )
+end
+
+-- Function to display every mob in a particular room
+function listMobsInRoom( roomRNumber )
+  for _, mob in ipairs( mobData ) do
+    if mob.roomRNumber == roomRNumber then
+      local ld = mob.longDescription
+      local fm = f " [<gold>{mob.fame}<reset>]" or ""
+      cout( f "<tomato>{ld}<reset>{fm}" )
+    end
+  end
+end
+
+-- Check all rooms and report on rooms marked with character "🅿️" that
+-- have at least one mob in them.
+function noMobRoomCheck()
+  local rooms = getRooms()
+  for roomID, roomName in pairs( rooms ) do
+    local roomChar = getRoomChar( roomID )
+    if roomChar == "🅿️" then
+      for _, mob in ipairs( mobData ) do
+        local sent = string.find( mob.flags, "SENTINEL" )
+        if mob.roomRNumber == roomID and mob.aggro and sent then
+          local mobID = mob.rNumber
+          setRoomChar( roomID, "" )
+          setRoomChar( roomID, "🔺" )
+        end
+      end
+    end
+  end
+end
+
+-- Get a more friendly, consolidated string to display the flags for a given room
+function getFormattedFlags( id )
+  local flagMap = {
+    INDOORS  = "",
+    PRIVATE  = "",
+    SAFE     = "🤝",
+    NO_MOB   = "⛔",
+    NO_MAGIC = "🤐",
+    DARK     = "",
+    NEUTRAL  = "",
+    ARENA    = "",
+    CLUB     = "💤",
+    NONE     = "",
+    DEATH    = "💀",
+    BFS_MARK = "",
+    TUNNEL   = "",
+    HALLOWED = "⛪",
+    DUEL     = "",
+    SNDPROOF = "🙉"
+  }
+
+  local roomFlags = getRoomUserData( id, "roomFlags" )
+  local formattedFlags = ""
+  for flag in string.gmatch( roomFlags, "%S+" ) do
+    if flagMap[flag] then
+      formattedFlags = formattedFlags .. flagMap[flag]
+    end
+  end
+  return formattedFlags
+end
+
+function formatRoomDescription( desc )
+  local maxLength = 80
+  local indent = "   "
+  local formattedDesc = indent
+  local lineLength = #indent
+  local firstLine = true
+
+  for word in string.gmatch( desc, "%S+" ) do
+    if lineLength + #word + 1 > maxLength then
+      if firstLine then
+        formattedDesc = formattedDesc .. "\n" .. word
+        firstLine = false
+      else
+        formattedDesc = formattedDesc .. "\n" .. word
+      end
+      lineLength = #word
+    else
+      if lineLength > (firstLine and #indent or 0) then
+        formattedDesc = formattedDesc .. " " .. word
+        lineLength = lineLength + 1 + #word
+      else
+        formattedDesc = formattedDesc .. word
+        lineLength = lineLength + #word
+      end
+    end
+  end
+  return formattedDesc
+end
+
 -- Get a string representing the "room name" with varying levels of detail
 function getRoomString( id, detail )
   detail = detail or 1

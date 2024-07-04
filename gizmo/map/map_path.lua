@@ -413,7 +413,7 @@ function findRoom( roomName )
 
     local stepsMe = getPath( CurrentRoomNumber, id ) and #speedWalkDir or 999
     local stepsMS = getPath( 1121, id ) and #speedWalkDir or 999
-    hline()
+    hrule( 50, "<cadet_blue>" )
     cout( roomString )
     cout( "Area: {SC}{roomAreaName}{RC}" )
 

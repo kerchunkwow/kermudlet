@@ -65,6 +65,7 @@ loadLibs()
 -- Register an event to listen for file modifications and reload scripts
 registerAnonymousEventHandler( 'sysPathChanged', fileModifiedEvent )
 
+
 -- Once all scripts are loaded, this function will iterate through the global namespace table and
 -- call addFileWatch() on any file that has at least one function definition in the current interpreter.
 -- This is done in each session's local interpreter, meaning we have four times the number of files to

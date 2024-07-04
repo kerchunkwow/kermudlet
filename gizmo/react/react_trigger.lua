@@ -207,13 +207,13 @@ function triggerLocateObject()
   local obj = trim( matches[2] )
   local loc = trim( matches[3] )
   -- Ignore items already owned by players
-  --if PlayerContainers[loc] or KnownPlayers[loc] then
-  --deleteLine()
-  -- selectString( line, 1 )
-  -- fg( "dim_grey" )
-  -- resetFormat()
-  --   return
-  -- end
+  if PlayerContainers[loc] or KnownPlayers[loc] then
+    deleteLine()
+    selectString( line, 1 )
+    fg( "dim_grey" )
+    resetFormat()
+    return
+  end
   selectString( obj, 1 )
   -- Sought after item
   if DesirableItems[obj] then
@@ -260,7 +260,7 @@ end
 -- Define a table called QuestHighlights which is a table of strings; each string may be associated with
 -- one or both of an info string and command string; define the table with a sample entry
 QuestHighlights = {
-  ["You see a rat"] = {info = "A rat is here!", command = "kill rat"},
+  ["You see a rat"] = {info = "A rat is here!", code = "burp"},
 }
 function highlightQuest( string )
   -- Highlight the triggering string in bright orange on dark purple
@@ -279,10 +279,10 @@ function highlightQuest( string )
   end
   -- If the string has an associated command, use iout to report on the triggered command incl. the triggering text,
   -- then send the command with send().
-  if QuestHighlights[string].command then
-    local command = QuestHighlights[string].command
+  if QuestHighlights[string].code then
+    local command = QuestHighlights[string].code
     --iout( f "<deep_pink>{cmd} triggered on <royal_blue>{string}<reset>" )
-    send( QuestHighlights[string].command, true )
+    send( QuestHighlights[string].code, true )
   end
 end
 

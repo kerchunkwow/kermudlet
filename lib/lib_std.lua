@@ -150,6 +150,41 @@ function skewedRandom( min, max, skewFactor )
   return min + (max - min) * skewedRandom
 end
 
+-- Function to create a backup of a file
+function backupFile( srcFile, dstDir )
+  -- Function to execute a system command and return the result
+  local function executeCommand( cmd )
+    local file = assert( io.popen( cmd, 'r' ) )
+    local output = file:read( '*all' )
+    file:close()
+    return output
+  end
+  -- Function to get the current timestamp
+  local function getTimestamp()
+    return os.date( '%Y%m%d%H%M%S' )
+  end
+  -- Function to get the base name of a file (without path)
+  local function getBaseName( filePath )
+    return filePath:match( "^.+\\(.+)$" )
+  end
+  -- Get the base name of the source file
+  local baseName = getBaseName( srcFile )
+  if not baseName then
+    print( "Error: Unable to determine the base name of the source file." )
+    return
+  end
+  -- Create a unique destination file name with timestamp
+  local timestamp = getTimestamp()
+  local dstFile = dstDir .. "\\" .. baseName .. "_" .. timestamp
+
+  -- Construct the command to copy the file
+  local cmd = string.format( 'copy "%s" "%s"', srcFile, dstFile )
+
+  -- Execute the command
+  local result = executeCommand( cmd )
+  cecho( f "\n<cyan>Backup result<reset>: {result}<reset>\n" )
+end
+
 -- Print all variables currently in _G (Lua's table for all variables); probably
 -- not very readable but might be helpful
 local function printVariables()

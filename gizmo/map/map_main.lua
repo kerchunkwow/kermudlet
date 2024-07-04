@@ -2,89 +2,6 @@ function doSpeedWalk()
   iout( "Someone called <cyan>doSpeedWalk<medium_orchid>()<reset>" )
 end
 
-function setRoomOnClick()
-  local dst = getMapSelection()["rooms"][1]
-  iout( "Player Location Set: {NC}{dst}{RC}" )
-  setPlayerRoom( dst )
-end
-
-function showMobOnClick()
-  local id = getMapSelection()["rooms"][1]
-  displayMobsByRoom( id )
-end
-
-function showRoomOnClick()
-  local id = getMapSelection()["rooms"][1]
-  displayRoom( id )
-end
-
-function registerMapEvents()
-  registerAnonymousEventHandler( "setRoomOnClick", "setRoomOnClick" )
-  registerAnonymousEventHandler( "showMobOnClick", "showMobOnClick" )
-  registerAnonymousEventHandler( "showRoomOnClick", "showRoomOnClick" )
-  addMapEvent( "Set Current Room", "setRoomOnClick" )
-  addMapEvent( "Show Mobs", "showMobOnClick" )
-  addMapEvent( "Show Room", "showRoomOnClick" )
-end
-
-function displayRoom( id )
-  local name       = getRoomName( id )
-  local desc       = getRoomUserData( id, "roomDescription" )
-  local flags      = getRoomUserData( id, "roomFlags" )
-  local spec       = getRoomUserData( id, "roomSpec" )
-  local type       = getRoomUserData( id, "roomType" )
-
-  -- Use a special character to denote when a room has a procedure
-  spec             = spec == "1" and "ƒ" or ""
-
-  -- Format the room description as it might appear in the MUD
-  desc             = formatRoomDescription( desc )
-
-  -- Update each attribute with colorization tags
-  local nc         = MAP_COLOR["roomName"] or "<dim_grey>"
-  local tc         = MAP_COLOR[type] or "<dim_grey>"
-  local dc         = MAP_COLOR["roomDesc"] or "<dim_grey>"
-  local fc         = MAP_COLOR["mapui"] or "<dim_grey>"
-  local sc         = "<ansi_yellow>"
-  local ids        = f "({MAP_COLOR['number']}{id}{RC})"
-  desc             = f "{dc}{desc}{RC}"
-  flags            = f "{fc}{flags}{RC}"
-  spec             = f "{sc}{spec}{RC}"
-  name             = f "{nc}{name}{RC}"
-  type             = f "[{tc}{type}{RC}]"
-  local nameString = f "{name} {ids} {type} {spec}"
-  cecho( f "\n{nameString}\n{desc}\n{flags}" )
-end
-
-function formatRoomDescription( desc )
-  local maxLength = 80
-  local indent = "   "
-  local formattedDesc = indent
-  local lineLength = #indent
-  local firstLine = true
-
-  for word in string.gmatch( desc, "%S+" ) do
-    if lineLength + #word + 1 > maxLength then
-      if firstLine then
-        formattedDesc = formattedDesc .. "\n" .. word
-        firstLine = false
-      else
-        formattedDesc = formattedDesc .. "\n" .. word
-      end
-      lineLength = #word
-    else
-      if lineLength > (firstLine and #indent or 0) then
-        formattedDesc = formattedDesc .. " " .. word
-        lineLength = lineLength + 1 + #word
-      else
-        formattedDesc = formattedDesc .. word
-        lineLength = lineLength + #word
-      end
-    end
-  end
-  return formattedDesc
-end
-
 -- Get a complete Wintin-compatible path between two rooms including door commands
 -- [TODO] Translating this to a Wintin-string is really only for convenience of output/sharing;
 -- for efficiency we should just use a list of raw commands for the core functionality
@@ -243,17 +160,20 @@ local function getAreaUniques()
   cecho( f "\n<dark_orange>{areaUniques}<reset> rooms are unique to a single area." )
 end
 
-function findSafeRooms()
+function setSafeRoomCharacters()
+  clearUserWindow( "info" )
   local allRooms = getRooms()
-  for rNumber, name in pairs( allRooms ) do
-    local roomFlags = getRoomUserData( rNumber, "roomFlags" )
+  for id, name in pairs( allRooms ) do
+    local roomFlags = getRoomUserData( id, "roomFlags" )
     if roomFlags then
-      -- if roomFlags contains the substring "NOMOB" then iout() it
-      if string.find( roomFlags, "NO_MOB" ) then
-        local char = getRoomChar( rNumber )
-        if char == "😈" then
-          iout( f "NO_MOB room has char: {char}" )
-          --iout( roomFlags )
+      --local noMob = string.find( roomFlags, "NO_MOB" )
+      local safe = string.find( roomFlags, "SAFE" )
+      --local safeRoom = noMob or safe
+      if safe then
+        local char = getRoomChar( id )
+        --if char and #char > 0 and char ~= "" and char ~= " " then
+        if char == "" or char == " " or char == "🅿️" then
+          setRoomChar( id, "🌈" )
         end
       end
     end

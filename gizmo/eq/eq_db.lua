@@ -36,6 +36,7 @@ function loadAllItems()
       nameTrimmed = trimmedName,
       nameLength = #row.name,
       keywords = row.keywords,
+      keyword = "nil",
       clone = row.clone == 1,
       statsString = row.statsString,
       antisString = row.antisString,
@@ -49,6 +50,11 @@ function loadAllItems()
   env:close()
   -- Only needed at load/reload
   loadAllItems = nil
+  countItemKeywords()
+  -- For each item in the newly populated item table, use findOptimizedKeyword to determine the best keyword
+  for _, item in pairs( itemData ) do
+    item.keyword = findOptimizedKeyword( item )
+  end
 end
 
 ItemKeywordCounts = ItemKeywordCounts or {}
@@ -73,16 +79,11 @@ function countItemKeywords()
 end
 
 function findOptimizedKeyword( item )
-  -- Using these colors and remembering that Mudlet Lua supports f-strings, add logic
-  -- to this function to print a report using iout() that displays a colorized string
-  -- based on how many times this item's optimal keyword appears on other items; output
-  -- should include the item name itself and the colorized optimal keyword; remember to
-  -- close Mudlet colors with <reset> not </color> or </reset>
   local ic = "<royal_blue>" -- color for the name of the item itself
 
   -- Colors for the optimized keyword based on frequency
   local uc = "<green_yellow>" -- unique keywords
-  local sc = "<goldenrod>"    -- "strong" keywords appearing less than 3 or fewer times
+  local sc = "<goldenrod>"    -- "strong" keywords appearing 3 or fewer times
   local cc = "<orange>"       -- "common" keywords appearing 4 or more times
 
   -- Split the keywords string into individual keywords
@@ -90,26 +91,40 @@ function findOptimizedKeyword( item )
 
   -- Initialize the best keyword and its count
   local bestKeyword = nil
-  local bestCount = 0
+  local bestCount = math.huge
 
   -- Iterate through each keyword
   for _, keyword in ipairs( keywords ) do
     -- Get the count for this keyword from ItemKeywordCounts
     local count = ItemKeywordCounts[keyword] or 0
 
-    -- If this keyword has a higher count than the current best keyword, update the best keyword and count
-    if count > bestCount then
+    -- If this keyword has a lower count than the current best keyword, update the best keyword and count
+    if count < bestCount then
       bestKeyword = keyword
       bestCount = count
     end
   end
+  -- Determine the color based on the count
+  local color = uc
+  if bestCount > 3 then
+    color = cc
+  elseif bestCount > 1 then
+    color = sc
+  end
+  -- Print the report using iout()
+  iout( f "{ic}{item.name}<reset>: {color}{bestKeyword}<reset> (count: {bestCount})" )
+
   -- Return the best keyword
   return bestKeyword
 end
 
 -- Triggered by items seen in game (e.g., worn by players), this function pulls stats from the global
 -- itemData table and appends them to the item's name in the game window
+local TransferTime = 0
+local TransferRate = 0.5
+--ItemsForTransfer = ItemsForTransfer or {}        -- Ensure it's initialized properly
 function itemQueryAppend( itemName )
+  ItemsForTransfer      = ItemsForTransfer or {} -- Ensure it's initialized properly
   itemName              = itemName or matches[2]
   local itemNameTrimmed = trimItemName( itemName )
   local itemNameLength  = #itemName
@@ -128,11 +143,11 @@ function itemQueryAppend( itemName )
   resetFormat()
 
   local item = itemData[itemNameTrimmed]
-
   -- Proceed if the item was found
   if item then
-    -- Temporarily sneak some code in here to get items out of storage (for sorting/archiving); this
-    -- wills separate armor and weapons from potions and other items
+    local kw       = item.keyword
+    kw             = f " (<dark_slate_blue><i>{kw}</i><reset>)"
+    -- table.insert( ItemsForTransfer, kw )
 
     -- Some shorthanded color codes
     local sc       = "<sea_green>"   -- Item stats
@@ -143,6 +158,8 @@ function itemQueryAppend( itemName )
 
     -- Padding for alignment
     local padding  = string.rep( " ", 46 - itemNameLength )
+
+    local antis    = ""
 
     -- Build display string from stats & cloneable flag
     local specTag  = item.hasSpec and f " {spc}ƒ{R}" or ""
@@ -157,13 +174,15 @@ function itemQueryAppend( itemName )
     elseif itemQueryMode == 1 and (stats ~= "") then
       -- Add effects and anti-flags when mode == 1
       local effects = item.affectsString and f " {ec}{item.affectsString}{R}" or ""
-      local antis   = item.antisString or ""
+      antis         = item.antisString or ""
       -- If there's an anti-string and a customize function is defined, use it
       if #antis >= 1 and customizeAntiString then
         antis = customizeAntiString( antis )
-        antis = f " {ac}{antis}{R}"
+        if #antis > 0 then
+          antis = f " {ac}{antis}{R}"
+        end
       end
-      display_string = f "{padding}{stats}{cloneTag}{specTag}{effects}{antis}"
+      display_string = f "{padding}{stats}{cloneTag}{specTag}{effects}{antis}{kw}"
     end
     -- Print the final string to the game window (appears after stat'd item)
     if display_string then
@@ -207,6 +226,46 @@ function itemHasSpec( item_name )
   else
     return false
   end
+end
+
+-- Load all items from the Item table into a globally-accessible table indexed by item name
+function exportIDStrings()
+  local luasql = require "luasql.sqlite3"
+  local env = luasql.sqlite3()
+  local conn = env:connect( DB_PATH )
+
+  if not conn then
+    iout( "{EC}eq_db.lua{RC} failed database connection in loadAllItems()" )
+    return
+  end
+  local cur, err = conn:execute( "SELECT identifyText FROM LegacyItem" )
+  if not cur then
+    iout( "{EC}Error exporting ID strings." )
+    conn:close()
+    env:close()
+    return
+  end
+  local file = io.open( "C:\\Dev\\mud\\mudlet\\legacyIDStrings.txt", "a" )
+  if not file then
+    cur:close()
+    conn:close()
+    env:close()
+    return
+  end
+  local row = cur:fetch( {}, "a" )
+  while row do
+    -- Write the ID block to an external file named "legacyIDStrings.txt"
+    local success, writeErr = file:write( "\n" .. row.identifyText )
+    if not success then
+      iout( "{EC}Error writing to file: " .. writeErr )
+      break
+    end
+    row = cur:fetch( row, "a" )
+  end
+  file:close()
+  cur:close()
+  conn:close()
+  env:close()
 end
 
 -- Deprecated to eliminate runtime dependency on the database; if for some reason you want to continue using this
@@ -294,4 +353,17 @@ local function itemQueryAppendDatabase()
       cecho( display_string )
     end
   end
+end
+
+-- This function will iterate through the itemList which is a list of keywords, and attempt to
+-- 'get' each item from container 1 and put each item into container 2
+local function transferItems( itemList, container1, container2 )
+  for i, item in ipairs( itemList ) do
+    local function transfer()
+      send( "get " .. item .. " " .. container1 )
+      send( "put " .. item .. " " .. container2 )
+    end
+    tempTimer( (i - 1) * 0.25, transfer )
+  end
+  ItemsForTransfer = nil
 end

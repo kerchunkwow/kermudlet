@@ -52,6 +52,16 @@ function interpolateColor( highColor, lowColor, ratio )
   return r, g, b
 end
 
+-- Print a horizontal divider to the main console of length n in color c; use
+-- Gizmo standard format of dashes flanked by plus signs.
+function hrule( n, c )
+  -- Add <> characters here so they don't have to be included in function calls
+  if not c then c = "<black>" end
+  local fi = fill( n, '-', c )
+  local line = f "\n{c}+{fi}{c}+<reset>"
+  cecho( line )
+end
+
 -- Create and/or open a basic user window into which you can echo output; uses _G to
 -- store the object in a variable of the same name
 local function openBasicWindow( name, title, fontFace, fontSize )
@@ -106,12 +116,4 @@ local function getModifiedColor( r, g, b, d )
   local newB = math.floor( clamp( b * scale, 0, 255 ) + 0.5 )
 
   return newR, newG, newB
-end
-
--- Print a horizontal dividing line to the main console; useful in conjunction with
--- large data outputs for visual distinction.
-function hline()
-  local CB = "<cadet_blue>"
-  local SG = "<dark_slate_grey>"
-  cout( "{CB}+{SG}------------------------------------------------{CB}+{RC}" )
 end

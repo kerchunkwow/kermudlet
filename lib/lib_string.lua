@@ -64,6 +64,28 @@ function lowerArticles( str )
   return str
 end
 
+-- Trim an article from the start of a string; useful for cleaning up mob names or item descriptions
+function trimArticle( s )
+  -- First, trim the input string
+  s = trim( s )
+
+  -- Define a pattern to match "a", "an", or "the" at the start of the string (case insensitive)
+  local patterns = {"^a%s+", "^an%s+", "^the%s+"}
+
+  -- Convert the input string to lower case for case insensitive matching
+  local lowerS = s:lower()
+
+  -- Iterate over the patterns and remove the matching article from the start of the string
+  for _, pattern in ipairs( patterns ) do
+    local matchStart, matchEnd = lowerS:find( pattern )
+    if matchStart == 1 then
+      s = s:sub( matchEnd + 1 )
+      break
+    end
+  end
+  return trim( s )
+end
+
 -- From a list of raw directions, create a Wintin-style command string
 -- e.g., { "n", "n", "n", "u", "u" } = "#3 n;#2 u"
 -- [TODO] Add support for both short/long direction format, ordinal directions, etc.
@@ -179,6 +201,42 @@ function createLineRegex( rawString )
   local lineRegex = [[(?:^.*?)]] .. escString .. "$"
 
   return lineRegex
+end
+
+-- Given a number, return a string with an appropriate + or - sign included
+function getSignedString( num )
+  if not num then
+    print( "Empty string" )
+    return ""
+  elseif num > 0 then
+    return "+" .. tostring( num )
+  else
+    return tostring( num )
+  end
+end
+
+-- Calculate the length of a string without Mudlet color tags
+function cLength( s )
+  -- Remove Mudlet color tags, which can include underscores
+  local strippedString = s:gsub( "<[%a_]+>", "" )
+  local result = #strippedString
+  -- If the string contains "ƒ", reduce the result by one because it gets counted as two characters
+  if string.find( strippedString, "ƒ" ) then
+    result = result - 1
+  end
+  return result
+end
+
+-- Given a string, substring, and color, return a new string with the substring and
+-- color code appended, separated by a space (if the substring is not empty or nil)
+function compositeString( string, substring, color )
+  if not substring or substring == "" then
+    return string
+  elseif not string or string == "" then
+    return color .. substring .. "<reset>"
+  else
+    return string .. " " .. color .. substring .. "<reset>"
+  end
 end
 
 -- Guess a string is regex if it starts with ^, ends with $, or contains a backslash

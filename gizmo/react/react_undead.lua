@@ -17,117 +17,18 @@ function summonNymph()
   end )
 end
 
--- Initialize CloneList, CloneCount, and CurrentClone
-CloneList = CloneList or {
-  ["kings"]        = 3,
-  ["helm"]         = 1,
-  ["lies"]         = 3,
-  ["sickle"]       = 1,
-  ["idiocy"]       = 2,
-  ["stone"]        = 1,
-  ["crocodile"]    = 1,
-  ["working"]      = 1,
-  ["waterwalking"] = 5,
-}
-
--- Calculate total clones needed
---if not CloneCount then
-if not CloneCount then
-  CloneCount = 0
-  for _, count in pairs( CloneList ) do
-    CloneCount = CloneCount + count
-  end
-end
--- Set the current item to clone
--- CurrentClone = CurrentClone or next( CloneList )
-CurrentClone = CurrentClone or next( CloneList )
-
--- How long to wait between attempts to clone items
-CloneRate    = 2.6
-
--- How long to rest when mana is needed
-CloneRest    = 182.6
-
--- Invoked by an in-game alias to initiate the cloning process; combined with the triggers this should
--- handle the entire process of cloning items from storage.
-function startCloning()
-  if not CurrentClone then return end
-  -- For each item, retrieve it from storage and start cloning
-  for item, _ in pairs( CloneList ) do
-    expandAlias( f "gett {item} stocking" )
-  end
-  -- Give it some time to get all the items out
-  tempTimer( 5.2, function ()
-    send( f "cast 'clone' {CurrentClone}", true )
-  end )
-end
-
--- Invoked once cloning is complete to free up resources
-function endCloning()
-  -- Clean up global variables
-  CloneList    = nil
-  CurrentClone = nil
-  CloneCount   = nil
-  CloneRate    = nil
-  CloneRest    = nil
-
-  -- Kill the triggers
-  killTrigger( CloneSuccessTrigger )
-  killTrigger( CloneFailTrigger )
-  killTrigger( CloneRecoverTrigger )
-
-  -- Undefine the functions
-  startCloning = nil
-  endCloning   = nil
-end
-
--- Handle successful cloning
-if CloneSuccessTrigger then killTrigger( CloneSuccessTrigger ) end
-CloneSuccessTrigger = tempTrigger( "You create a duplicate", function ()
-  CloneList[CurrentClone] = CloneList[CurrentClone] - 1
-  local remaining = CloneList[CurrentClone]
-  if CloneList[CurrentClone] == 0 then
-    CurrentClone = next( CloneList, CurrentClone )
-  end
-  if not CurrentClone then
-    endCloning()
-  else
-    tempTimer( CloneRate, function ()
-      send( f "cast 'clone' " .. CurrentClone, true )
-    end )
-  end
-end )
-
--- Handle clone failure; attempt to clone the item again after a short delay
-if CloneFailTrigger then killTrigger( CloneFailTrigger ) end
-CloneFailTrigger = tempTrigger( "You lost your concentration", function ()
-  tempTimer( CloneRate, function ()
-    send( f "cast 'clone' " .. CurrentClone, true )
-  end )
-end )
-
--- Handle mana recovery
-if CloneRecoverTrigger then killTrigger( CloneRecoverTrigger ) end
-CloneRecoverTrigger = tempTrigger( "can't summon enough energy", function ()
-  send( "rest", true )
-  tempTimer( CloneRest, function ()
-    send( "stand", true )
-    send( f "cast 'clone' " .. CurrentClone, true )
-  end )
-end )
-
 -- New module/file for reactions exclusive to Undead player characters
-TrollMode           = TrollMode or nil
-RescueDelay         = false
-TROLL_DMG           = [[crush]]
+TrollMode       = TrollMode or nil
+RescueDelay     = false
+TROLL_DMG       = [[crush]]
 
 -- My minions
-MINIONS             = {"troll", "shade", "nymph"}
+MINIONS         = {"troll", "shade", "nymph"}
 
 -- Current index to keep track of whose turn it is to eat
-CorpseIndex         = 1
+CorpseIndex     = 1
 
-TransferTrigger     = TransferTrigger or nil
+TransferTrigger = TransferTrigger or nil
 function orderTransferTroll()
   TransferTrigger = tempTrigger( [[stubbornly refuses]], function ()
     send( 'order nymph transfer health troll', true )
@@ -199,7 +100,7 @@ function equipMinion( minion )
       "reptilian",
       "idiocy",
       "oaken",
-      "crocodile",
+      "planes", -- boots
       "agony",
       "working",
       "lies",
@@ -254,14 +155,14 @@ function equipMinion( minion )
       "bodice",
       "helm",
       "zyca",
-      "outer",
+      "planes",
       "bloody",
       "hell",
-      "shield",
-      "spider",
+      "plate", -- Ygaddrozil keyword can be a pain
+      "flowing",
       "flesh",
-      "outer",
-      "outer",
+      "plane",
+      "plane",
       "sickle",
       "drop",
     }
@@ -350,6 +251,8 @@ function orderEatCorpse()
 end
 
 function aliasBansheeRecall()
+  iout( "Banshee recall temporarily disabled." )
+  if true then return end
   if AutoPathing then AutoPathing = false end
   if AutoLooking then AutoLooking = false end
   if AutoBuffing then AutoBuffing = false end
@@ -443,6 +346,8 @@ end
 SacTrigger = SacTrigger or nil
 RecallTrigger = RecallTrigger or nil
 function triggerEmergencySoft()
+  iout( "Emergencies temporarily disabled." )
+  if true then return end
   if AutoPathing then AutoPathing = false end
   if AutoBuffing then AutoBuffing = false end
   if AutoStunning then AutoStunning = false end
@@ -563,7 +468,7 @@ local function aliasThrow()
   expandAlias( 'rehold', true )
 end
 
-local function banshee1()
+function banshee1()
   send( 'w', true )
   send( 'w', true )
   send( 'n', true )
@@ -589,7 +494,7 @@ local function banshee1()
   send( 'use mechanism', true )
 end
 
-local function banshee2()
+function banshee2()
   send( 'u', true )
   send( 'n', true )
   send( 'e', true )
@@ -607,7 +512,7 @@ local function banshee2()
   expandAlias( 'targ rat', false )
 end
 
-local function banshee3()
+function banshee3()
   send( 's', true )
   send( 's', true )
   send( 'w', true )
@@ -636,7 +541,7 @@ local function banshee3()
   send( 'drop awl', true )
 end
 
-local function banshee4()
+function banshee4()
   send( 'n', true )
   send( 'w', true )
   send( 'w', true )
@@ -668,7 +573,7 @@ local function banshee4()
   send( 'drop ladder', true )
 end
 
-local function banshee5()
+function banshee5()
   send( 'n', true )
   send( 'u', true )
   send( 'n', true )
@@ -703,7 +608,7 @@ local function banshee5()
   send( 'get tongs', true )
 end
 
-local function banshee6()
+function banshee6()
   send( 's', true )
   send( 's', true )
   send( 'e', true )
@@ -724,7 +629,7 @@ local function banshee6()
   send( 'drop tongs', true )
 end
 
-local function banshee7()
+function banshee7()
   send( 'n', true )
   send( 'e', true )
   send( 'e', true )
@@ -742,7 +647,7 @@ local function banshee7()
   send( 'drop dagger', true )
 end
 
-local function banshee8()
+function banshee8()
   send( 'drop morningstar', true )
   send( 'drop mandible', true )
   send( 'drop gem', true )
@@ -789,7 +694,7 @@ local function banshee8()
   send( 'drop gem', true )
 end
 
-local function banshee9()
+function banshee9()
   send( 's', true )
   send( 'w', true )
   send( 'w', true )
@@ -828,7 +733,7 @@ local function banshee9()
   send( 'put violin stocking', true )
 end
 
-local function banshee10()
+function banshee10()
   send( 'n', true )
   send( 'e', true )
   send( 'u', true )
@@ -837,7 +742,7 @@ local function banshee10()
   send( 'search mud', true )
 end
 
-local function banshee11()
+function banshee11()
   send( 's', true )
   send( 'w', true )
   send( 'd', true )
@@ -858,7 +763,7 @@ local function banshee11()
   send( 'put guitar stocking', true )
 end
 
-local function banshee12()
+function banshee12()
   send( 's', true )
   send( 'w', true )
   send( 'w', true )
@@ -869,7 +774,7 @@ local function banshee12()
   send( 'say Time to give instruments!', true )
 end
 
-local function banshee13()
+function banshee13()
   send( 'get violin stocking', true )
   send( 'give violin statue', true )
   send( 'get flute stocking', true )

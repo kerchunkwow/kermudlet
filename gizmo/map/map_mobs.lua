@@ -122,15 +122,6 @@ function loadAreaMobs( areaRNumber )
   end
 end
 
--- Function to display every mob in a particular room
-function displayMobsByRoom( roomRNumber )
-  for _, mob in ipairs( mobData ) do
-    if mob.roomRNumber == roomRNumber then
-      displayMob( mob.rNumber )
-    end
-  end
-end
-
 -- Retrieve data about a specific mob from the global mobData table
 function getMob( rNumber )
   -- Convert in case the parameter arrives as a string

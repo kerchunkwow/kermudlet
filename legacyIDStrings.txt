@@ -1,0 +1,3286 @@
+
+Object 'suit cloudsuit', Item type: ARMOR
+Item is: GLOW MAGIC BLESS 
+Weight: 3, Value: 30000
+AC-apply is 14
+Can affect you as :
+    Affects : DEX By 4
+    Affects : HITROLL By 1
+Object 'rags enchanted pile', Item type: ARMOR
+Item will give you following abilities:  SNEAK
+Item is: INVISIBLE ANTI-GOOD ANTI-NEUTRAL ANTI-WARRIOR ANTI-CLERIC ANTI-MAGIC_USER
+ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED NOBITS
+Weight: 2, Value: 85000
+AC-apply is 12
+Can affect you as :
+    Affects : DEX By 4
+    Affects : HITROLL By 4
+Object 'ring tring tz', Item type: ARMOR
+Item is: LIMITED 
+Weight: 5, Value: 175000
+AC-apply is 7
+Can affect you as :
+    Affects : DEX By 3
+    Affects : HIT By 20
+Object 'boots dirty', Item type: ARMOR
+Item is: ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA 
+ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO NOBITS
+Undead antis: ANTI_DEATH_TYRANT ANTI_BANSHEE ANTI_LICH ANTI_WRAITH 
+ANTI_DEATH_KNIGHT ANTI_BONE_GOLEM
+Weight: 7, Value: 3000
+AC-apply is 5
+Can affect you as :
+    Affects : MOVE By 50
+    Affects : DEX By 3
+
+Loaded By - Nomad Guildmaster
+Object 'dark spider mail plate', Item type: ARMOR
+Item is: ANTI-GOOD ANTI-NEUTRAL 
+Weight: 40, Value: 0
+AC-apply is 14
+Can affect you as :
+    Affects : DEX By 2
+    Affects : HIT By 10
+Object 'vulcan mail', Item type: ARMOR
+Item is: GLOW MAGIC ANTI-WARRIOR NOBITS
+Weight: 5, Value: 75000
+AC-apply is 8
+Can affect you as :
+    Affects : DEX By 2
+    Affects : ARMOR By -4
+
+loaded by Lesser God Aeacus
+Object 'hide jerkin', Item type: ARMOR
+Item is: ANTI-FEMALE 
+Weight: 4, Value: 2000
+AC-apply is 6
+Can affect you as :
+    Affects : DEX By 2
+    Affects : CON By 2
+Object 'robe runed arcane', Item type: ARMOR
+Item is: GLOW MAGIC ANTI-GOOD ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-AVATAR NOBITS
+Weight: 10, Value: 15000
+AC-apply is 5
+Can affect you as :
+    Affects : MANA By 45
+    Affects : DEX By 2
+Object 'cape red', Item type: ARMOR
+Item is: GLOW ANTI-EVIL 
+Weight: 4, Value: 100000
+AC-apply is 7
+Can affect you as :
+    Affects : DEX By 2
+    Affects : DAMROLL By 1
+Object 'amulet ettin', Item type: ARMOR
+Item is: GLOW 
+Weight: 2, Value: 10000
+AC-apply is 1
+Can affect you as :
+    Affects : DEX By 2
+    Affects : CON By 3
+Object 'withered rose', Item type: WORN
+Item is: ANTI-EVIL NOBITS
+Weight: 1, Value: 1000
+Can affect you as :
+    Affects : STR By 2
+    Affects : DEX By 2
+Object 'gauntlets ogauntlets', Item type: ARMOR
+Item is: NOBITS
+Weight: 20, Value: 0
+AC-apply is 5
+Can affect you as :
+    Affects : DEX By 2
+    Affects : HIT By 5
+Object 'boots wind', Item type: ARMOR
+Item is: MAGIC 
+Weight: 1, Value: 10000
+AC-apply is 4
+Can affect you as :
+    Affects : DEX By 2
+    Affects : MOVE By 20
+Object 'leather suit', Item type: ARMOR
+Item is: GLOW MAGIC 
+Weight: 3, Value: 1000
+AC-apply is 4
+Can affect you as :
+    Affects : DEX By 1
+Object 'platinum leg plates', Item type: ARMOR
+Item is: GLOW MAGIC NOBITS
+Weight: 30, Value: 100000
+AC-apply is 7
+Can affect you as :
+    Affects : DEX By 1
+    Affects : HIT By 20
+Object 'evil boots', Item type: ARMOR
+Item is: HUM ANTI-GOOD ANTI-NEUTRAL NOBITS
+Weight: 15, Value: 7000
+AC-apply is 9
+Can affect you as :
+    Affects : DEX By 1
+    Affects : MOVE By 30
+
+loaded by ogre
+Object 'glowing bracelet fanra', Item type: ARMOR
+Item is: GLOW 
+Weight: 5, Value: 0
+AC-apply is 10
+Can affect you as :
+    Affects : HIT By 10
+    Affects : DAMROLL By 1
+Object 'bangle', Item type: ARMOR
+Item is: NOBITSNOBITS
+Weight: 5, Value: 3250
+AC-apply is 10
+
+
+loaded by warrior mage
+Object 'bracelet fiend fiendish brac', Item type: ARMOR
+Item is: HUM EVIL MAGIC ANTI-GOOD ANTI-NEUTRAL LIMITED 
+Weight: 4, Value: 0
+AC-apply is 7
+Can affect you as :
+    Affects : DAMROLL By 1
+    Affects : HIT By 30
+Object 'bracelet bom', Item type: ARMOR
+Item is: GLOW LIMITED RSPEC 
+Weight: 5, Value: 350000
+AC-apply is 7
+Can affect you as :
+    Affects : HIT By 25
+    Affects : MANA By 25
+Object 'wrist band', Item type: ARMOR
+Item is: GLOW ANTI-WARRIOR 
+Weight: 2, Value: 25000
+AC-apply is 7
+Can affect you as :
+    Affects : HITROLL By 1
+    Affects : DAMROLL By 1
+Object 'buckler steel', Item type: ARMOR
+Item is: NOBITSNOBITS
+Weight: 5, Value: 7000
+AC-apply is 6
+Object 'golden cuff', Item type: ARMOR
+Item is: INVISIBLE MAGIC 
+Weight: 3, Value: 25000
+AC-apply is 5
+Can affect you as :
+    Affects : DAMROLL By 1
+    Affects : HIT By 10
+Object 'bracelet elemental', Item type: ARMOR
+Item is: NOBITS
+Weight: 4, Value: 10000
+AC-apply is 5
+Object 'buckler obuckler', Item type: ARMOR
+Item is: NOBITS
+Weight: 10, Value: 0
+AC-apply is 5
+Can affect you as :
+    Affects : CON By 1
+    Affects : HITROLL By 1
+Object 'bracelet mardok', Item type: ARMOR
+Item is: DARK ANTI-GOOD ANTI-NEUTRAL ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO
+Weight: 10, Value: 20000
+AC-apply is 5
+Can affect you as :
+    Affects : HITROLL By 3
+    Affects : DAMROLL By 2
+Object 'bracelet outer plane', Item type: ARMOR
+Item is: HUM ANTI-GOOD ANTI-NEUTRAL ANTI-CLERIC ANTI-MAGIC_USER ANTI-PALADIN LIMITED 
+Weight: 6, Value: 90000
+AC-apply is 5
+Can affect you as :
+    Affects : HITROLL By 3
+    Affects : DAMROLL By 3
+Object 'bracelet adamant diamond diamonds', Item type: ARMOR
+Item will give you following abilities:  INVISIBLE
+Item is: GLOW LIMITED NOBITS
+Weight: 1, Value: 0
+AC-apply is 5
+Can affect you as :
+    Affects : INT By 2
+    Affects : HITROLL By 3
+Object 'ivory bracelet', Item type: ARMOR
+Item is: NOBITSNOBITS
+Weight: 10, Value: 11000
+AC-apply is 5
+Can affect you as :
+    Affects : SKILL_BACKSTAB By 10
+Object 'bracelet diamond', Item type: ARMOR
+Item is: MAGIC LIMITED NOBITS
+Weight: 1, Value: 175000
+AC-apply is 5
+Can affect you as :
+    Affects : MANA By 30
+    Affects : DAMROLL By 1
+Object 'steel bead bracelet', Item type: ARMOR
+Item is: ANTI-GOOD ANTI-EVIL 
+Weight: 3, Value: 0
+AC-apply is 5
+Can affect you as :
+    Affects : DAMROLL By 1
+    Affects : SKILL_DODGE By 5
+Object 'black bracelet blkbrac', Item type: ARMOR
+Item is: GLOW HUM MAGIC ANTI-EVIL ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD LIMITED 
+Weight: 6, Value: 200000
+AC-apply is 5
+Can affect you as :
+    Affects : HITROLL By 2
+    Affects : DAMROLL By 2
+Object 'bracelet skull', Item type: ARMOR
+Item is: NOBITS
+Weight: 2, Value: 5000
+AC-apply is 3
+Can affect you as :
+    Affects : HITROLL By 1
+    Affects : DAMROLL By 1
+Object 'bracelet', Item type: ARMOR
+Item is: MAGIC BLESS ANTI-EVIL ANTI-NEUTRAL NOBITS
+Weight: 1, Value: 0
+AC-apply is 3
+Can affect you as :
+    Affects : DAMROLL By 1
+Object 'ivory buckler', Item type: ARMOR
+Item is: ANTI-EVIL 
+Weight: 10, Value: 4000
+AC-apply is 2
+Can affect you as :
+    Affects : MANA By 10
+    Affects : HIT By 10
+Object 'blue wristband wrist band', Item type: WORN
+Item will give you following abilities:  DETECT-ALIGNMENT 
+Item is: MAGIC ANTI-WARRIOR ANTI-THIEF ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-COMMANDO LIMITED 
+Weight: 2, Value: 0
+Can affect you as :
+    Affects : HIT By 45
+    Affects : AGE By -2
+Object 'flaming bracelet', Item type: ARMOR
+Item is: LIMITED 
+Weight: 2, Value: 120000
+AC-apply is 0
+Can affect you as :
+    Affects : HITROLL By 2
+    Affects : DAMROLL By 2
+Object 'red wristband wrist band', Item type: WORN
+Item will give you following abilities:  DETECT-MAGIC 
+Item is: GLOW MAGIC ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-BARD ANTI-COMMANDO LIMITED 
+Weight: 2, Value: 0
+Can affect you as :
+    Affects : MANA By 45
+    Affects : AGE By 2
+Object 'freezing bracelet', Item type: ARMOR
+Item is: LIMITED NOBITS
+Weight: 2, Value: 120000
+AC-apply is 0
+Can affect you as :
+    Affects : HITROLL By 2
+    Affects : DAMROLL By 2
+Object 'pendulum brass', Item type: WEAPON
+Item is: ANTI-GOOD ANTI-EVIL ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA
+ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED NOBITS
+Weight: 24, Value: 240000
+Damage Dice is '5D9'
+Can affect you as :
+    Affects : HITROLL By 7
+    Affects : HIT By 35
+Object 'piangi rapier', Item type: WEAPON
+Item is: ANTI-EVIL ANTI-WARRIOR ANTI-MAGIC_USER ANTI-PALADIN ANTI-BARD NOBITS
+Weight: 8, Value: 5000
+Damage Dice is '3D6'
+Can affect you as :
+    Affects : HIT By 25
+    Affects : DAMROLL By 2
+Object 'breast dagger', Item type: WEAPON
+Item is: ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-MALE ANTI-NINJA 
+ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-COMMANDO NOBITS
+Weight: 14, Value: 65000
+Damage Dice is '8D4'
+Can affect you as :
+    Affects : HIT By 18
+    Affects : MANA By 18
+
+Loaded By - a Pretentious Socialite
+Object 'oaken cudgel', Item type: WEAPON
+Item is: ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-FEMALE ANTI-NINJA ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-BARD LIMITED 
+Weight: 18, Value: 55000
+Damage Dice is '8D4'
+Can affect you as :
+    Affects : DAMROLL By 4
+    Affects : HIT By 15
+Object 'granite pole', Item type: WEAPON
+Item is: ANTI-EVIL ANTI-NEUTRAL 
+Weight: 15, Value: 0
+Damage Dice is '9D3'
+Can affect you as :
+    Affects : CON By 2
+    Affects : STR By 3
+Object 'falchion sword', Item type: WEAPON
+Item is: GLOW MAGIC BLESS ANTI-EVIL ANTI-NINJA ANTI-PALADIN ANTI-BARD LIMITED 
+Weight: 22, Value: 250000
+Damage Dice is '10D4'
+Can affect you as :
+    Affects : STR By 3
+    Affects : HITROLL By 3
+Object 'scimitar heavy black adamantite', Item type: WEAPON
+Item is: GLOW MAGIC ANTI-GOOD ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-PALADIN 
+Weight: 21, Value: 15000
+Damage Dice is '4D8'
+Can affect you as :
+    Affects : STR By 2
+    Affects : DAMROLL By 5
+Object 'spike iron', Item type: WEAPON
+Item is: ANTI-GOOD ANTI-NEUTRAL NOBITS
+Weight: 8, Value: 5000
+Damage Dice is '6D5'
+Can affect you as :
+    Affects : STR By 1
+    Affects : HITROLL By 4
+Object 'fishhook fish hook barbed', Item type: WEAPON
+Item will give you following abilities:  SENSE-LIFE INFRAVISION 
+Item is: GLOW HUM ANTI-NINJA LIMITED 
+Weight: 23, Value: 0
+Damage Dice is '6D6'
+Can affect you as :
+    Affects : HITROLL By 3
+    Affects : DAMROLL By 3
+Object 'golden scimitar', Item type: WEAPON
+Item is: GLOW BLESS ANTI-WARRIOR ANTI-MAGIC_USER 
+Weight: 14, Value: 0
+Damage Dice is '6D3'
+Can affect you as :
+    Affects : HITROLL By 2
+    Affects : DAMROLL By 2
+Object 'lightning bolt sword', Item type: WEAPON
+Item is: GLOW HUM 
+Weight: 10, Value: 10000
+Damage Dice is '6D3'
+Can affect you as :
+    Affects : HITROLL By 1
+    Affects : DAMROLL By 1
+Object 'yeti spear', Item type: WEAPON
+Item is: HUM 
+Weight: 16, Value: 0
+Damage Dice is '3D8'
+Can affect you as :
+    Affects : HITROLL By 4
+    Affects : DAMROLL By 3
+Object 'two handed sword flaming', Item type: WEAPON
+Item is: GLOW 
+Weight: 15, Value: 0
+Damage Dice is '3D6'
+Can affect you as :
+    Affects : DAMROLL By 5
+Object 'parasol', Item type: WEAPON
+Item will give you following abilities:  FLY 
+Item is: BLESS LIMITED 
+Weight: 17, Value: 94000
+Damage Dice is '2D15'
+Can affect you as :
+    Affects : SKILL_BACKSTAB By 10
+    Affects : DAMROLL By 4
+Object 'claw blood', Item type: WEAPON
+Item is: NOBITS
+Weight: 10, Value: 18000
+Damage Dice is '6D3'
+Object 'dagger sacrificial', Item type: WEAPON
+Item is: MAGIC ANTI-GOOD 
+Weight: 2, Value: 12000
+Damage Dice is '3D5'
+Can affect you as :
+    Affects : HITROLL By 3
+    Affects : DAMROLL By 3
+Object 'sword dark lord', Item type: WEAPON
+Item is: GLOW EVIL ANTI-GOOD ANTI-NEUTRAL ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-COMMANDO LIMITED RSPEC 
+Weight: 20, Value: 0
+Damage Dice is '3D5'
+Can affect you as :
+    Affects : DAMROLL By 1
+    Affects : HITROLL By 5
+Object 'mace legend', Item type: WEAPON
+Item is: ANTI-NINJA LIMITED
+Weight: 18, Value: 250000
+Damage Dice is '8D4'
+Can affect you as :
+    Affects : HITROLL By 6
+    Affects : DAMROLL By 6
+Object 'sword sun black sobs', Item type: WEAPON
+Item is: HUM ANTI-NINJA LIMITED 
+Weight: 11, Value: 0
+Damage Dice is '2D13'
+Can affect you as :
+    Affects : HITROLL By 2
+    Affects : DAMROLL By 6
+Object 'huge spear', Item type: WEAPON
+Item is: MAGIC ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO 
+Weight: 30, Value: 150000
+Damage Dice is '4D8'
+Can affect you as :
+    Affects : HITROLL By 4
+    Affects : DAMROLL By 4
+Object 'katana orichalcum', Item type: WEAPON
+Item will give you following abilities:  DETECT-INVISIBLE SENSE-LIFE 
+Item is: MAGIC LIMITED RSPEC 
+Weight: 12, Value: 225000
+Damage Dice is '7D5'
+Can affect you as :
+    Affects : HITROLL By 5
+    Affects : DAMROLL By 3
+Object 'dagger slender', Item type: WEAPON
+Item is: ANTI-WARRIOR ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD 
+ANTI-PALADIN ANTI-AVATAR ANTI-BARD ANTI-COMMANDO LIMITED 
+Weight: 18, Value: 200000
+Damage Dice is '8D4'
+Can affect you as :
+    Affects : DAMROLL By 5
+    Affects : SKILL_BACKSTAB By 2
+Object 'dagger prismatic crystal chaos', Item type: WEAPON
+Item will give you following abilities:  DETECT-MAGIC 
+Item is: MAGIC LIMITED RSPEC 
+Weight: 18, Value: 175000
+Damage Dice is '10D3'
+Can affect you as :
+    Affects : SKILL_BACKSTAB By 20
+    Affects : SKILL_CIRCLE By 20
+Object 'silver kris knife skk mage', Item type: WEAPON
+Item will give you following abilities:  FLY 
+Item is: MAGIC ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-NINJA ANTI-NOMAD 
+ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED RSPEC 
+Weight: 1, Value: 350000
+Item decays, and has 9734 ticks remaining.
+Damage Dice is '2D8'
+Can affect you as :
+    Affects : SAVING_SPELL By 5
+    Affects : DAMROLL By 16
+Object 'punjab lasso', Item type: WEAPON
+Item is: ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-PALADIN LIMITED 
+Weight: 10, Value: 50000
+Damage Dice is '8D5'
+Can affect you as :
+    Affects : DAMROLL By 3
+    Affects : ARMOR By 10
+Object 'mammoth tusk large', Item type: WEAPON
+Item is: GLOW ANTI-GOOD ANTI-NEUTRAL ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-PALADIN LIMITED 
+Weight: 24, Value: 300000
+Damage Dice is '4D6'
+Can affect you as :
+    Affects : DAMROLL By 10
+    Affects : HITROLL By -2
+Object 'tail', Item type: WEAPON
+Item is: HUM ANTI-GOOD ANTI-NINJA LIMITED 
+Weight: 20, Value: 175000
+Damage Dice is '1D20'
+Can affect you as :
+    Affects : DAMROLL By 10
+Object 'hook', Item type: WEAPON
+Item is: ANTI-GOOD 
+Weight: 3, Value: 25000
+Damage Dice is '2D5'
+Can affect you as :
+    Affects : HITROLL By 3
+    Affects : DAMROLL By 8
+Object 'deathbringer', Item type: WEAPON
+Item is: ANTI-GOOD ANTI-NEUTRAL 
+Weight: 25, Value: 70000
+Damage Dice is '6D4'
+Can affect you as :
+    Affects : HITROLL By 1
+    Affects : DAMROLL By 1
+Object 'hezryl spear hez', Item type: WEAPON
+Item is: MAGIC ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-PALADIN 
+ANTI-ANTI-PALADIN ANTI-BARD LIMITED RSPEC 
+Weight: 19, Value: 75000
+Damage Dice is '4D8'
+Can affect you as :
+    Affects : HITROLL By 4
+    Affects : DAMROLL By 3
+Object 'tooth titan incisor', Item type: WEAPON
+Item is: ANTI-GOOD ANTI-NEUTRAL ANTI-WARRIOR ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD 
+ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO 
+Weight: 12, Value: 100000
+Damage Dice is '3D15'
+Can affect you as :
+    Affects : DAMROLL By 1
+    Affects : HITROLL By 2
+Object 'spanish cutlass', Item type: WEAPON
+Item is: GLOW ANTI-CLERIC ANTI-MAGIC_USER ANTI-NOMAD ANTI-PALADIN LIMITED RSPEC 
+NOBITS
+Weight: 20, Value: 65000
+Damage Dice is '3D12'
+Can affect you as :
+    Affects : HITROLL By 4
+    Affects : DAMROLL By 4
+Object 'knife', Item type: WEAPON
+Item is: ANTI-NINJA NOBITS
+Weight: 10, Value: 75000
+Damage Dice is '2D8'
+Can affect you as :
+    Affects : HITROLL By 3
+    Affects : DAMROLL By 8
+Object 'dagger silver', Item type: WEAPON
+Item is: NOBITSNOBITS
+Weight: 6, Value: 50000
+Damage Dice is '6D4'
+Can affect you as :
+    Affects : HITROLL By 5
+    Affects : DAMROLL By -5
+Object 'dagger wizard', Item type: WEAPON
+Item is: MAGIC ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-NINJA ANTI-NOMAD 
+ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO NOBITS
+Weight: 8, Value: 125000
+Damage Dice is '1D6'
+Can affect you as :
+    Affects : MANA By 20
+    Affects : DAMROLL By 12
+Object 'spirit chrysanthemum', Item type: WEAPON
+Item will give you following abilities:  PROTECT-EVIL 
+Item is: ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-NINJA ANTI-NOMAD ANTI-PALADIN 
+ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-BARD ANTI-COMMANDO NOBITS
+Weight: 15, Value: 100000
+Damage Dice is '1D3'
+Can affect you as :
+    Affects : DAMROLL By 19
+    Affects : HITROLL By 1
+Object 'dagger well crafted', Item type: WEAPON
+Item will give you following abilities:  SENSE-LIFE 
+Item is: MAGIC NOBITS
+Weight: 2, Value: 55000
+Damage Dice is '2D10'
+Can affect you as :
+    Affects : SKILL_THROW By 10
+    Affects : SKILL_BACKSTAB By 10
+Object 'sword longsword well crafted', Item type: WEAPON
+Item is: MAGIC NOBITS
+Weight: 10, Value: 55000
+Damage Dice is '4D5'
+Can affect you as :
+    Affects : SKILL_BLOCK By 10
+Object 'fencing foil', Item type: WEAPON
+Item is: MAGIC ANTI-WARRIOR ANTI-CLERIC ANTI-NINJA ANTI-NOMAD ANTI-PALADIN
+ANTI-AVATAR ANTI-BARD ANTI-COMMANDO LIMITED NOBITS
+Weight: 30, Value: 50000
+Damage Dice is '2D7'
+Can affect you as :
+    Affects : HITROLL By 2
+    Affects : DAMROLL By 16
+Object 'tooth pale', Item type: WEAPON
+Item will give you following abilities:  SENSE-LIFE 
+Item is: GLOW EVIL MAGIC BLESS ANTI-GOOD ANTI-WARRIOR ANTI-THIEF ANTI-NOMAD ANTI-PALADIN
+ANTI-ANTI-PALADIN LIMITED NOBITS
+Weight: 16, Value: 175000
+Damage Dice is '7D5'
+Can affect you as :
+    Affects : HITROLL By 5
+    Affects : DAMROLL By 3
+
+
+Loaded by Chazegreth
+Object 'dipper', Item type: WEAPON
+Item is: GLOW HUM INVISIBLE MAGIC BLESS NOBITS
+Weight: 20, Value: 30000
+Damage Dice is '5D4'
+Can affect you as :
+    Affects : HITROLL By 2
+    Affects : DAMROLL By 2
+Object 'jubi jabber', Item type: WEAPON
+Item is: ANTI-GOOD ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-BARD LIMITED
+NOBITS
+Weight: 7, Value: 10000
+Damage Dice is '5D8'
+Can affect you as :
+    Affects : HITROLL By -1
+    Affects : DAMROLL By 2
+Object 'rowan staff sages', Item type: WEAPON
+Item is: HUM MAGIC ANTI-WARRIOR ANTI-THIEF ANTI-NINJA ANTI-ANTI-PALADIN LIMITED 
+NOBITS
+Weight: 9, Value: 10000
+Damage Dice is '2D10'
+Can affect you as :
+    Affects : HITROLL By 5
+    Affects : DAMROLL By 10
+Object 'tongue lashing whip disembodied', Item type: WEAPON
+Item is: ANTI-GOOD ANTI-NEUTRAL ANTI-RENT LIMITED NOBITS
+Weight: 18, Value: 0
+Item decays, and has 80 ticks remaining.
+Damage Dice is '10D4'
+Can affect you as :
+    Affects : DAMROLL By 5
+    Affects : HITROLL By -2
+Object 'coachman whip', Item type: WEAPON
+Item will give you following abilities:  SENSE-LIFE
+Item is: HUM ANTI-MAGIC_USER ANTI-NINJA ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD LIMITED
+NOBITS
+Weight: 10, Value: 100000
+Damage Dice is '6D4'
+Can affect you as :
+    Affects : SKILL_BLOCK By 25
+    Affects : DAMROLL By 4
+Object 'star morning', Item type: WEAPON
+Item is: GLOW NOBITS
+Weight: 11, Value: 8200
+Damage Dice is '6D2'
+Can affect you as :
+    Affects : HITROLL By 3
+Object 'avalanche', Item type: WEAPON
+Item is: NOBITSNOBITS
+Weight: 16, Value: 5000
+Damage Dice is '1D21'
+Can affect you as :
+    Affects : HITROLL By -2
+    Affects : DAMROLL By 1
+Object 'beak wood woodpecker', Item type: WEAPON
+Item is: ANTI-WARRIOR ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-PALADIN
+ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO NOBITS
+Weight: 5, Value: 25000
+Damage Dice is '6D5'
+Can affect you as :
+    Affects : DAMROLL By 4
+    Affects : SKILL_CIRCLE By 20
+Object 'staff', Item type: WEAPON
+Item is: HUM ANTI-GOOD ANTI-WARRIOR NOBITS
+Weight: 14, Value: 5000
+Damage Dice is '4D8'
+Can affect you as :
+    Affects : ARMOR By 45
+Object 'githyaddi blade silver', Item type: WEAPON
+Item will give you following abilities:  DETECT-MAGIC
+Item is: ANTI-GOOD LIMITED NOBITS
+Weight: 12, Value: 99999
+Damage Dice is '5D6'
+Can affect you as :
+    Affects : SKILL_DISARM By 5
+    Affects : SAVING_SPELL By -3
+Object 'long scythe', Item type: WEAPON
+Item is: NOBITSNOBITS
+Weight: 13, Value: 5000
+Damage Dice is '2D8'
+Can affect you as :
+    Affects : HITROLL By 2
+    Affects : DAMROLL By 2
+Object 'stinger wyvern poisonstinger', Item type: WEAPON
+Item is: ANTI-GOOD ANTI-NEUTRAL ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED RSPEC NOBITS
+Weight: 6, Value: 350000
+Item decays, and has 600 ticks remaining.
+Damage Dice is '8D4'
+Can affect you as :
+    Affects : HITROLL By -2
+    Affects : DAMROLL By 2
+Object 'elven bow', Item type: WEAPON
+Item is: HUM ANTI-EVIL 
+Weight: 10, Value: 25000
+Damage Dice is '2D8'
+Can affect you as :
+    Affects : DAMROLL By 2
+Object 'cutlass jeweled', Item type: WEAPON
+Item is: MAGIC ANTI-EVIL LIMITED 
+Weight: 13, Value: 84032
+Damage Dice is '3D11'
+Can affect you as :
+    Affects : ARMOR By -10
+    Affects : SKILL_DODGE By 20
+Object 'gold golden halberd', Item type: WEAPON
+Item is: GLOW BLESS ANTI-EVIL ANTI-NEUTRAL LIMITED 
+Weight: 16, Value: 175000
+Damage Dice is '4D7'
+Can affect you as :
+    Affects : DAMROLL By 6
+Object 'adamantite tail dragon', Item type: WEAPON
+Item is: MAGIC ANTI-EVIL ANTI-NEUTRAL LIMITED 
+Weight: 17, Value: 250000
+Damage Dice is '10D4'
+Can affect you as :
+    Affects : HITROLL By 2
+    Affects : ARMOR By -5
+Object 'ibis sword platinum broadsword', Item type: WEAPON
+Item is: ANTI-EVIL ANTI-NEUTRAL ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED 
+Weight: 19, Value: 128000
+Damage Dice is '3D13'
+Can affect you as :
+    Affects : DAMROLL By 3
+    Affects : HITROLL By 10
+Object 'dirk platinum', Item type: WEAPON
+Item is: ANTI-EVIL ANTI-NEUTRAL NOBITS
+Undead antis: NONE
+Weight: 9, Value: 10000
+Damage Dice is '3D5'
+Can affect you as :
+    Affects : HITROLL By 2
+    Affects : MANA By -20
+Object 'stout brass hour hand hourhand', Item type: WEAPON
+Item is: ANTI-GOOD ANTI-EVIL ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-NINJA ANTI-NOMAD
+ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO NOBITS
+Weight: 5, Value: 45000
+Damage Dice is '2D7'
+Can affect you as :
+    Affects : DAMROLL By 15
+    Affects : HITROLL By 6
+Object 'crystalline longsword', Item type: WEAPON
+Item is: HUM MAGIC ANTI-EVIL ANTI-NEUTRAL NOBITS
+Weight: 20, Value: 20000
+Damage Dice is '4D4'
+Can affect you as :
+    Affects : HITROLL By 1
+    Affects : DAMROLL By 2
+Object 'trident', Item type: WEAPON
+Item is: GLOW ANTI-EVIL LIMITED NOBITS
+Weight: 16, Value: 8000
+Damage Dice is '8D2'
+Can affect you as :
+    Affects : HITROLL By 1
+    Affects : DAMROLL By 5
+Object 'dagger icicle ice', Item type: WEAPON
+Item is: GLOW NOBITS
+Weight: 1, Value: 9000
+Damage Dice is '8D2'
+Can affect you as :
+    Affects : STR By -1
+Object 'shock whip', Item type: WEAPON
+Item is: HUM NOBITS
+Weight: 10, Value: 10000
+Damage Dice is '4D4'
+Can affect you as :
+    Affects : DAMROLL By 3
+    Affects : HIT By -10
+Object 'snake skin belt', Item type: ARMOR
+Item is: NOBITS
+Weight: 10, Value: 150000
+AC-apply is 12
+Can affect you as :
+    Affects : MANA By 10
+    Affects : HIT By 10
+Object 'belt goldenbelt', Item type: ARMOR
+Item is: MAGIC LIMITED NOBITS
+Weight: 20, Value: 20000
+AC-apply is 12
+Can affect you as :
+    Affects : CON By 1
+    Affects : MANA By 20
+
+loaded by cute rabbit
+Object 'belt vines', Item type: ARMOR
+Item is: GLOW ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED 
+Weight: 15, Value: 200000
+AC-apply is 10
+Can affect you as :
+    Affects : HIT By 30
+Object 'spiked leather belt', Item type: ARMOR
+Item is: GLOW ANTI-NEUTRAL LIMITED 
+Weight: 6, Value: 175000
+AC-apply is 10
+Can affect you as :
+    Affects : DAMROLL By 1
+Object 'demon hair belt', Item type: ARMOR
+Item is: GLOW ANTI-GOOD ANTI-CLERIC ANTI-NINJA ANTI-PALADIN ANTI-ANTI-PALADIN LIMITED
+Weight: 2, Value: 25000
+AC-apply is 10
+Can affect you as :
+    Affects : HITROLL By 2
+    Affects : DAMROLL By 2
+Object 'belt woven hair', Item type: ARMOR
+Item will give you following abilities:  INVUL
+Item is: ANTI-WARRIOR ANTI-THIEF ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-PALADIN
+ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-BARD ANTI-COMMANDO LIMITED NOBITS
+Weight: 10, Value: 200000
+AC-apply is 10
+Can affect you as :
+    Affects : MANA By 30
+    Affects : DAMROLL By 1
+Object 'order belt chorlachtogna chorlach', Item type: ARMOR
+Item is: GLOW EVIL MAGIC ANTI-GOOD ANTI-EVIL ANTI-THIEF ANTI-CLERIC 
+ANTI-MAGIC_USER ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-BARD 
+ANTI-COMMANDO LIMITED RSPEC NOBITS
+Weight: 2, Value: 70000
+AC-apply is 10
+Can affect you as :
+    Affects : DAMROLL By 1
+    Affects : HITROLL By 2
+Object 'belt dragonrider', Item type: ARMOR
+Item is: HUM MAGIC ANTI-EVIL ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN
+ANTI-BARD LIMITED NOBITS
+Weight: 30, Value: 900000
+AC-apply is 10
+Can affect you as :
+    Affects : SKILL_TRIPLE By 10
+    Affects : DAMROLL By 2
+Object 'sash pebble', Item type: ARMOR
+Item is: ANTI-EVIL ANTI-NEUTRAL NOBITS
+Weight: 4, Value: 10000
+AC-apply is 9
+Can affect you as :
+    Affects : CON By 4
+    Affects : STR By 1
+Object 'chaos belt chorlachtogna chorlach', Item type: ARMOR
+Item is: DARK ANTI-NEUTRAL ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER 
+ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-BARD ANTI-COMMANDO 
+LIMITED RSPEC 
+Weight: 3, Value: 35000
+AC-apply is 8
+Can affect you as :
+    Affects : DAMROLL By 2
+    Affects : HITROLL By 2
+Object 'skull belt black dangling', Item type: ARMOR
+Item is: HUM MAGIC ANTI-GOOD ANTI-WARRIOR ANTI-CLERIC ANTI-MALE ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-COMMANDO 
+Weight: 2, Value: 0
+AC-apply is 7
+Can affect you as :
+    Affects : AGE By 6
+    Affects : DAMROLL By 2
+Object 'rune covered belt', Item type: ARMOR
+Item is: NOBITS
+Weight: 5, Value: 10000
+AC-apply is 6
+Object 'belt orion', Item type: ARMOR
+Item is: GLOW MAGIC ANTI-EVIL NOBITS
+Weight: 7, Value: 10000
+AC-apply is 6
+Can affect you as :
+    Affects : CON By 2
+Object 'bloody charred belt <ap>', Item type: ARMOR
+Item will give you following abilities:  FLY
+Item is: DARK EVIL ANTI-GOOD ANTI-NEUTRAL ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC
+ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED RSPEC
+NOBITS
+Weight: 3, Value: 100000
+Item decays, and has 6000 ticks remaining.
+AC-apply is 5
+Can affect you as :
+    Affects : HITROLL By 1
+    Affects : DAMROLL By 1
+Object 'vadir belt', Item type: ARMOR
+Item is: HUM ANTI-EVIL ANTI-NEUTRAL ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-ANTI-PALADIN ANTI-BARD
+ANTI-COMMANDO LIMITED
+Weight: 15, Value: 400000
+AC-apply is 5
+Can affect you as :
+    Affects : DAMROLL By 2
+    Affects : HITROLL By -2
+Object 'belt names', Item type: ARMOR
+Item is: ANTI-EVIL ANTI-NEUTRAL ANTI-WARRIOR ANTI-THIEF ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED 
+Weight: 15, Value: 100000
+AC-apply is 5
+Can affect you as :
+    Affects : MANA By -50
+    Affects : DAMROLL By 3
+Object 'belt flesh burnt', Item type: ARMOR
+Item is: HUM EVIL MAGIC ANTI-GOOD ANTI-NEUTRAL LIMITED 
+Weight: 8, Value: 0
+AC-apply is 4
+Can affect you as :
+    Affects : STR By 3
+    Affects : DAMROLL By 1
+Object 'sash platinum', Item type: ARMOR
+Item is: GLOW NOBITS
+Undead antis: NONE
+Weight: 5, Value: 30000
+AC-apply is 3
+Can affect you as :
+    Affects : MANA By 20
+Object 'slime belt', Item type: ARMOR
+Item is: GLOW ANTI-EVIL ANTI-NEUTRAL ANTI-WARRIOR ANTI-CLERIC ANTI-MAGIC_USER ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED 
+Weight: 10, Value: 60000
+AC-apply is 1
+Can affect you as :
+    Affects : DAMROLL By 2
+Object 'belt golden', Item type: ARMOR
+Item is: GLOW BLESS ANTI-EVIL ANTI-NEUTRAL LIMITED 
+Weight: 10, Value: 250000
+AC-apply is 0
+Can affect you as :
+    Affects : MANA By -100
+    Affects : HIT By 100
+Object 'blackened black belt', Item type: WORN
+Item will give you following abilities:  DETECT-MAGIC 
+Item is: DARK ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-PALADIN LIMITED RSPEC 
+Weight: 9, Value: 0
+Can affect you as :
+    Affects : HITROLL By 3
+    Affects : HIT By 20
+Object 'silk sash', Item type: ARMOR
+Item is: ANTI-GOOD ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-PALADIN
+ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED NOBITS
+Weight: 15, Value: 15000
+AC-apply is 0
+Can affect you as :
+    Affects : HIT By 20
+    Affects : DAMROLL By 1
+Object 'belt crocodile skin', Item type: ARMOR
+Item is: MAGIC BLESS ANTI-GOOD ANTI-EVIL LIMITED 
+Weight: 5, Value: 175000
+AC-apply is 0
+Can affect you as :
+    Affects : DAMROLL By 2
+    Affects : ARMOR By 10
+Object 'scale covered belt', Item type: ARMOR
+Item is: GLOW ANTI-WARRIOR ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-PALADIN
+ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED NOBITS
+Undead antis: ANTI_DEATH_TYRANT ANTI_BANSHEE ANTI_LICH ANTI_WRAITH ANTI_DEATH_KNIGHT
+ANTI_BONE_GOLEM
+Weight: 12, Value: 234000
+AC-apply is -20
+Can affect you as :
+    Affects : DAMROLL By 2
+    Affects : SKILL_STEAL By 10
+Object 'shield unholy power', Item type: ARMOR
+Item will give you following abilities:  SANCTUARY DUAL
+Item is: DARK ANTI-GOOD ANTI-NEUTRAL ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER
+ANTI-RENT ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-BARD
+ANTI-COMMANDO LIMITED NOBITS
+Weight: 9, Value: 5000
+AC-apply is 24
+Can affect you as :
+    Affects : HITROLL By 5
+    Affects : DAMROLL By 5
+Object 'shield absorption <warrior>', Item type: ARMOR
+Item is: ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-PALADIN
+ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED RSPEC NOBITS
+Weight: 10, Value: 500000
+Item decays, and has 5675 ticks remaining.
+AC-apply is 17
+Can affect you as :
+    Affects : DAMROLL By 3
+    Affects : SKILL_PARRY By 5
+Object 'demon shield', Item type: ARMOR
+Item is: GLOW ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD LIMITED 
+Weight: 10, Value: 25000
+AC-apply is 15
+Can affect you as :
+    Affects : DAMROLL By 1
+    Affects : HIT By 15
+Object 'plate ygaddrozil shield', Item type: ARMOR
+Item will give you following abilities:  PROTECT-EVIL 
+Item is: ANTI-CLERIC ANTI-MAGIC_USER LIMITED 
+Weight: 20, Value: 1000000
+AC-apply is 15
+Can affect you as :
+   Affects : MANA By -50
+   Affects : DAMROLL By 3
+Object 'shield hide worm', Item type: ARMOR
+Item is: GLOW HUM INVISIBLE MAGIC NOBITS
+Weight: 1, Value: 45000
+AC-apply is 15
+Can affect you as :
+    Affects : HITROLL By 1
+Object 'shield ancient', Item type: ARMOR
+Item is: ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-PALADIN
+ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-BARD ANTI-COMMANDO LIMITED NOBITS
+Weight: 18, Value: 200000
+AC-apply is 12
+Can affect you as :
+    Affects : DAMROLL By 1
+    Affects : SKILL_PARRY By 20
+
+
+Dropped by The Vampire Celeste
+Object 'crystal shield', Item type: ARMOR
+Item is: GLOW ANTI-GOOD ANTI-WARRIOR ANTI-THIEF ANTI-NOMAD ANTI-PALADIN NOBITS
+Weight: 10, Value: 150000
+AC-apply is 10
+Can affect you as :
+    Affects : MANA By 10
+    Affects : HIT By 10
+Object 'shell spines scaly shield', Item type: ARMOR
+Item is: ANTI-GOOD ANTI-NEUTRAL ANTI-NINJA ANTI-ANTI-PALADIN LIMITED 
+Weight: 20, Value: 100000
+AC-apply is 10
+Can affect you as :
+    Affects : HITROLL By 2
+    Affects : DAMROLL By 1
+Object 'vapor shield', Item type: ARMOR
+Item is: BLESS NOBITS
+Undead antis: NONE
+Weight: 1, Value: 5000
+AC-apply is 10
+Can affect you as :
+    Affects : HITROLL By 3
+    Affects : SKILL_DODGE By 20
+
+loaded by Fog Dweller
+Object 'shield electric', Item type: ARMOR
+Item is: HUM NOBITS
+Weight: 8, Value: 10000
+AC-apply is 9
+Can affect you as :
+    Affects : STR By 1
+Object 'shield fury', Item type: ARMOR
+Item is: NOBITS
+Weight: 5, Value: 0
+AC-apply is 8
+Can affect you as :
+    Affects : INT By 1
+    Affects : HIT By 20
+Object 'dragon shield gold', Item type: ARMOR
+Item is: GLOW MAGIC ANTI-GOOD ANTI-NEUTRAL ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-NOMAD ANTI-BARD LIMITED
+Weight: 8, Value: 12500
+AC-apply is 8
+Can affect you as :
+    Affects : MANA By 13
+    Affects : DAMROLL By 2
+Object 'shield steel', Item type: ARMOR
+Item is: NOBITSNOBITS
+Weight: 10, Value: 20000
+AC-apply is 7
+Can affect you as :
+    Affects : HIT By 30
+Object 'shield black', Item type: ARMOR
+Item is: NOBITS
+Weight: 10, Value: 1
+AC-apply is 7
+Object 'shield ice', Item type: ARMOR
+Item is: NOBITSNOBITS
+Weight: 14, Value: 80000
+AC-apply is 7
+Can affect you as :
+    Affects : ARMOR By -7
+    Affects : HITROLL By 3
+Object 'adamantite shield', Item type: ARMOR
+Item is: MAGIC ANTI-EVIL ANTI-NEUTRAL LIMITED 
+Weight: 8, Value: 0
+AC-apply is 6
+Can affect you as :
+    Affects : HITROLL By 2
+    Affects : HIT By 35
+Object 'chrome shield', Item type: ARMOR
+Item is: ANTI-GOOD ANTI-EVIL ANTI-MAGIC_USER ANTI-COMMANDO LIMITED 
+Weight: 9, Value: 140000
+AC-apply is 6
+Can affect you as :
+    Affects : DAMROLL By 2
+    Affects : HITROLL By 2
+Object 'shield lies', Item type: ARMOR
+Item will give you following abilities:  DETECT-INVISIBLE 
+Item is: GLOW HUM BLESS 
+Weight: 10, Value: 175000
+AC-apply is 5
+Can affect you as :
+    Affects : HIT By 35
+    Affects : HITROLL By 4
+Object 'shield stone', Item type: ARMOR
+Item is: MAGIC ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO 
+Weight: 35, Value: 60000
+AC-apply is 5
+Can affect you as :
+    Affects : ARMOR By -13
+    Affects : HITROLL By -1
+Object 'shield leaf', Item type: ARMOR
+Item is: ANTI-EVIL ANTI-NEUTRAL LIMITED 
+Weight: 7, Value: 0
+AC-apply is 5
+Can affect you as :
+    Affects : HIT By -30
+    Affects : DAMROLL By 1
+Object 'shield wolfskin', Item type: ARMOR
+Item is: NOBITS
+Weight: 5, Value: 300
+AC-apply is 4
+Object 'scale shadow dragon', Item type: ARMOR
+Item will give you following abilities:  FLY 
+Item is: DARK ANTI-GOOD ANTI-WARRIOR ANTI-MAGIC_USER ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-COMMANDO LIMITED 
+Weight: 8, Value: 0
+AC-apply is 3
+Can affect you as :
+    Affects : CON By 1
+    Affects : HIT By 42
+Object 'pixie crest shield', Item type: ARMOR
+Item is: GLOW ANTI-EVIL ANTI-NEUTRAL ANTI-MALE LIMITED 
+Weight: 1, Value: 1
+AC-apply is 0
+Can affect you as :
+    Affects : HIT By 30
+    Affects : MANA By 30
+Object 'scale libra', Item type: ARMOR
+Item is: MAGIC ANTI-EVIL 
+Weight: 15, Value: 0
+AC-apply is 0
+Can affect you as :
+    Affects : ARMOR By -8
+    Affects : HIT By 5
+Object 'shield festering mortal skins', Item type: ARMOR
+Item is: GLOW ANTI-GOOD ANTI-NEUTRAL ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-BARD ANTI-COMMANDO 
+LIMITED RSPEC 
+Weight: 10, Value: 250100
+AC-apply is 0
+Can affect you as :
+    Affects : MANA By -50
+    Affects : DAMROLL By 3
+Object 'rag shield', Item type: ARMOR
+Item is: MAGIC ANTI-WARRIOR ANTI-THIEF ANTI-MAGIC_USER ANTI-PALADIN ANTI-ANTI-PALADIN
+ANTI-AVATAR LIMITED NOBITS
+Weight: 2, Value: 15000
+AC-apply is 0
+Can affect you as :
+    Affects : HITROLL By 1
+    Affects : DAMROLL By 1
+Object 'moonstone robes moon astrasi', Item type: ARMOR
+Item is: ANTI-WARRIOR ANTI-THIEF ANTI-MAGIC_USER ANTI-MALE ANTI-NINJA ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-COMMANDO LIMITED 
+Weight: 100, Value: 600000
+AC-apply is 20
+Can affect you as :
+    Affects : DAMROLL By -2
+    Affects : HITROLL By -2
+Object 'robes greater lunar weave', Item type: ARMOR
+Item is: ANTI-CLERIC ANTI-MAGIC_USER ANTI-FEMALE ANTI-NOMAD ANTI-BARD LIMITED 
+Weight: 40, Value: 200000
+AC-apply is 18
+Can affect you as :
+    Affects : HITROLL By -1
+    Affects : DAMROLL By -1
+Object 'tattered dress', Item type: ARMOR
+Item is: GLOW ANTI-THIEF ANTI-MALE ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-COMMANDO
+LIMITED NOBITS
+Weight: 6, Value: 1000000
+AC-apply is 17
+Can affect you as :
+    Affects : AGE By -20
+    Affects : CHAR_WEIGHT By -20
+Object 'vest', Item type: ARMOR
+Item is: NOBITS
+Weight: 5, Value: 3000
+AC-apply is 16
+Object 'insect exoskeleton exo oozing', Item type: ARMOR
+Item will give you following abilities:  DETECT-INVISIBLE 
+Item is: ANTI-GOOD ANTI-NEUTRAL ANTI-CLERIC ANTI-MAGIC_USER ANTI-BARD LIMITED 
+Weight: 15, Value: 0
+AC-apply is 15
+Can affect you as :
+    Affects : HIT By 25
+    Affects : DAMROLL By 2
+Object 'gurundi mesh jacket', Item type: ARMOR
+Item will give you following abilities:  INFRAVISION 
+Item is: GLOW HUM 
+Weight: 10, Value: 10000
+AC-apply is 15
+Can affect you as :
+    Affects : AGE By 5
+    Affects : STR By 3
+Object 'plate lich mail platemail', Item type: ARMOR
+Item is: GLOW DARK EVIL MAGIC ANTI-GOOD ANTI-WARRIOR ANTI-THIEF ANTI-NOMAD ANTI-PALADIN ANTI-BARD LIMITED 
+Weight: 4, Value: 0
+AC-apply is 14
+Can affect you as :
+    Affects : DAMROLL By 2
+    Affects : MANA By 21
+Object 'adamantite plate mail', Item type: ARMOR
+Item will give you following abilities:  DETECT-ALIGNMENT
+Item is: MAGIC ANTI-EVIL ANTI-NEUTRAL LIMITED
+Weight: 20, Value: 220000
+AC-apply is 13
+Can affect you as :
+    Affects : DAMROLL By 3
+    Affects : HIT By 10
+Object 'transparent plate mail platemail', Item type: ARMOR
+Item is: GLOW HUM MAGIC 
+Weight: 10, Value: 75000
+AC-apply is 12
+Can affect you as :
+    Affects : DAMROLL By 2
+Object 'lion fur jacket', Item type: ARMOR
+Item is: HUM ANTI-FEMALE ANTI-ANTI-PALADIN 
+Weight: 7, Value: 54000
+AC-apply is 10
+Can affect you as :
+    Affects : HIT By 20
+    Affects : MANA By 10
+Object 'rune breast plate', Item type: ARMOR
+Item is: LIMITED 
+Weight: 30, Value: 175000
+AC-apply is 10
+Can affect you as :
+    Affects : ARMOR By -8
+    Affects : DAMROLL By 2
+Object 'plate breast', Item type: ARMOR
+Item is: HUM ANTI-GOOD ANTI-NEUTRAL LIMITED 
+Weight: 20, Value: 0
+AC-apply is 10
+Can affect you as :
+    Affects : DAMROLL By 2
+Object 'platemail tz', Item type: ARMOR
+Item will give you following abilities:  SANCTUARY 
+Item is: ANTI-GOOD LIMITED 
+Weight: 10, Value: 175000
+AC-apply is 8
+Can affect you as :
+    Affects : HIT By 70
+    Affects : SKILL_BACKSTAB By 10
+Object 'tabard elven', Item type: ARMOR
+Item is: ANTI-FEMALE 
+Weight: 6, Value: 34000
+AC-apply is 8
+Can affect you as :
+    Affects : HIT By 20
+    Affects : CHAR_WEIGHT By -25
+Object 'fleece aries', Item type: ARMOR
+Item is: ANTI-EVIL 
+Weight: 9, Value: 0
+AC-apply is 7
+Object 'tournament breast plate', Item type: ARMOR
+Item is: GLOW MAGIC LIMITED 
+Weight: 12, Value: 0
+AC-apply is 5
+Can affect you as :
+    Affects : DAMROLL By 1
+    Affects : HIT By 5
+Object 'surplice dirty', Item type: ARMOR
+Item is: GLOW ANTI-GOOD NOBITS
+Weight: 3, Value: 60000
+AC-apply is 5
+Can affect you as :
+    Affects : MANA By 40
+Object 'sun dress', Item type: ARMOR
+Item is: GLOW ANTI-EVIL ANTI-MALE 
+Weight: 3, Value: 10000
+AC-apply is 5
+Can affect you as :
+    Affects : MANA By 20
+    Affects : HITROLL By 2
+Object 'linen bodice', Item type: ARMOR
+Item is: ANTI-WARRIOR ANTI-CLERIC ANTI-MAGIC_USER ANTI-MALE ANTI-NOMAD ANTI-COMMANDO LIMITED 
+Weight: 6, Value: 200000
+AC-apply is 1
+Can affect you as :
+    Affects : DAMROLL By 3
+    Affects : MANA By 20
+Object 'reptilian scaled plate', Item type: ARMOR
+Item is: DARK EVIL ANTI-GOOD ANTI-NEUTRAL ANTI-WARRIOR ANTI-MAGIC_USER 
+ANTI-NINJA ANTI-PALADIN LIMITED 
+Weight: 20, Value: 200000
+AC-apply is 0
+Can affect you as :
+    Affects : DAMROLL By 3
+Object 'robes black kafkefoni', Item type: ARMOR
+Item is: GLOW ANTI-GOOD LIMITED NOBITS
+Weight: 5, Value: 0
+AC-apply is 0
+Can affect you as :
+    Affects : MANA By 10
+Object 'claw ygaddrozil', Item type: ARMOR
+Item is: GLOW HUM ANTI-GOOD ANTI-EVIL LIMITED 
+Weight: 20, Value: 50000
+AC-apply is 15
+Can affect you as :
+    Affects : DAMROLL By 3
+Object 'medallion loftwick', Item type: ARMOR
+Item will give you following abilities:  INVISIBLE 
+Item is: HUM EVIL MAGIC ANTI-GOOD ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED 
+Weight: 12, Value: 888888
+AC-apply is 12
+Can affect you as :
+    Affects : HIT By 25
+    Affects : MANA By 15
+Object 'necklace fingers', Item type: ARMOR
+Item is: ANTI-NEUTRAL ANTI-CLERIC ANTI-MAGIC_USER ANTI-PALADIN ANTI-ANTI-PALADIN
+ANTI-BARD ANTI-COMMANDO LIMITED NOBITS
+Weight: 30, Value: 200000
+AC-apply is 10
+Can affect you as :
+    Affects : HIT By 30
+    Affects : HITROLL By -2
+Object 'necklace ancient power', Item type: ARMOR
+Item is: LIMITED 
+Weight: 5, Value: 250000
+AC-apply is 10
+Can affect you as :
+    Affects : DAMROLL By 2
+    Affects : HIT By 15
+Object 'skin sala', Item type: ARMOR
+Item is: MAGIC ANTI-CLERIC ANTI-MAGIC_USER ANTI-PALADIN ANTI-ANTI-PALADIN 
+ANTI-BARD 
+Weight: 15, Value: 95000
+AC-apply is 10
+Can affect you as :
+    Affects : HIT By 10
+    Affects : DAMROLL By 1
+Object 'necklace righteousness', Item type: ARMOR
+Item is: BLESS ANTI-EVIL ANTI-NEUTRAL LIMITED 
+Weight: 15, Value: 250000
+AC-apply is 10
+Can affect you as :
+    Affects : DAMROLL By 1
+    Affects : HIT By 10
+Object 'collar golden', Item type: ARMOR
+Item is: GLOW NOBITS
+Weight: 15, Value: 50000
+AC-apply is 10
+Object 'medallion mom macabre', Item type: ARMOR
+Item is: ANTI-GOOD ANTI-NEUTRAL LIMITED 
+Weight: 30, Value: 10000
+AC-apply is 8
+Can affect you as :
+    Affects : DAMROLL By 2
+    Affects : HIT By 10
+Object 'evil necklace', Item type: ARMOR
+Item is: HUM ANTI-GOOD ANTI-NEUTRAL NOBITS
+Weight: 15, Value: 20000
+AC-apply is 8
+Can affect you as :
+    Affects : MANA By 25
+
+loaded by ogress
+Object 'necklace fang', Item type: ARMOR
+Item is: ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-BARD LIMITED NOBITS
+Weight: 10, Value: 150000
+AC-apply is 8
+Can affect you as :
+    Affects : DAMROLL By 2
+Object 'cloak adventurers', Item type: ARMOR
+Item is: MAGIC ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD
+ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO NOBITS
+Weight: 10, Value: 0
+AC-apply is 7
+Can affect you as :
+    Affects : HIT By 5
+    Affects : DAMROLL By 2
+Object 'scarf', Item type: ARMOR
+Item is: NOBITSNOBITS
+Undead antis: NONE
+Weight: 2, Value: 15000
+AC-apply is 7
+Can affect you as :
+    Affects : SAVING_SPELL By -3
+    Affects : MANA By 15
+Object 'cape flaming red', Item type: ARMOR
+Item is: GLOW NOBITS
+Weight: 3, Value: 10000
+AC-apply is 7
+Object 'necklace death', Item type: ARMOR
+Item is: GLOW HUM ANTI-GOOD 
+Weight: 10, Value: 10000
+AC-apply is 6
+Can affect you as :
+    Affects : MANA By 10
+    Affects : HIT By 10
+Object 'ettin cape', Item type: ARMOR
+Item is: GLOW ANTI-GOOD ANTI-WARRIOR ANTI-THIEF ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-COMMANDO 
+Weight: 10, Value: 175000
+AC-apply is 6
+Can affect you as :
+    Affects : MANA By 25
+    Affects : DAMROLL By 2
+Object 'amulet elemental', Item type: ARMOR
+Item is: GLOW 
+Weight: 1, Value: 0
+AC-apply is 5
+Can affect you as :
+    Affects : HIT By 10
+Object 'collar evilcollar', Item type: ARMOR
+Item is: HUM MAGIC ANTI-GOOD NOBITS
+Weight: 10, Value: 8000
+AC-apply is 5
+Can affect you as :
+    Affects : STR By 1
+
+loaded by evil dog
+Object 'amulet glowing glowingamulet', Item type: ARMOR
+Item is: GLOW MAGIC ANTI-MALE 
+Weight: 10, Value: 6000
+AC-apply is 5
+Can affect you as :
+    Affects : MANA By 10
+    Affects : SAVING_PARA By 2
+Object 'lion claw pendant safari', Item type: ARMOR
+Item is: MAGIC ANTI-EVIL ANTI-NEUTRAL ANTI-WARRIOR ANTI-CLERIC ANTI-ANTI-PALADIN 
+Weight: 2, Value: 120000
+AC-apply is 5
+Can affect you as :
+    Affects : DAMROLL By 2
+    Affects : CON By -1
+Object 'collar', Item type: ARMOR
+Item is: NOBITSNOBITS
+Weight: 4, Value: 2000
+AC-apply is 4
+Object 'rosarius amulet', Item type: ARMOR
+Item is: MAGIC 
+Weight: 3, Value: 75000
+AC-apply is 4
+Can affect you as :
+    Affects : MANA By 30
+    Affects : WIS By -2
+Object 'talisman x'ot xot', Item type: ARMOR
+Item is: EVIL MAGIC ANTI-GOOD ANTI-NEUTRAL ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-BARD ANTI-COMMANDO LIMITED 
+Weight: 3, Value: 30000
+AC-apply is 3
+Can affect you as :
+    Affects : SAVING_PARA By -1
+    Affects : DAMROLL By 3
+Object 'usulian cape', Item type: ARMOR
+Item is: HUM ANTI-GOOD ANTI-NEUTRAL ANTI-WARRIOR ANTI-THIEF ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED 
+Weight: 5, Value: 400000
+AC-apply is 3
+Can affect you as :
+    Affects : DAMROLL By 2
+    Affects : MANA By 30
+Object 'golden medallion', Item type: ARMOR
+Item is: GLOW MAGIC 
+Weight: 1, Value: 150000
+AC-apply is 0
+Can affect you as :
+    Affects : WIS By 2
+    Affects : CON By 2
+Object 'chain gold', Item type: WORN
+Item is: ANTI-GOOD NOBITS
+Weight: 2, Value: 1
+Can affect you as :
+    Affects : CON By 3
+    Affects : WIS By 1
+Object 'iron bloody collar', Item type: ARMOR
+Item will give you following abilities:  DETECT-INVISIBLE SENSE-LIFE INFRAVISION SNEAK
+FURY
+Item is: LIMITED NOBITS
+Weight: 12, Value: 100000
+Item decays, and has 10 ticks remaining.
+AC-apply is 0
+Object 'locket chieftain', Item type: WORN
+Item is: MAGIC ANTI-EVIL ANTI-NEUTRAL ANTI-WARRIOR ANTI-THIEF ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-COMMANDO LIMITED RSPEC 
+Weight: 5, Value: 20000000
+Can affect you as :
+    Affects : HITROLL By 1
+    Affects : DAMROLL By 3
+Object 'crawdad bible', Item type: LIGHT
+Item will give you following abilities:  SENSE-LIFE PROTECT-EVIL 
+Item is: ANTI-EVIL ANTI-NEUTRAL ANTI-THIEF ANTI-NINJA ANTI-ANTI-PALADIN ANTI-COMMANDO LIMITED 
+Weight: 5, Value: 0
+Can affect you as :
+    Affects : STR By 3
+    Affects : HIT By 35
+Object 'stoned torch', Item type: LIGHT
+Item is: GLOW MAGIC LIMITED NOBITS
+Weight: 20, Value: 40000
+Can affect you as :
+    Affects : HIT By 20
+    Affects : DAMROLL By 1
+Object 'crystal lantern', Item type: LIGHT
+Item is: GLOW ANTI-GOOD ANTI-WARRIOR ANTI-THIEF ANTI-NOMAD ANTI-PALADIN 
+ANTI-COMMANDO NOBITS
+Weight: 3, Value: 130000
+Can affect you as :
+    Affects : STR By 1
+    Affects : MANA By 20
+Object 'holy grail', Item type: LIGHT
+Item is: GLOW HUM 
+Weight: 10, Value: 30000
+Can affect you as :
+    Affects : ARMOR By -6
+    Affects : HITROLL By 2
+Object 'lantern planes', Item type: LIGHT
+Item will give you following abilities:  DETECT-INVISIBLE SENSE-LIFE 
+Item is: GLOW ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-NOMAD LIMITED RSPEC 
+Weight: 10, Value: 1000000
+Can affect you as :
+    Affects : HITROLL By 2
+    Affects : DAMROLL By 4
+Object 'hand glory', Item type: LIGHT
+Item will give you following abilities:  INVUL 
+Item is: GLOW HUM LIMITED RSPEC 
+Weight: 18, Value: 250000
+Can affect you as :
+    Affects : DAMROLL By 4
+    Affects : HITROLL By 2
+Object 'staff spiral dance spiraldance sd <nomad>', Item type: LIGHT
+Item will give you following abilities:  DETECT-INVISIBLE 
+Item is: GLOW HUM ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED RSPEC 
+Weight: 10, Value: 250000
+Can affect you as :
+    Affects : ARMOR By -5
+    Affects : DAMROLL By 4
+Object 'staff crystal', Item type: LIGHT
+Item is: GLOW 
+Weight: 15, Value: 10000
+Can affect you as :
+    Affects : ARMOR By -5
+    Affects : HITROLL By 5
+Object 'fang vadir', Item type: LIGHT
+Item is: GLOW MAGIC ANTI-GOOD ANTI-NEUTRAL ANTI-WARRIOR ANTI-NOMAD ANTI-PALADIN ANTI-COMMANDO LIMITED 
+Weight: 3, Value: 235000
+Can affect you as :
+    Affects : HITROLL By 4
+    Affects : DAMROLL By 3
+Object 'spyglass', Item type: LIGHT
+Item is: ANTI-GOOD ANTI-WARRIOR ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-PALADIN ANTI-AVATAR ANTI-BARD ANTI-COMMANDO LIMITED 
+Weight: 10, Value: 150000
+Can affect you as :
+    Affects : DAMROLL By 4
+    Affects : SKILL_PEEK By 20
+Object 'lantern', Item type: LIGHT
+Item is: NOBITSNOBITS
+Weight: 3, Value: 1000
+Can affect you as :
+    Affects : HITROLL By 1
+    Affects : DAMROLL By 1
+
+loaded by Genevieve
+Object 'globe hyless', Item type: LIGHT
+Item will give you following abilities:  SENSE-LIFE 
+Item is: DARK EVIL MAGIC LIMITED NOBITS
+Weight: 5, Value: 165000
+Can affect you as :
+    Affects : HITROLL By 3
+    Affects : DAMROLL By 3
+Object 'sceptre might', Item type: LIGHT
+Item is: GLOW HUM MAGIC ANTI-EVIL 
+Weight: 4, Value: 100000
+Can affect you as :
+    Affects : HITROLL By 2
+    Affects : DAMROLL By 2
+Object 'fireflies', Item type: LIGHT
+Item is: GLOW ANTI-EVIL 
+Weight: 2, Value: 0
+Can affect you as :
+    Affects : INT By 2
+    Affects : ARMOR By -8
+Object 'eye eyeball ygaddrozil', Item type: LIGHT
+Item is: ANTI-EVIL ANTI-NEUTRAL ANTI-WARRIOR ANTI-THIEF ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED 
+Weight: 5, Value: 50000
+Can affect you as :
+    Affects : MANA By 50
+    Affects : ARMOR By 5
+Object 'cross avatar', Item type: LIGHT
+Item is: GLOW HUM ANTI-EVIL ANTI-NEUTRAL LIMITED 
+Weight: 15, Value: 200000
+Can affect you as :
+    Affects : DAMROLL By 5
+Object 'torch flaming', Item type: LIGHT
+Item is: GLOW ANTI-EVIL NOBITS
+Undead antis: NONE
+Weight: 8, Value: 20000
+Can affect you as :
+    Affects : HITROLL By 4
+
+Loaded By - Fire Elemental
+Object 'spirit light', Item type: LIGHT
+Item will give you following abilities:  CURSE INFRAVISION 
+Item is: GLOW HUM INVISIBLE ANTI-GOOD ANTI-THIEF ANTI-RENT ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-BARD LIMITED 
+Weight: 0, Value: 666
+Can affect you as :
+    Affects : STR By -1
+    Affects : DAMROLL By 7
+Object 'roc feather leggings', Item type: ARMOR
+Item is: ANTI-THIEF ANTI-FEMALE ANTI-NINJA ANTI-NOMAD ANTI-ANTI-PALADIN 
+Weight: 7, Value: 3000
+AC-apply is 15
+Can affect you as :
+    Affects : HITROLL By 3
+Object 'leggings worn', Item type: ARMOR
+Item is: ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA 
+ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-BARD ANTI-COMMANDO LIMITED 
+Weight: 10, Value: 150000
+AC-apply is 10
+Can affect you as :
+    Affects : DAMROLL By 3
+    Affects : HIT By 20
+Object 'oaken greaves', Item type: ARMOR
+Item is: ANTI-FEMALE ANTI-PALADIN ANTI-ANTI-PALADIN LIMITED 
+Weight: 10, Value: 0
+AC-apply is 10
+Can affect you as :
+    Affects : DAMROLL By 2
+    Affects : HIT By 10
+Object 'ettin leg plates', Item type: ARMOR
+Item is: GLOW ANTI-CLERIC ANTI-MAGIC_USER ANTI-PALADIN 
+Weight: 10, Value: 50000
+AC-apply is 10
+Can affect you as :
+    Affects : HIT By 10
+    Affects : HITROLL By 2
+Object 'grungy pants', Item type: ARMOR
+Item is: ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA 
+ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-COMMANDO LIMITED NOBITS
+Weight: 10, Value: 30000
+AC-apply is 10
+Can affect you as :
+    Affects : HIT By -25
+    Affects : DAMROLL By 3
+Object 'leggings dragonrider', Item type: ARMOR
+Item is: GLOW MAGIC ANTI-GOOD ANTI-EVIL LIMITED NOBITS
+Weight: 20, Value: 500000
+AC-apply is 9
+Can affect you as :
+    Affects : CON By 2
+    Affects : DAMROLL By 2
+Object 'judge leggings', Item type: ARMOR
+Item is: ANTI-GOOD ANTI-NEUTRAL NOBITS
+Weight: 12, Value: 10000
+AC-apply is 8
+Can affect you as :
+    Affects : WIS By 1
+    Affects : HIT By 20
+
+loaded by evil judge
+Object 'dragon skin leggings', Item type: ARMOR
+Item is: MAGIC ANTI-WARRIOR ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO NOBITS
+Weight: 10, Value: 24000
+AC-apply is 8
+Can affect you as :
+    Affects : HIT By 5
+    Affects : DAMROLL By 1
+Object 'threggi leg chitinous plates', Item type: ARMOR
+Item is: ANTI-WARRIOR ANTI-NOMAD LIMITED 
+Weight: 7, Value: 50000
+AC-apply is 8
+Can affect you as :
+    Affects : DAMROLL By 1
+    Affects : MANA By 15
+Object 'plates leg zyca', Item type: ARMOR
+Item is: LIMITED
+Weight: 10, Value: 175000
+AC-apply is 8
+Can affect you as :
+    Affects : DAMROLL By 2
+Object 'legs leg mardok', Item type: ARMOR
+Item is: DARK ANTI-GOOD ANTI-NEUTRAL ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED
+Weight: 10, Value: 10000
+AC-apply is 8
+Can affect you as :
+    Affects : HITROLL By 1
+    Affects : DAMROLL By 2
+Object 'leg plates', Item type: ARMOR
+Item is: GLOW ANTI-GOOD 
+Weight: 9, Value: 0
+AC-apply is 7
+Can affect you as :
+    Affects : AGE By 5
+Object 'leggings golden', Item type: ARMOR
+Item is: GLOW BLESS ANTI-EVIL ANTI-NEUTRAL LIMITED 
+Weight: 5, Value: 145000
+AC-apply is 7
+Can affect you as :
+    Affects : DAMROLL By 2
+Object 'platinum leg bands legbands', Item type: ARMOR
+Item is: NOBITSNOBITS
+Weight: 4, Value: 2000
+AC-apply is 6
+Object 'leg bionic', Item type: ARMOR
+Item is: BLESS 
+Weight: 3, Value: 5000
+AC-apply is 5
+Can affect you as :
+    Affects : STR By 1
+Object 'metallic leg plates', Item type: ARMOR
+Item is: NOBITSNOBITS
+Weight: 8, Value: 3500
+AC-apply is 5
+Object 'pants silk white flowing', Item type: ARMOR
+Item is: MAGIC ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-NINJA ANTI-NOMAD ANTI-PALADIN
+ANTI-ANTI-PALADIN LIMITED NOBITS
+Weight: 1, Value: 65743
+AC-apply is 4
+Can affect you as :
+    Affects : MANA By 15
+    Affects : SKILL_DODGE By 15
+Object 'long cloth skirt', Item type: ARMOR
+Item is: ANTI-CLERIC ANTI-MALE LIMITED NOBITS
+Weight: 8, Value: 200000
+AC-apply is 2
+Can affect you as :
+    Affects : DAMROLL By 2
+    Affects : MANA By 15
+Object 'leggings steadiness', Item type: ARMOR
+Item is: ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED NOBITS
+Weight: 5, Value: 50000
+AC-apply is 0
+Can affect you as :
+    Affects : DAMROLL By 2
+    Affects : SKILL_THROW By 5
+Object 'tooth ygaddrozil', Item type: ARMOR
+Item is: ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED 
+Weight: 75, Value: 50000
+AC-apply is 15
+Can affect you as :
+    Affects : DAMROLL By 3
+    Affects : HIT By 30
+Object 'mirror', Item type: ARMOR
+Item is: ANTI-WARRIOR ANTI-THIEF ANTI-MAGIC_USER ANTI-NINJA ANTI-ANTI-PALADIN ANTI-BARD NOBITS
+Weight: 50, Value: 5000
+AC-apply is 10
+Can affect you as :
+    Affects : HIT By 40
+    Affects : HITROLL By 5
+Object 'roc claw', Item type: ARMOR
+Item is: ANTI-THIEF ANTI-NINJA ANTI-NOMAD ANTI-ANTI-PALADIN 
+Weight: 7, Value: 80000
+AC-apply is 5
+Can affect you as :
+    Affects : HITROLL By 2
+    Affects : DAMROLL By 1
+Object 'roc claw', Item type: ARMOR
+Item is: ANTI-THIEF ANTI-NINJA ANTI-NOMAD ANTI-ANTI-PALADIN NOBITS
+Weight: 7, Value: 80000
+AC-apply is 5
+Can affect you as :
+    Affects : HITROLL By 2
+    Affects : DAMROLL By 1
+Object 'branch golden', Item type: ARMOR
+Item is: GLOW MAGIC 
+Weight: 5, Value: 10000
+AC-apply is 3
+Can affect you as :
+    Affects : HIT By 25
+Object 'small black stone', Item type: ARMOR
+Item is: MAGIC NOBITS
+Weight: 20, Value: 10
+AC-apply is 1
+Can affect you as :
+    Affects : HITROLL By -5
+    Affects : STR By 2
+Object 'cherrywood violin', Item type: MUSICAL
+Item is: ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD
+ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-COMMANDO NOBITS
+Undead antis: ANTI_DEATH_TYRANT ANTI_LICH ANTI_WRAITH ANTI_DEATH_KNIGHT ANTI_BONE_GOLEM
+Weight: 6, Value: 151515
+Can affect you as :
+    Affects : WIS By 3
+    Affects : MANA By 30
+Object 'feather simurgh', Item type: TREASURE
+Item is: GLOW MAGIC BLESS LIMITED NOBITS
+Weight: 1, Value: 55377
+Can affect you as :
+    Affects : HIT By 40
+    Affects : STR By -2
+Object 'apollo lyre', Item type: MUSICAL
+Item will give you following abilities:  SENSE-LIFE 
+Item is: ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-PALADIN 
+ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-COMMANDO LIMITED 
+Weight: 10, Value: 50000
+Can affect you as :
+    Affects : HIT By 35
+    Affects : DAMROLL By 3
+Object 'master cello', Item type: MUSICAL
+Item is: GLOW ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD
+ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-COMMANDO NOBITS
+Undead antis: ANTI_DEATH_TYRANT ANTI_LICH ANTI_WRAITH ANTI_DEATH_KNIGHT ANTI_BONE_GOLEM
+Weight: 35, Value: 200000
+Can affect you as :
+    Affects : HIT By 35
+    Affects : MOVE By -65
+Object 'carlotta fan', Item type: WORN
+Item is: NOBITSNOBITS
+Weight: 3, Value: 1000
+Can affect you as :
+    Affects : HIT By 25
+    Affects : DAMROLL By 2
+Object 'missing data', Item type: UNKNOWN
+Item will give you following abilities:  DETECT-INVISIBLE FLY 
+Item is: GLOW ANTI-WARRIOR ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-BARD LIMITED RSPEC 
+Weight: 1, Value: 1000000
+Can affect you as :
+    Affects : DAMROLL By 4
+    Affects : CON By -9
+Object 'walking stick', Item type: OTHER
+Item will give you following abilities:  INFRAVISION
+Item is: GLOW MAGIC ANTI-GOOD ANTI-WARRIOR ANTI-THIEF ANTI-FEMALE ANTI-NINJA ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-BARD ANTI-COMMANDO LIMITED
+Weight: 1, Value: 1
+Can affect you as :
+    Affects : DAMROLL By 4
+    Affects : HITROLL By 3
+Object malachite, Item type: WEAPON
+Item is: MAGIC LIMITED 
+Weight: 20, Value: 175000
+Damage Dice is '1D2'
+Can affect you as :
+    Affects : HITROLL By 3
+    Affects : DAMROLL By 3
+Object scalpel, Item type: WEAPON
+Item is: ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-ANTI-PALADIN ANTI-BARD LIMITED
+Weight: 15, Value: 200000
+Damage Dice is '4D8'
+Can affect you as :
+    Affects : DAMROLL By 4
+Object 'colossal bass', Item type: MUSICAL
+Item is: ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-COMMANDO 
+Weight: 75, Value: 250000
+Can affect you as :
+    Affects : ARMOR By -30
+    Affects : HITROLL By -4
+Object 'wand dark black', Item type: WAND
+Item is: DARK EVIL INVISIBLE MAGIC ANTI-GOOD 
+Weight: 3, Value: 55555
+Has 6 charges, with 6 charges left.
+Level 25 spell of:
+energy drain
+Object 'tuning key', Item type: MUSICAL
+Item is: HUM ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA 
+ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-COMMANDO LIMITED RSPEC NOBITS
+Weight: 10, Value: 50000
+Can affect you as :
+    Affects : HITROLL By 4
+    Affects : DAMROLL By 4
+Object 'gem red', Item type: TREASURE
+Item is: GLOW NOBITS
+Weight: 5, Value: 15000
+Can affect you as :
+    Affects : MANA By 20
+    Affects : HITROLL By 1
+Object 'violin ornate', Item type: MUSICAL
+Item will give you following abilities:  SENSE-LIFE 
+Item is: ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA 
+ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-COMMANDO LIMITED 
+RSPEC NOBITS
+Weight: 6, Value: 150000
+Can affect you as :
+    Affects : DAMROLL By 5
+    Affects : HITROLL By 2
+Object 'pixie figurine', Item type: OTHER
+Item will give you following abilities:  DETECT-INVISIBLE
+Item is: GLOW HUM ANTI-WARRIOR ANTI-MALE ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-COMMANDO
+LIMITED NOBITS
+Weight: 7, Value: 400000
+Can affect you as :
+    Affects : HITROLL By 4
+    Affects : DAMROLL By 3
+
+
+Loaded by Mariko
+Object 'book songs', Item type: OTHER
+Item is: NOBITSNOBITS
+Weight: 5, Value: 500
+Can affect you as :
+    Affects : CON By 1
+Object 'horse', Item type: WEAPON
+Item is: NOBITSNOBITS
+Weight: 7, Value: 10000
+Damage Dice is '1D4'
+Can affect you as :
+    Affects : DAMROLL By 2
+    Affects : ARMOR By 4
+
+loaded by Abel
+Object 'rutter log book tome', Item type: TREASURE
+Item is: GLOW ANTI-GOOD ANTI-MALE ANTI-BARD LIMITED NOBITS
+Weight: 15, Value: 1000000
+Can affect you as :
+    Affects : MANA By 30
+    Affects : DAMROLL By 3
+Object 'snowy potion', Item type: POTION
+Item is: MAGIC LIMITED NOBITS
+Weight: 2, Value: 300000
+Level 33 spells of:
+recover mana
+Object 'sceptre royal golden', Item type: OTHER
+Item is: MAGIC ANTI-EVIL NOBITS
+Weight: 15, Value: 15000
+Can affect you as :
+    Affects : HITROLL By 2
+Object 'accordian', Item type: MUSICAL
+Item is: HUM ANTI-EVIL ANTI-NEUTRAL ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER
+ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-COMMANDO LIMITED NOBITS
+Weight: 10, Value: 100000
+Can affect you as :
+    Affects : HITROLL By 3
+    Affects : DAMROLL By 3
+
+
+
+Loaded by Vedder
+Object 'black pearl power', Item type: TREASURE
+Item is: GLOW MAGIC NODROP BLESS ANTI-EVIL ANTI-WARRIOR ANTI-THIEF ANTI-MALE ANTI-NINJA
+ANTI-NOMAD ANTI-ANTI-PALADIN LIMITED NOBITS
+Weight: 5, Value: 500000
+Can affect you as :
+    Affects : MANA By 50
+    Affects : DAMROLL By 2
+Object 'orb huge', Item type: OTHER
+Item is: GLOW ANTI-GOOD LIMITED NOBITS
+Undead antis: NONE
+Weight: 50, Value: 50000
+Can affect you as :
+    Affects : DAMROLL By 5
+    Affects : STR By -4
+Object 'octahedron crystal', Item type: TREASURE
+Item is: HUM MAGIC BLESS NOBITS
+Weight: 20, Value: 10000
+Can affect you as :
+    Affects : STR By -5
+    Affects : MANA By 40
+Object 'halo battered bent broken', Item type: ARMOR
+Item will give you following abilities:  DETECT-ALIGNMENT 
+Item is: EVIL ANTI-GOOD ANTI-NEUTRAL ANTI-RENT LIMITED 
+Weight: 15, Value: 20
+AC-apply is 20
+Can affect you as :
+    Affects : DAMROLL By 4
+    Affects : HITROLL By 5
+Object 'helm darkness pitch-black', Item type: ARMOR
+Item is: GLOW MAGIC ANTI-GOOD ANTI-NEUTRAL ANTI-THIEF ANTI-CLERIC ANTI-FEMALE ANTI-NOMAD ANTI-PALADIN ANTI-BARD 
+Weight: 10, Value: 54321
+AC-apply is 13
+Can affect you as :
+    Affects : HITROLL By 3
+    Affects : DAMROLL By 2
+Object 'ioun', Item type: ARMOR
+Item is: GLOW MAGIC ANTI-WARRIOR ANTI-THIEF ANTI-NOMAD LIMITED RSPEC 
+Weight: 14, Value: 3000000
+AC-apply is 13
+Object 'silver helmet', Item type: ARMOR
+Item will give you following abilities:  PROTECT-EVIL INFRAVISION 
+Item is: ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA 
+ANTI-NOMAD ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-BARD ANTI-COMMANDO LIMITED 
+Weight: 10, Value: 200000
+AC-apply is 12
+Can affect you as :
+    Affects : DAMROLL By 2
+    Affects : HIT By 30
+Object 'mask cannibal', Item type: ARMOR
+Item is: HUM EVIL ANTI-GOOD ANTI-NEUTRAL ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD 
+ANTI-COMMANDO LIMITED 
+Weight: 20, Value: 500000
+AC-apply is 12
+Can affect you as :
+    Affects : DAMROLL By 3
+    Affects : SKILL_TRAP By 20
+Object 'mask tmask tz', Item type: ARMOR
+Item will give you following abilities:  DETECT-INVISIBLE 
+Item is: HUM LIMITED NOBITS
+Weight: 5, Value: 150000
+AC-apply is 12
+Can affect you as :
+    Affects : INT By 3
+    Affects : CON By 3
+Object 'crown basalt', Item type: ARMOR
+Item is: GLOW HUM ANTI-WARRIOR ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED 
+Weight: 5, Value: 40000
+AC-apply is 11
+Can affect you as :
+    Affects : DAMROLL By 3
+    Affects : SAVING_PARA By 5
+Object 'crown marquis', Item type: ARMOR
+Item is: GLOW ANTI-NEUTRAL LIMITED 
+Weight: 6, Value: 200000
+AC-apply is 10
+Can affect you as :
+    Affects : HIT By 35
+    Affects : MANA By 35
+Object 'tournament helmet', Item type: ARMOR
+Item will give you following abilities:  PROTECT-EVIL 
+Item is: GLOW MAGIC BLESS ANTI-NEUTRAL ANTI-NINJA LIMITED 
+Weight: 8, Value: 30000
+AC-apply is 10
+Can affect you as :
+    Affects : DAMROLL By 1
+    Affects : HIT By 10
+Object 'belled hat', Item type: ARMOR
+Item will give you following abilities:  SNEAK 
+Item is: BLESS 
+Weight: 5, Value: 10000
+AC-apply is 10
+Can affect you as :
+    Affects : SKILL_PARRY By 20
+    Affects : SKILL_DODGE By 20
+Object 'demon horn horns helmet', Item type: ARMOR
+Item is: GLOW ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD
+ANTI-PALADIN ANTI-ANTI-PALADIN NOBITS
+Weight: 30, Value: 0
+AC-apply is 10
+Can affect you as :
+    Affects : MANA By 30
+    Affects : DAMROLL By 2
+
+
+loaded by Turimalga The Fearsome
+Object 'visor golden', Item type: ARMOR
+Item is: GLOW BLESS ANTI-EVIL ANTI-NEUTRAL LIMITED 
+Weight: 12, Value: 0
+AC-apply is 9
+Can affect you as :
+    Affects : STR By 1
+    Affects : DAMROLL By 2
+Object 'halo golden', Item type: ARMOR
+Item will give you following abilities:  INVUL 
+Item is: GLOW ANTI-EVIL ANTI-NEUTRAL ANTI-PALADIN 
+Weight: 3, Value: 175000
+AC-apply is 8
+Can affect you as :
+    Affects : DAMROLL By 3
+Object 'helm dragons', Item type: ARMOR
+Item is: NOBITSNOBITS
+Weight: 7, Value: 150000
+AC-apply is 7
+Can affect you as :
+    Affects : HITROLL By 2
+Object 'horns', Item type: ARMOR
+Item is: MAGIC ANTI-EVIL NOBITS
+Weight: 6, Value: 10000
+AC-apply is 7
+Can affect you as :
+    Affects : DAMROLL By 1
+Object 'red jester cap', Item type: ARMOR
+Item is: ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-BARD ANTI-COMMANDO LIMITED 
+Weight: 6, Value: 66666
+AC-apply is 6
+Can affect you as :
+    Affects : INT By 3
+    Affects : WIS By 3
+Object 'silver crown', Item type: ARMOR
+Item is: ANTI-EVIL ANTI-WARRIOR ANTI-CLERIC ANTI-MAGIC_USER ANTI-ANTI-PALADIN
+ANTI-AVATAR ANTI-BARD NOBITS
+Weight: 4, Value: 400000
+AC-apply is 6
+Can affect you as :
+    Affects : HIT By 33
+    Affects : SKILL_BASH By 20
+Object 'jester cap blue', Item type: ARMOR
+Item is: ANTI-WARRIOR ANTI-THIEF ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-COMMANDO LIMITED 
+Weight: 6, Value: 66666
+AC-apply is 6
+Can affect you as :
+    Affects : STR By 3
+    Affects : DAMROLL By -3
+Object 'grey hood', Item type: ARMOR
+Item is: ANTI-WARRIOR ANTI-CLERIC ANTI-MAGIC_USER ANTI-NOMAD ANTI-PALADIN ANTI-AVATAR ANTI-COMMANDO 
+Weight: 2, Value: 60000
+AC-apply is 6
+Can affect you as :
+    Affects : SKILL_THROW By 15
+    Affects : DAMROLL By 2
+Object 'helm ice', Item type: ARMOR
+Item is: NOBITSNOBITS
+Weight: 13, Value: 80000
+AC-apply is 5
+Can affect you as :
+    Affects : ARMOR By 3
+    Affects : HIT By 25
+Object 'mask black blackmask', Item type: ARMOR
+Item is: ANTI-GOOD 
+Weight: 10, Value: 0
+AC-apply is 5
+Can affect you as :
+    Affects : STR By 1
+    Affects : HIT By 10
+Object 'crown mountain king', Item type: ARMOR
+Item will give you following abilities:  DETECT-INVISIBLE SANCTUARY INFRAVISION
+Item is: MAGIC ANTI-RENT LIMITED NOBITS
+Weight: 13, Value: 200000
+Item decays, and has 40 ticks remaining.
+AC-apply is 5
+Can affect you as :
+    Affects : STR By 3
+    Affects : HITROLL By 10
+Object 'iron helmet', Item type: ARMOR
+Item is: LIMITED NOBITS
+Weight: 2, Value: 6000
+AC-apply is 5
+Can affect you as :
+    Affects : STR By 2
+
+loaded by Kobold Warrior
+Object 'black helmet', Item type: ARMOR
+Item is: ANTI-FEMALE 
+Weight: 10, Value: 5000
+AC-apply is 5
+Object 'pointy hat necromancer', Item type: ARMOR
+Item will give you following abilities:  FLY 
+Item is: HUM DARK EVIL ANTI-GOOD ANTI-NEUTRAL ANTI-WARRIOR ANTI-THIEF 
+ANTI-CLERIC ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD 
+ANTI-COMMANDO LIMITED RSPEC 
+Weight: 10, Value: 100000
+AC-apply is 5
+Can affect you as :
+    Affects : DAMROLL By 2
+    Affects : MANA By 40
+Object 'helmet hurricane', Item type: ARMOR
+Item is: HUM NOBITS
+Weight: 4, Value: 20000
+AC-apply is 5
+Can affect you as :
+    Affects : SAVING_BREATH By -4
+Object 'helmet bronze', Item type: ARMOR
+Item is: NOBITSNOBITS
+Weight: 8, Value: 3500
+AC-apply is 5
+Object 'adamantite helmet', Item type: ARMOR
+Item is: MAGIC ANTI-EVIL ANTI-WARRIOR ANTI-THIEF ANTI-NOMAD LIMITED 
+Weight: 5, Value: 220000
+AC-apply is 5
+Can affect you as :
+    Affects : HITROLL By 3
+    Affects : MANA By 30
+Object 'adamantite helmet', Item type: ARMOR
+Item is: MAGIC ANTI-EVIL ANTI-WARRIOR ANTI-THIEF ANTI-NOMAD LIMITED 
+Weight: 5, Value: 220000
+AC-apply is 5
+Can affect you as :
+    Affects : HITROLL By 3
+    Affects : MANA By 30
+Object 'phantom mask', Item type: ARMOR
+Item is: ANTI-GOOD ANTI-EVIL LIMITED NOBITS
+Weight: 1, Value: 50000
+AC-apply is 5
+Can affect you as :
+    Affects : HITROLL By 1
+    Affects : DAMROLL By 2
+Object 'helm razor war warhelm', Item type: ARMOR
+Item is: ANTI-EVIL ANTI-NEUTRAL ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NOMAD
+ANTI-ANTI-PALADIN ANTI-BARD LIMITED NOBITS
+Weight: 12, Value: 160000
+AC-apply is 5
+Can affect you as :
+    Affects : DAMROLL By 3
+    Affects : HITROLL By -4
+Object 'sun hat', Item type: ARMOR
+Item is: GLOW ANTI-EVIL NOBITS
+Undead antis: NONE
+Weight: 1, Value: 0
+AC-apply is 4
+Can affect you as :
+    Affects : STR By 2
+    Affects : INT By 2
+Object 'crown brod dorva brod-dorva', Item type: ARMOR
+Item is: MAGIC ANTI-GOOD ANTI-NEUTRAL ANTI-WARRIOR ANTI-THIEF ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED RSPEC 
+Weight: 8, Value: 200000
+AC-apply is 3
+Can affect you as :
+    Affects : DAMROLL By 2
+Object 'horn rimmed glasses', Item type: ARMOR
+Item will give you following abilities:  DETECT-INVISIBLE 
+Item is: GLOW ANTI-WARRIOR ANTI-THIEF ANTI-FEMALE ANTI-NINJA ANTI-NOMAD ANTI-PALADIN
+ANTI-ANTI-PALADIN ANTI-COMMANDO NOBITS
+Undead antis: ANTI_DEATH_TYRANT ANTI_LICH ANTI_WRAITH ANTI_DEATH_KNIGHT ANTI_BONE_GOLEM
+Weight: 2, Value: 174000
+AC-apply is 3
+Can affect you as :
+    Affects : INT By 3
+    Affects : HITROLL By 3
+Object 'helmet training newbie', Item type: ARMOR
+Item is: RSPEC NOBITS
+Weight: 3, Value: 150
+AC-apply is 3
+Object 'glasses', Item type: ARMOR
+Item is: GLOW 
+Weight: 2, Value: 1200
+AC-apply is 0
+Can affect you as :
+    Affects : ARMOR By -1
+    Affects : WIS By 1
+Object 'top hat', Item type: ARMOR
+Item is: NOBITSNOBITS
+Weight: 10, Value: 50000
+AC-apply is 0
+Can affect you as :
+    Affects : HIT By 25
+    Affects : ARMOR By -2
+Object 'crown lich iron cold', Item type: WORN
+Item will give you following abilities:  DETECT-MAGIC 
+Item is: GLOW EVIL ANTI-GOOD ANTI-FEMALE NOBITS
+Undead antis: NONE
+Weight: 20, Value: 30000
+Can affect you as :
+    Affects : INT By 2
+    Affects : AGE By -40
+Object 'hood', Item type: WORN
+Item is: ANTI-RENT LIMITED NOBITS
+Weight: 5, Value: 0
+Item decays, and has 105 ticks remaining.
+Can affect you as :
+    Affects : DAMROLL By 5
+Object 'crown sorrow infinite', Item type: ARMOR
+Item is: GLOW HUM ANTI-WARRIOR ANTI-CLERIC ANTI-MAGIC_USER ANTI-NOMAD
+ANTI-ANTI-PALADIN ANTI-BARD LIMITED RSPEC SHORTSPEC
+Weight: 10, Value: 50000
+AC-apply is 0
+Can affect you as :
+    Affects : HITROLL By 2
+    Affects : DAMROLL By 3
+Object 'moody blue hat', Item type: ARMOR
+Item is: GLOW ANTI-EVIL 
+Weight: 6, Value: 0
+AC-apply is 0
+Can affect you as :
+    Affects : MANA By 30
+Object 'opera glasses', Item type: WORN
+Item is: ANTI-EVIL NOBITS
+Weight: 2, Value: 10
+Can affect you as :
+    Affects : AGE By 20
+    Affects : HITROLL By 3
+Object 'hat idiocy', Item type: ARMOR
+Item will give you following abilities:  CURSE 
+Item is: NOBITS
+Weight: 5, Value: 0
+AC-apply is -10
+Can affect you as :
+    Affects : DAMROLL By 2
+    Affects : HIT By -37
+Object 'dirty gloves', Item type: ARMOR
+Item is: ANTI-GOOD LIMITED 
+Weight: 20, Value: 0
+AC-apply is 20
+Can affect you as :
+    Affects : STR By 1
+    Affects : DAMROLL By 2
+Object 'gloves glove void nothing', Item type: ARMOR
+Item will give you following abilities:  INFRAVISION 
+Item is: MAGIC ANTI-NEUTRAL ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-COMMANDO LIMITED 
+Weight: 8, Value: 60000
+AC-apply is 14
+Can affect you as :
+    Affects : DAMROLL By 4
+    Affects : SAVING_SPELL By 10
+Object 'gauntlets wonder tz', Item type: ARMOR
+Item is: GLOW MAGIC ANTI-NINJA 
+Weight: 7, Value: 30000
+AC-apply is 10
+Can affect you as :
+    Affects : STR By 5
+    Affects : DAMROLL By 2
+Object 'crystal gauntlets', Item type: ARMOR
+Item is: GLOW ANTI-GOOD ANTI-WARRIOR ANTI-THIEF ANTI-NOMAD ANTI-PALADIN NOBITS
+Weight: 10, Value: 150000
+AC-apply is 10
+Can affect you as :
+    Affects : MANA By 10
+    Affects : DAMROLL By 2
+Object 'heroism gloves', Item type: ARMOR
+Item is: GLOW ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-PALADIN
+ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-BARD LIMITED NOBITS
+Weight: 3, Value: 100000
+AC-apply is 9
+Can affect you as :
+    Affects : SKILL_TRIPLE By 17
+    Affects : DAMROLL By 2
+Object 'black blackgloves gloves', Item type: ARMOR
+Item is: MAGIC 
+Weight: 10, Value: 50000
+AC-apply is 8
+Can affect you as :
+    Affects : HITROLL By 2
+    Affects : DAMROLL By 2
+Object 'gauntlets blackened', Item type: ARMOR
+Item is: HUM EVIL MAGIC ANTI-GOOD ANTI-NEUTRAL ANTI-THIEF ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-AVATAR LIMITED 
+Weight: 5, Value: 400000
+AC-apply is 7
+Can affect you as :
+    Affects : HITROLL By -2
+    Affects : DAMROLL By 4
+Object 'scale gloves', Item type: ARMOR
+Item is: GLOW ANTI-WARRIOR ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED 
+Weight: 8, Value: 150000
+AC-apply is 6
+Can affect you as :
+    Affects : DAMROLL By 4
+    Affects : SKILL_CIRCLE By 5
+Object 'gloves gladiator', Item type: ARMOR
+Item is: GLOW ANTI-EVIL ANTI-CLERIC ANTI-MAGIC_USER ANTI-BARD NOBITS
+Weight: 5, Value: 5000
+AC-apply is 5
+Can affect you as :
+    Affects : HIT By 15
+    Affects : HITROLL By 2
+Object 'gloves evilgloves', Item type: ARMOR
+Item is: ANTI-GOOD ANTI-NEUTRAL NOBITS
+Weight: 10, Value: 0
+AC-apply is 5
+Can affect you as :
+    Affects : HIT By 1
+    Affects : DAMROLL By 2
+Object 'gloves bloody', Item type: ARMOR
+Item will give you following abilities:  SNEAK 
+Item is: HUM DARK ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-AVATAR ANTI-BARD ANTI-COMMANDO LIMITED 
+Weight: 5, Value: 150000
+AC-apply is 5
+Can affect you as :
+    Affects : HITROLL By 3
+    Affects : DAMROLL By 3
+Object 'adamantite gauntlets', Item type: ARMOR
+Item is: MAGIC ANTI-EVIL ANTI-NEUTRAL LIMITED 
+Weight: 3, Value: 220000
+AC-apply is 5
+Can affect you as :
+    Affects : HITROLL By 1
+    Affects : DAMROLL By 4
+Object 'gloves golden', Item type: ARMOR
+Item is: GLOW BLESS ANTI-EVIL ANTI-NEUTRAL LIMITED 
+Weight: 10, Value: 0
+AC-apply is 5
+Can affect you as :
+    Affects : HITROLL By 3
+    Affects : DAMROLL By 2
+Object 'manifestation crystalline hand cryshand <cleric>', Item type: ARMOR
+Item is: ANTI-EVIL ANTI-NEUTRAL ANTI-WARRIOR ANTI-THIEF ANTI-MAGIC_USER ANTI-NINJA
+ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED RSPEC NOBITS
+Weight: 1, Value: 100000
+Item decays, and has 6000 ticks remaining.
+AC-apply is 5
+Can affect you as :
+    Affects : HITROLL By 2
+    Affects : DAMROLL By 4
+Object 'gloves', Item type: ARMOR
+Item is: NOBITS
+Weight: 2, Value: 4000
+AC-apply is 3
+Can affect you as :
+    Affects : STR By 1
+Object 'alabaster claws', Item type: ARMOR
+Item is: GLOW ANTI-EVIL ANTI-NEUTRAL ANTI-MAGIC_USER ANTI-MALE ANTI-NINJA ANTI-NOMAD
+ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-COMMANDO LIMITED NOBITS
+Weight: 12, Value: 7800000
+AC-apply is 3
+Can affect you as :
+    Affects : DAMROLL By 3
+    Affects : HITROLL By 4
+Object 'gauntlets strange', Item type: WORN
+Item is: GLOW 
+Weight: 2, Value: 100000
+Can affect you as :
+    Affects : STR By 3
+Object 'glove gloves agony', Item type: ARMOR
+Item is: GLOW HUM ANTI-GOOD LIMITED 
+Weight: 5, Value: 175000
+AC-apply is 0
+Can affect you as :
+    Affects : DAMROLL By 3
+    Affects : HITROLL By 2
+Object 'andres ornate gloves', Item type: ARMOR
+Item is: LIMITED NOBITS
+Weight: 5, Value: 50000
+AC-apply is 0
+Can affect you as :
+    Affects : HITROLL By 3
+    Affects : ARMOR By 5
+Object 'yousei belt', Item type: ARMOR
+Item will give you following abilities:  DETECT-INVISIBLE PROTECT-EVIL 
+Item is: GLOW ANTI-MALE LIMITED NOBITS
+Undead antis: NONE
+Weight: 1, Value: 2500000
+AC-apply is 14
+Can affect you as :
+    Affects : HITROLL By -1
+    Affects : DAMROLL By -1
+Object 'one ring', Item type: ARMOR
+Item is: MAGIC LIMITED 
+Weight: 3, Value: 50000
+AC-apply is 13
+Can affect you as :
+    Affects : STR By -1
+Object 'ring bloodstone', Item type: ARMOR
+Item is: GLOW ANTI-GOOD ANTI-EVIL 
+Weight: 10, Value: 50000
+AC-apply is 10
+Can affect you as :
+    Affects : HIT By 50
+Object 'ring darkness', Item type: ARMOR
+Item is: GLOW ANTI-GOOD ANTI-NEUTRAL LIMITED NOBITS
+Weight: 20, Value: 0
+AC-apply is 10
+Can affect you as :
+    Affects : HIT By 30
+    Affects : HITROLL By 4
+Object 'ring spider small', Item type: ARMOR
+Item is: GLOW MAGIC 
+Weight: 1, Value: 160000
+AC-apply is 10
+Can affect you as :
+    Affects : HITROLL By 1
+    Affects : DAMROLL By 3
+Object 'signet ring', Item type: ARMOR
+Item is: GLOW HUM MAGIC ANTI-GOOD ANTI-WARRIOR ANTI-THIEF ANTI-FEMALE ANTI-NOMAD
+NOBITS
+Weight: 1, Value: 16000
+AC-apply is 8
+Can affect you as :
+    Affects : MANA By 35
+    Affects : HIT By 35
+Object 'emerald ring', Item type: ARMOR
+Item is: MAGIC 
+Weight: 10, Value: 80000
+AC-apply is 8
+Can affect you as :
+    Affects : HITROLL By 2
+    Affects : DAMROLL By 2
+Object 'ring king', Item type: ARMOR
+Item is: ANTI-GOOD ANTI-NEUTRAL ANTI-FEMALE LIMITED NOBITS
+Weight: 10, Value: 30000
+AC-apply is 6
+Can affect you as :
+    Affects : HIT By 25
+    Affects : MANA By 25
+Object 'ring adamant diamond diamonds', Item type: ARMOR
+Item is: GLOW MAGIC ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER LIMITED NOBITS
+Weight: 1, Value: 50000
+AC-apply is 5
+Can affect you as :
+    Affects : STR By 2
+    Affects : DAMROLL By 3
+Object 'ring soul eater', Item type: ARMOR
+Item is: HUM EVIL MAGIC ANTI-GOOD ANTI-NEUTRAL LIMITED 
+Weight: 2, Value: 0
+AC-apply is 5
+Can affect you as :
+    Affects : HITROLL By 2
+    Affects : DAMROLL By 4
+Object 'ring hieroglyphic ancient', Item type: ARMOR
+Item is: MAGIC LIMITED 
+Weight: 1, Value: 0
+AC-apply is 5
+Can affect you as :
+    Affects : DAMROLL By 1
+    Affects : MANA By 20
+Object 'polished bone ring', Item type: ARMOR
+Item is: GLOW ANTI-NEUTRAL ANTI-THIEF ANTI-MAGIC_USER ANTI-NOMAD ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED 
+Weight: 5, Value: 200000
+AC-apply is 5
+Can affect you as :
+    Affects : HITROLL By 3
+    Affects : DAMROLL By 3
+Object 'ring headmaster headmasters', Item type: ARMOR
+Item is: ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-FEMALE ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-BARD LIMITED NOBITS
+Weight: 15, Value: 150000
+AC-apply is 5
+Can affect you as :
+    Affects : DAMROLL By 3
+    Affects : SKILL_KNOCK By 5
+Object 'heirloom ring', Item type: ARMOR
+Item is: ANTI-WARRIOR ANTI-THIEF ANTI-FEMALE ANTI-NINJA ANTI-NOMAD ANTI-PALADIN
+ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED NOBITS
+Weight: 10, Value: 3000
+AC-apply is 5
+Can affect you as :
+    Affects : INT By -1
+    Affects : MANA By 43
+Object 'ring oring', Item type: ARMOR
+Item is: NOBITS
+Weight: 5, Value: 0
+AC-apply is 4
+Can affect you as :
+    Affects : MANA By 10
+Object 'blood red ruby ring', Item type: ARMOR
+Item is: GLOW MAGIC ANTI-GOOD ANTI-WARRIOR ANTI-THIEF ANTI-NINJA ANTI-BARD LIMITED 
+Weight: 1, Value: 160000
+AC-apply is 4
+Can affect you as :
+    Affects : HITROLL By 4
+    Affects : DAMROLL By 3
+Object 'ring nova bautzan ender world', Item type: ARMOR
+Item is: GLOW HUM INVISIBLE NOBITS
+Weight: 6, Value: 8000
+AC-apply is 4
+Can affect you as :
+    Affects : DAMROLL By 2
+    Affects : AGE By 13
+Object 'nenya ring adamant', Item type: ARMOR
+Item is: GLOW ANTI-EVIL NOBITS
+Undead antis: NONE
+Weight: 1, Value: 30000
+AC-apply is 4
+Can affect you as :
+    Affects : CON By 2
+    Affects : HITROLL By 3
+Object 'pixie crown ring', Item type: ARMOR
+Item is: HUM ANTI-EVIL ANTI-NEUTRAL ANTI-WARRIOR ANTI-THIEF ANTI-MAGIC_USER ANTI-MALE
+ANTI-NINJA ANTI-PALADIN ANTI-ANTI-PALADIN LIMITED NOBITS
+Weight: 1, Value: 386839
+AC-apply is 4
+Can affect you as :
+    Affects : DAMROLL By 3
+    Affects : HITROLL By 3
+Object 'ring royal elite', Item type: ARMOR
+Item is: DARK EVIL ANTI-GOOD ANTI-NEUTRAL ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD NOBITS
+Weight: 6, Value: 10000
+AC-apply is 3
+Can affect you as :
+    Affects : HITROLL By 4
+    Affects : DAMROLL By 2
+Object 'crystal ring black', Item type: ARMOR
+Item is: GLOW MAGIC ANTI-WARRIOR ANTI-THIEF ANTI-NINJA ANTI-NOMAD ANTI-ANTI-PALADIN ANTI-COMMANDO LIMITED 
+Weight: 5, Value: 0
+AC-apply is 2
+Can affect you as :
+    Affects : WIS By 2
+    Affects : DAMROLL By 3
+Object 'gold ring', Item type: ARMOR
+Item is: NOBITS
+Weight: 1, Value: 0
+AC-apply is 2
+Can affect you as :
+    Affects : HITROLL By 1
+    Affects : DAMROLL By 1
+Object 'iron ring star sapphire', Item type: ARMOR
+Item is: GLOW HUM ANTI-GOOD ANTI-WARRIOR ANTI-CLERIC ANTI-NINJA ANTI-PALADIN ANTI-AVATAR ANTI-COMMANDO LIMITED 
+Weight: 1, Value: 500000
+AC-apply is 2
+Can affect you as :
+    Affects : SKILL_CIRCLE By 10
+    Affects : MANA By 45
+Object 'christine ring', Item type: ARMOR
+Item is: ANTI-WARRIOR ANTI-THIEF ANTI-MALE ANTI-NINJA ANTI-NOMAD ANTI-PALADIN
+ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED NOBITS
+Weight: 5, Value: 1000
+AC-apply is 2
+Can affect you as :
+    Affects : INT By -1
+    Affects : MANA By 43
+Object 'ring garnet invisibility invis', Item type: ARMOR
+Item will give you following abilities:  INVISIBLE DETECT-INVISIBLE
+Item is: GLOW INVISIBLE ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-NINJA ANTI-NOMAD
+ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED RSPEC NOBITS
+Weight: 10, Value: 100000
+AC-apply is 2
+Can affect you as :
+    Affects : AGE By 10
+Object 'ring jeweled', Item type: ARMOR
+Item is: MAGIC 
+Weight: 8, Value: 1000
+AC-apply is 1
+Can affect you as :
+    Affects : INT By 2
+    Affects : WIS By 1
+Object 'emerald ring', Item type: WORN
+Item is: MAGIC ANTI-WARRIOR 
+Weight: 1, Value: 30000
+Can affect you as :
+    Affects : HIT By 30
+Object 'ring sky', Item type: OTHER
+Item is: ANTI-EVIL NOBITS
+Weight: 6, Value: 0
+Can affect you as :
+    Affects : STR By 2
+    Affects : CON By 2
+Object 'black onyx ring', Item type: ARMOR
+Item is: LIMITED 
+Weight: 1, Value: 160000
+AC-apply is 0
+Can affect you as :
+    Affects : HITROLL By 3
+    Affects : DAMROLL By 3
+Object 'crystal ring', Item type: ARMOR
+Item is: LIMITED 
+Weight: 1, Value: 100000
+AC-apply is 0
+Can affect you as :
+    Affects : MANA By 40
+Object 'ring vines circle', Item type: WORN
+Item is: ANTI-RENT LIMITED NOBITS
+Weight: 5, Value: 1000
+Item decays, and has 50 ticks remaining.
+Can affect you as :
+    Affects : HITROLL By 10
+Object 'ring wizardry wizard', Item type: TREASURE
+Item is: MAGIC ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO NOBITS
+Weight: 1, Value: 130000
+Can affect you as :
+    Affects : INT By 1
+    Affects : MANA By 30
+Object 'boots stone', Item type: ARMOR
+Item is: MAGIC ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO
+Weight: 12, Value: 60600
+AC-apply is 12
+Can affect you as :
+    Affects : DAMROLL By 2
+Object 'crocodile boots', Item type: ARMOR
+Item is: HUM 
+Weight: 5, Value: 175000
+AC-apply is 10
+Can affect you as :
+    Affects : STR By 2
+    Affects : DAMROLL By 1
+Object 'skin boots', Item type: ARMOR
+Item is: MAGIC ANTI-NEUTRAL ANTI-WARRIOR ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD LIMITED 
+Weight: 10, Value: 50000
+AC-apply is 10
+Can affect you as :
+    Affects : DAMROLL By 2
+Object 'rose slippers', Item type: ARMOR
+Item will give you following abilities:  FLY
+Item is: ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN
+ANTI-AVATAR ANTI-COMMANDO NOBITS
+Weight: 3, Value: 88888
+AC-apply is 8
+Can affect you as :
+    Affects : MANA By 20
+    Affects : HIT By 10
+Object 'boots dragonrider', Item type: ARMOR
+Item is: GLOW MAGIC ANTI-EVIL ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-NINJA 
+ANTI-PALADIN ANTI-ANTI-PALADIN LIMITED NOBITS
+Weight: 20, Value: 900000
+AC-apply is 8
+Can affect you as :
+    Affects : STR By 1
+    Affects : DAMROLL By 2
+Object 'boots', Item type: ARMOR
+Item is: MAGIC ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-PALADIN
+ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO NOBITS
+Weight: 10, Value: 30000
+AC-apply is 8
+Can affect you as :
+    Affects : HITROLL By 1
+Object 'pair silver boot boots', Item type: ARMOR
+Item is: NOBITS
+Weight: 5, Value: 2100
+AC-apply is 7
+Can affect you as :
+    Affects : MOVE By 50
+Object 'flesh boots blackened', Item type: ARMOR
+Item is: GLOW MAGIC ANTI-GOOD ANTI-WARRIOR ANTI-CLERIC ANTI-MAGIC_USER ANTI-NOMAD ANTI-PALADIN ANTI-COMMANDO 
+Weight: 10, Value: 12500
+AC-apply is 7
+Can affect you as :
+    Affects : DAMROLL By 2
+    Affects : SKILL_PICKLOCK By 15
+Object 'boots cboots', Item type: ARMOR
+Item is: ANTI-GOOD NOBITS
+Weight: 10, Value: 8000
+AC-apply is 7
+Can affect you as :
+    Affects : MOVE By 40
+Object 'boots planes enchant outer', Item type: ARMOR
+Item is: ANTI-GOOD ANTI-WARRIOR ANTI-NINJA LIMITED
+Weight: 9, Value: 200000
+AC-apply is 5
+Can affect you as :
+    Affects : DAMROLL By 2
+    Affects : HITROLL By 4
+Object 'boots speed', Item type: ARMOR
+Item will give you following abilities:  FLY 
+Item is: GLOW HUM ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-BARD ANTI-COMMANDO LIMITED 
+Weight: 9, Value: 200000
+AC-apply is 5
+Can affect you as :
+    Affects : DAMROLL By 2
+    Affects : MOVE By 50
+Object 'sandals', Item type: ARMOR
+Item is: MAGIC NOBITS
+Weight: 8, Value: 5000
+AC-apply is 4
+Can affect you as :
+    Affects : CON By 2
+Object 'boots water', Item type: ARMOR
+Item will give you following abilities:  FLY
+Item is: NOBITSNOBITS
+Weight: 5, Value: 15000
+AC-apply is 0
+Can affect you as :
+    Affects : ARMOR By -4
+    Affects : MOVE By 25
+Object 'sandals spiked', Item type: WORN
+Item will give you following abilities:  POISON
+Item is: ANTI-THIEF ANTI-NINJA ANTI-NOMAD ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-COMMANDO
+NOBITS
+Weight: 6, Value: 400
+Can affect you as :
+    Affects : MOVE By -12
+    Affects : MANA By 44
+Object 'cantu boots', Item type: BOAT
+Item is: GLOW BLESS ANTI-EVIL ANTI-NEUTRAL ANTI-WARRIOR ANTI-THIEF ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-BARD ANTI-COMMANDO LIMITED 
+Weight: 15, Value: 200000
+Can affect you as :
+    Affects : DAMROLL By 2
+    Affects : ARMOR By -5
+Object 'boots skull adorned berserker', Item type: ARMOR
+Item is: GLOW ANTI-GOOD ANTI-NEUTRAL ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA
+ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED RSPEC NOBITS
+Weight: 3, Value: 250100
+Item decays, and has 1000 ticks remaining.
+AC-apply is -6
+Can affect you as :
+    Affects : SKILL_QUAD By 12-20
+    Affects : DAMROLL By 1
+Object 'serpentine arm coil', Item type: ARMOR
+Item is: GLOW ANTI-EVIL ANTI-THIEF ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED 
+Weight: 7, Value: 650000
+AC-apply is 12
+Can affect you as :
+    Affects : DAMROLL By 2
+    Affects : HITROLL By 1
+Object 'arm band armband hell', Item type: ARMOR
+Item will give you following abilities:  CURSE 
+Item is: HUM EVIL MAGIC ANTI-GOOD ANTI-NEUTRAL LIMITED 
+Weight: 8, Value: 230000
+AC-apply is 10
+Can affect you as :
+    Affects : DAMROLL By 2
+    Affects : HIT By 10
+Object 'ettin arm plates', Item type: ARMOR
+Item is: GLOW ANTI-WARRIOR ANTI-PALADIN ANTI-COMMANDO 
+Weight: 10, Value: 50000
+AC-apply is 10
+Can affect you as :
+    Affects : STR By 1
+    Affects : DAMROLL By 1
+Object 'sleeves golden', Item type: ARMOR
+Item is: GLOW BLESS ANTI-EVIL ANTI-NEUTRAL LIMITED 
+Weight: 5, Value: 175000
+AC-apply is 9
+Can affect you as :
+    Affects : HITROLL By 1
+    Affects : DAMROLL By 2
+Object 'threggi arm chitinous plates', Item type: ARMOR
+Item is: ANTI-GOOD ANTI-NEUTRAL LIMITED 
+Weight: 15, Value: 0
+AC-apply is 8
+Can affect you as :
+    Affects : DAMROLL By 1
+    Affects : HIT By 15
+Object 'silver sleeves', Item type: ARMOR
+Item is: GLOW MAGIC LIMITED 
+Weight: 7, Value: 3500
+AC-apply is 8
+Can affect you as :
+    Affects : SKILL_DUAL By 20
+Object 'plates arm zyca', Item type: ARMOR
+Item is: LIMITED 
+Weight: 10, Value: 30000
+AC-apply is 8
+Can affect you as :
+    Affects : HITROLL By 2
+Object 'dragon skin sleeves', Item type: ARMOR
+Item is: MAGIC ANTI-WARRIOR ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO 
+Weight: 10, Value: 48000
+AC-apply is 7
+Can affect you as :
+    Affects : DAMROLL By 2
+    Affects : HIT By 10
+Object 'working sleeves', Item type: ARMOR
+Item is: GLOW 
+Weight: 7, Value: 40000
+AC-apply is 7
+Can affect you as :
+    Affects : HITROLL By 1
+    Affects : DAMROLL By 1
+Object 'sleeves chaos', Item type: ARMOR
+Item is: GLOW MAGIC ANTI-GOOD ANTI-WARRIOR ANTI-THIEF ANTI-MAGIC_USER ANTI-PALADIN LIMITED RSPEC 
+Weight: 10, Value: 0
+AC-apply is 6
+Can affect you as :
+    Affects : CON By 1
+    Affects : DAMROLL By 2
+Object 'arm plates', Item type: ARMOR
+Item is: GLOW ANTI-GOOD 
+Weight: 9, Value: 100000
+AC-apply is 6
+Can affect you as :
+    Affects : HITROLL By 1
+    Affects : DAMROLL By 1
+Object 'platinum arm bands armbands', Item type: ARMOR
+Item is: NOBITSNOBITS
+Weight: 4, Value: 2000
+AC-apply is 6
+Object 'bracers power', Item type: ARMOR
+Item is: ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-BARD ANTI-COMMANDO LIMITED
+Weight: 10, Value: 150000
+AC-apply is 5
+Can affect you as :
+    Affects : DAMROLL By 2
+    Affects : MANA By 25
+Object 'bracers hidden fortune bhf <thief>', Item type: ARMOR
+Item will give you following abilities:  SENSE-LIFE 
+Item is: ANTI-WARRIOR ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED RSPEC 
+Weight: 3, Value: 23400
+Item decays, and has 2070 ticks remaining.
+AC-apply is 5
+Can affect you as :
+    Affects : DAMROLL By 2
+    Affects : SKILL_CIRCLE By 10
+Object 'arm plate plates vauron king', Item type: ARMOR
+Item is: ANTI-GOOD ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-COMMANDO LIMITED 
+Weight: 5, Value: 20000
+AC-apply is 2
+Can affect you as :
+    Affects : DAMROLL By 3
+Object 'bracers defense', Item type: ARMOR
+Item is: GLOW MAGIC ANTI-NEUTRAL 
+Weight: 1, Value: 15000
+AC-apply is 2
+Can affect you as :
+    Affects : ARMOR By -10
+    Affects : HITROLL By -3
+Object 'handcuffs cuffs cuff', Item type: WORN
+Item is: GLOW 
+Weight: 4, Value: 175000
+Can affect you as :
+    Affects : MANA By 20
+    Affects : DAMROLL By 1
+Object 'sleeves silk', Item type: WORN
+Item is: ANTI-GOOD ANTI-EVIL ANTI-WARRIOR ANTI-THIEF LIMITED 
+Weight: 4, Value: 1000
+Can affect you as :
+    Affects : MANA By 15
+    Affects : DAMROLL By 2
+Object 'coils leg thorny vines bramble', Item type: WORN
+Item is: ANTI-RENT NOBITS
+Weight: 4, Value: 0
+Item decays, and has 80 ticks remaining.
+Can affect you as :
+    Affects : DAMROLL By 6
+    Affects : HIT By -100
+Object 'mantle terror octalon', Item type: ARMOR
+Item is: EVIL ANTI-GOOD ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO NOBITS
+Weight: 13, Value: 15000
+AC-apply is 30
+Can affect you as :
+    Affects : HITROLL By -1
+Object 'protection cloak grey', Item type: ARMOR
+Item will give you following abilities:  PROTECT-EVIL 
+Item is: ANTI-NEUTRAL ANTI-WARRIOR ANTI-THIEF ANTI-MAGIC_USER ANTI-ANTI-PALADIN ANTI-BARD LIMITED 
+Weight: 8, Value: 0
+AC-apply is 25
+Can affect you as :
+    Affects : SAVING_BREATH By -4
+    Affects : HIT By 36
+Object 'cloak night', Item type: ARMOR
+Item will give you following abilities:  SNEAK
+Item is: GLOW HUM LIMITED
+Weight: 12, Value: 250000
+AC-apply is 20
+Can affect you as :
+    Affects : DAMROLL By 2
+    Affects : HIT By 20
+Object 'cloak masoch', Item type: ARMOR
+Item is: HUM 
+Weight: 15, Value: 220000
+AC-apply is 20
+Can affect you as :
+    Affects : MANA By 45
+    Affects : HITROLL By 5
+Object 'cloak spider kings', Item type: ARMOR
+Item is: GLOW 
+Weight: 5, Value: 250000
+AC-apply is 13
+Can affect you as :
+    Affects : HIT By 50
+    Affects : HITROLL By 5
+Object 'transparent cloak', Item type: ARMOR
+Item is: GLOW INVISIBLE MAGIC ANTI-GOOD ANTI-WARRIOR ANTI-THIEF ANTI-NINJA ANTI-NOMAD ANTI-PALADIN
+ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED NOBITS
+Undead antis: ANTI_DEATH_TYRANT ANTI_BANSHEE ANTI_LICH ANTI_WRAITH ANTI_DEATH_KNIGHT ANTI_BONE_GOLEM
+Weight: 10, Value: 50000
+AC-apply is 10
+Can affect you as :
+    Affects : MANA By 30
+    Affects : HIT By 30
+Object 'cloak wizard', Item type: ARMOR
+Item is: MAGIC ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-NINJA ANTI-NOMAD
+ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO NOBITS
+Weight: 10, Value: 0
+AC-apply is 10
+Can affect you as :
+    Affects : MANA By 30
+    Affects : HITROLL By 2
+Object 'leopard hide ixthian ix', Item type: ARMOR
+Item is: ANTI-AVATAR LIMITED NOBITS
+Weight: 8, Value: 20000
+AC-apply is 10
+Can affect you as :
+    Affects : HITROLL By 1
+    Affects : DAMROLL By 1
+Object 'cloak human skin', Item type: ARMOR
+Item is: INVISIBLE ANTI-EVIL ANTI-NEUTRAL ANTI-WARRIOR ANTI-THIEF ANTI-NINJA ANTI-NOMAD
+ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED NOBITS
+Weight: 10, Value: 250000
+AC-apply is 10
+Can affect you as :
+    Affects : MANA By 20
+    Affects : DAMROLL By 2
+Object 'cape black flowing', Item type: ARMOR
+Item is: HUM EVIL ANTI-GOOD ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-BARD 
+ANTI-COMMANDO LIMITED 
+Weight: 2, Value: 77777
+AC-apply is 9
+Can affect you as :
+    Affects : CHAR_HEIGHT By 10
+    Affects : DAMROLL By 3
+Object 'cloak waterfall', Item type: ARMOR
+Item is: GLOW 
+Weight: 5, Value: 30000
+AC-apply is 8
+Can affect you as :
+    Affects : SAVING_SPELL By -5
+Object 'dark cloak', Item type: ARMOR
+Item is: ANTI-GOOD ANTI-NEUTRAL NOBITS
+Weight: 15, Value: 50000
+AC-apply is 7
+Can affect you as :
+    Affects : HIT By 20
+
+loaded by witch
+Object 'robe aman', Item type: ARMOR
+Item is: GLOW MAGIC ANTI-EVIL 
+Weight: 5, Value: 100000
+AC-apply is 7
+Can affect you as :
+    Affects : DAMROLL By 1
+Object 'cloak stalking', Item type: ARMOR
+Item is: GLOW MAGIC ANTI-GOOD ANTI-NEUTRAL 
+Weight: 6, Value: 0
+AC-apply is 6
+Can affect you as :
+    Affects : SKILL_HIDE By 25
+    Affects : SKILL_SNEAK By 15
+Object 'mantle priest dark night soutane', Item type: ARMOR
+Item will give you following abilities:  DETECT-ALIGNMENT 
+Item is: GLOW HUM EVIL ANTI-GOOD ANTI-NEUTRAL ANTI-WARRIOR ANTI-THIEF ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-AVATAR ANTI-BARD ANTI-COMMANDO 
+LIMITED 
+Weight: 11, Value: 70000
+AC-apply is 6
+Can affect you as :
+    Affects : DAMROLL By 3
+Object 'shawl dirty', Item type: ARMOR
+Item will give you following abilities:  IMINV 
+Item is: ANTI-MAGIC_USER NOBITS
+Undead antis: ANTI_DEATH_TYRANT ANTI_LICH
+Weight: 5, Value: 20000
+Item decays, and has 10 ticks remaining.
+AC-apply is 6
+Object 'black silver cloak', Item type: ARMOR
+Item is: NOBITS
+Weight: 5, Value: 0
+AC-apply is 5
+Can affect you as :
+    Affects : STR By 1
+Object 'wings', Item type: ARMOR
+Item is: NOBITSNOBITS
+Weight: 6, Value: 8000
+AC-apply is 5
+Can affect you as :
+    Affects : MOVE By 30
+Object 'cloak miracle tz', Item type: ARMOR
+Item will give you following abilities:  SENSE-LIFE
+Item is: GLOW MAGIC LIMITED NOBITS
+Weight: 5, Value: 175000
+AC-apply is 5
+Can affect you as :
+    Affects : MANA By 80
+    Affects : MOVE By 50
+Object 'cloak rift times time', Item type: ARMOR
+Item will give you following abilities:  DETECT-ALIGNMENT SENSE-LIFE
+Item is: ANTI-GOOD ANTI-EVIL ANTI-WARRIOR ANTI-THIEF ANTI-MAGIC_USER ANTI-NINJA
+ANTI-NOMAD ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-BARD ANTI-COMMANDO NOBITS
+Weight: 6, Value: 50000
+AC-apply is 4
+Can affect you as :
+    Affects : DAMROLL By 4
+Object 'cloak fiend', Item type: ARMOR
+Item will give you following abilities:  CURSE INFRAVISION FLY 
+Item is: MAGIC ANTI-GOOD ANTI-NEUTRAL LIMITED 
+Weight: 3, Value: 0
+AC-apply is 3
+Can affect you as :
+    Affects : DAMROLL By 3
+    Affects : MANA By 10
+Object 'cloak green', Item type: ARMOR
+Item is: GLOW MAGIC NOBITS
+Weight: 12, Value: 14500
+AC-apply is 0
+Can affect you as :
+    Affects : HIT By 5
+    Affects : ARMOR By -5
+Object 'carlotta mink wrap', Item type: WORN
+Item is: ANTI-MALE ANTI-NOMAD ANTI-ANTI-PALADIN ANTI-COMMANDO NOBITS
+Weight: 10, Value: 1000
+Can affect you as :
+    Affects : STR By 3
+    Affects : HITROLL By 3
+Object 'cloak scaled taninniver', Item type: ARMOR
+Item is: GLOW ANTI-GOOD LIMITED NOBITS
+Weight: 15, Value: 0
+AC-apply is 0
+Can affect you as :
+    Affects : MANA By 10
+Object 'cloak red', Item type: WORN
+Item is: INVISIBLE MAGIC ANTI-WARRIOR NOBITS
+Weight: 2, Value: 10000
+Can affect you as :
+    Affects : MANA By 20
+
+loaded by Lesser God Minos
+Object 'cloak flesh tattered sheet', Item type: WORN
+Item will give you following abilities:  FURY
+Item is: ANTI-GOOD ANTI-NEUTRAL ANTI-RENT LIMITED NOBITS
+Weight: 20, Value: 0
+Item decays, and has 24 ticks remaining.
+Can affect you as :
+    Affects : DAMROLL By -10
+    Affects : HITROLL By -10
+Object 'buckler black', Item type: ARMOR
+Item is: DARK ANTI-GOOD ANTI-THIEF ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD 
+ANTI-ANTI-PALADIN ANTI-AVATAR LIMITED 
+Weight: 15, Value: 4
+AC-apply is 9
+Can affect you as :
+    Affects : DEX By -1
+    Affects : DAMROLL By 3
+Object 'desecrated belt symbols', Item type: ARMOR
+Item is: EVIL ANTI-GOOD ANTI-NEUTRAL ANTI-WARRIOR ANTI-THIEF ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-BARD ANTI-COMMANDO LIMITED 
+Weight: 12, Value: 80000
+AC-apply is 5
+Can affect you as :
+    Affects : DEX By -1
+    Affects : DAMROLL By 2
+Object 'shield golden', Item type: ARMOR
+Item is: GLOW BLESS ANTI-EVIL ANTI-NEUTRAL LIMITED 
+Weight: 25, Value: 0
+AC-apply is 12
+Can affect you as :
+    Affects : DEX By -2
+    Affects : ARMOR By -3
+Object 'breast plate', Item type: ARMOR
+Item is: GLOW ANTI-GOOD LIMITED 
+Weight: 50, Value: 0
+AC-apply is 14
+Can affect you as :
+    Affects : DEX By -2
+Object 'hammer stone huge', Item type: WEAPON
+Item is: HUM ANTI-NINJA NOBITS
+Weight: 18, Value: 28000
+Damage Dice is '10D2'
+Can affect you as :
+    Affects : DEX By -3
+    Affects : DAMROLL By 5
+Object 'wristband wolfskin', Item type: ARMOR
+Item is: NOBITSNOBITS
+Weight: 2, Value: 600
+AC-apply is 3
+Object 'ring earth', Item type: OTHER
+Item is: ANTI-EVIL NOBITS
+Weight: 6, Value: 30000
+Can affect you as :
+    Affects : INT By 2
+    Affects : WIS By 2
+Object 'hoof taurus', Item type: ARMOR
+Item is: ANTI-EVIL NOBITS
+Weight: 10, Value: 10000
+AC-apply is 3
+Can affect you as :
+    Affects : MOVE By 50
+Object 'purple cloak', Item type: ARMOR
+Item is: GLOW BLESS ANTI-EVIL NOBITS
+Weight: 3, Value: 10000
+AC-apply is 10
+Can affect you as :
+    Affects : AGE By 15
+    Affects : MOVE By 100
+Object 'boots waterwalking', Item type: BOAT
+Item is: HUM ANTI-EVIL NOBITS
+Weight: 6, Value: 25000
+Can affect you as :
+    Affects : MOVE By 30
+    Affects : ARMOR By -7
+Object 'butterfly necklace', Item type: TREASURE
+Item is: GLOW ANTI-MALE NOBITS
+Weight: 1, Value: 375000
+Can affect you as :
+    Affects : DAMROLL By 1
+    Affects : MANA By 10
+Object 'ring broken', Item type: WORN
+Item is: GLOW NOBITS
+Weight: 4, Value: 7000
+Can affect you as :
+    Affects : MANA By 20
+Object 'arm bionic', Item type: ARMOR
+Item is: BLESS NOBITS
+Weight: 3, Value: 5000
+AC-apply is 5
+Can affect you as :
+    Affects : STR By 1
+Object 'vest', Item type: ARMOR
+Item is: NOBITSNOBITS
+Weight: 5, Value: 3000
+AC-apply is 16
+Object 'boots wolfskin', Item type: ARMOR
+Item is: NOBITSNOBITS
+Weight: 10, Value: 8000
+AC-apply is 6
+Can affect you as :
+    Affects : MOVE By 30
+Object 'sewing belt', Item type: CONTAINER
+Item is: GLOW MAGIC ANTI-EVIL NOBITS
+Weight: 1, Value: 1000
+Can affect you as :
+    Affects : ARMOR By -8
+    Affects : HITROLL By 1
+Object 'rope', Item type: ARMOR
+Item is: MAGIC NOBITS
+Weight: 4, Value: 10000
+AC-apply is 5
+Can affect you as :
+    Affects : HIT By 1
+Object 'dagger wizard', Item type: WEAPON
+Item is: MAGIC ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI
+-PALADIN ANTI-BARD ANTI-COMMANDO NOBITS
+Weight: 8, Value: 125000
+Damage Dice is '1D6'
+Can affect you as :
+    Affects : MANA By 20
+    Affects : DAMROLL By 12
+Object 'oaken cudgel', Item type: WEAPON
+Item is: ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-FEMALE ANTI-NINJA ANTI-ANTI
+-PALADIN ANTI-AVATAR ANTI-BARD LIMITED NOBITS
+Weight: 18, Value: 55000
+Damage Dice is '8D4'
+Can affect you as :
+    Affects : DAMROLL By 4
+    Affects : HIT By 15
+Object 'silver necklace', Item type: ARMOR
+Item is: NOBITSNOBITS
+Weight: 1, Value: 3000
+AC-apply is 3
+Can affect you as :
+    Affects : CON By 2
+    Affects : HIT By 10
+Object 'shirt muslin', Item type: ARMOR
+Item is: MAGIC NOBITS
+Weight: 10, Value: 10000
+AC-apply is 10
+Can affect you as :
+    Affects : MOVE By 10
+Object 'bangle', Item type: ARMOR
+Item is: NOBITSNOBITS
+Weight: 5, Value: 3250
+AC-apply is 10
+Object 'skirt muslin', Item type: ARMOR
+Item is: MAGIC NOBITS
+Weight: 7, Value: 5000
+AC-apply is 10
+Can affect you as :
+    Affects : MOVE By 10
+Object 'rope glowing', Item type: ARMOR
+Item is: GLOW NOBITS
+Weight: 11, Value: 30000
+AC-apply is 10
+Can affect you as :
+    Affects : WIS By 2
+    Affects : HITROLL By 1
+Object 'cloak adventurers', Item type: ARMOR
+Item is: MAGIC ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI-ANTI
+-PALADIN ANTI-BARD ANTI-COMMANDO NOBITS
+Weight: 10, Value: 150000
+AC-apply is 7
+Can affect you as :
+    Affects : HIT By 5
+    Affects : DAMROLL By 2
+Object 'curved dagger', Item type: WEAPON
+Item is: NOBITSNOBITS
+Weight: 7, Value: 0
+Damage Dice is '1D10'
+Object 'cutlass', Item type: WEAPON
+Item is: NOBITSNOBITS
+Weight: 15, Value: 0
+Damage Dice is '5D4'
+Object 'sphere basalt', Item type: WEAPON
+Item is: NOBITSNOBITS
+Weight: 13, Value: 0
+Damage Dice is '5D5'
+Object 'dwarven hammer', Item type: WEAPON
+Item is: NOBITSNOBITS
+Weight: 3, Value: 0
+Damage Dice is '2D6'
+Object 'dark sword', Item type: WEAPON
+Item is: HUM ANTI-GOOD NOBITS
+Weight: 13, Value: 0
+Damage Dice is '3D7'
+Object 'shovel metal', Item type: WEAPON
+Item is: NOBITSNOBITS
+Weight: 1, Value: 0
+Damage Dice is '1D7'
+Object 'staff well crafted', Item type: WEAPON
+Item will give you following abilities:  FLY 
+Item is: GLOW MAGIC NOBITS
+Weight: 8, Value: 0
+Damage Dice is '2D10'
+Can affect you as :
+    Affects : ARMOR By 10
+    Affects : MANA By -10
+Object 'demon claw', Item type: WEAPON
+Item is: GLOW ANTI-RENT LIMITED NOBITS
+Weight: 3, Value: 0
+Damage Dice is '0D0'
+Object 'orb zyca', Item type: WEAPON
+Item is: ANTI-NINJA NOBITS
+Weight: 19, Value: 0
+Damage Dice is '4D6'
+Can affect you as :
+    Affects : HITROLL By 5
+    Affects : DAMROLL By 1
+Object 'gauntlets blackened', Item type: ARMOR
+Item is: HUM EVIL MAGIC ANTI-GOOD ANTI-NEUTRAL ANTI-THIEF ANTI-PALADIN ANTI-ANTI-PALADIN ANTI-AVATAR
+LIMITED NOBITS
+Weight: 5, Value: 0
+AC-apply is 7
+Can affect you as :
+    Affects : HITROLL By -2
+    Affects : DAMROLL By 4
+Object 'crown petals', Item type: ARMOR
+Item is: ANTI-EVIL NOBITS
+Weight: 2, Value: 0
+AC-apply is 5
+Can affect you as :
+    Affects : WIS By 2
+    Affects : HITROLL By 2
+Object 'ring bloodstone', Item type: ARMOR
+Item is: GLOW ANTI-GOOD ANTI-EVIL NOBITS
+Weight: 10, Value: 0
+AC-apply is 10
+Can affect you as :
+    Affects : HIT By 50
+Object 'plate golden breast', Item type: ARMOR
+Item is: GLOW BLESS ANTI-EVIL ANTI-NEUTRAL LIMITED NOBITS
+Weight: 50, Value: 0
+AC-apply is 15
+Can affect you as :
+    Affects : HITROLL By -2
+    Affects : DAMROLL By 1
+Object 'githyaddi chainmail', Item type: ARMOR
+Item is: GLOW ANTI-GOOD ANTI-CLERIC ANTI-MAGIC_USER ANTI-ANTI-PALADIN ANTI-BARD NOBITS
+Weight: 25, Value: 0
+AC-apply is 7
+Can affect you as :
+    Affects : HIT By 35
+    Affects : SKILL_RESCUE By 10
+Object 'burlap pants', Item type: ARMOR
+Item is: ANTI-GOOD ANTI-EVIL NOBITS
+Weight: 4, Value: 0
+AC-apply is 7
+Can affect you as :
+    Affects : MOVE By 30
+Object 'suit iron banded mail', Item type: ARMOR
+Item is: GLOW LIMITED NOBITS
+Weight: 15, Value: 0
+AC-apply is 9
+Can affect you as :
+    Affects : CON By 2
+    Affects : SKILL_BLOCK By 5
+Object 'boots thigh', Item type: ARMOR
+Item is: HUM NOBITS
+Weight: 10, Value: 175000
+AC-apply is 10
+Can affect you as :
+    Affects : HIT By 20
+    Affects : AGE By -15
+Object 'boots harmony bard', Item type: ARMOR
+Item will give you following abilities:  DETECT-ALIGNMENT 
+Item is: ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-NOMAD ANTI-PALADIN ANTI
+-ANTI-PALADIN ANTI-COMMANDO LIMITED RSPEC NOBITS
+Weight: 2, Value: 50000
+AC-apply is 7
+Can affect you as :
+    Affects : SAVING_PETRI By 5
+    Affects : DAMROLL By 2
+Object 'sword', Item type: WEAPON
+Item is: GLOW NOBITS
+Weight: 13, Value: 5000
+Damage Dice is '3D6'
+Can affect you as :
+    Affects : HITROLL By 2
+    Affects : DAMROLL By 2
+Object 'sickle curved', Item type: WEAPON
+Item is: ANTI-GOOD ANTI-WARRIOR ANTI-THIEF ANTI-CLERIC ANTI-NINJA ANTI-PALADIN NOBITS
+Weight: 23, Value: 0
+Damage Dice is '2D6'
+Can affect you as :
+    Affects : MANA By 3
+    Affects : DAMROLL By 16
+Object 'emerald bracelet emer', Item type: ARMOR
+Item is: ANTI-THIEF ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-ANTI-PALADIN ANTI-BARD LIMITED
+NOBITS
+Weight: 5, Value: 200000
+AC-apply is 5
+Can affect you as :
+    Affects : HIT By 30
+    Affects : SKILL_RESCUE By 10
+Object 'leggings chaos', Item type: ARMOR
+Item is: GLOW MAGIC ANTI-GOOD ANTI-NEUTRAL ANTI-CLERIC ANTI-MAGIC_USER ANTI-NINJA ANTI-PALADIN ANTI
+-BARD LIMITED NOBITS
+Weight: 10, Value: 125000
+AC-apply is 6
+Can affect you as :
+    Affects : STR By 1
+    Affects : HIT By 27
+Object 'rod darklight', Item type: LIGHT
+Item is: GLOW MAGIC ANTI-GOOD ANTI-NEUTRAL NOBITS
+Weight: 5, Value: 3
+Can affect you as :
+    Affects : DAMROLL By 2
+    Affects : SKILL_STEAL By 10

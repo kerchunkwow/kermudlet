@@ -198,6 +198,7 @@ local function configByUsername()
       ['Invulnerability'] = true,
       ['Darkness'] = true,
       ["Achilles' last stand"] = true,
+      ["Protection from evil"] = true,
     }
 
     -- How many "steps" does the tick clock have (i.e., how many individual images make up the animation)
@@ -208,17 +209,18 @@ local function configByUsername()
     function customizeAntiString( antis )
       local includedFlags = {
         ["!NEU"] = true,
-        ["!GOO"] = true,
+        ["!GOO"] = false,
         ["!EVI"] = true,
-        ["!MU"] = true,
+        ["!MU"] = false,
         ["!CL"] = true,
-        ["!CO"] = true,
+        ["!CO"] = false,
+        ["!BN"] = true,
         ["!BA"] = true,
         ["!WA"] = true,
         ["!AP"] = true,
-        ["!TH"] = true,
+        ["!TH"] = false,
         ["!FEM"] = true,
-        ["!MAL"] = true,
+        ["!MAL"] = false,
         ["!RENT"] = true
       }
 
@@ -367,17 +369,17 @@ local DK          = "<dark_khaki>"
 local FB          = "<firebrick>"
 
 function saveCustomDataTables()
-  table.save( f '{HOME_PATH}/gizmo/map/data/player_containers.lua', PlayerContainers )
-  table.save( f '{HOME_PATH}/gizmo/map/data/potion_affects.lua', PotionAffects )
-  table.save( f '{HOME_PATH}/gizmo/map/data/desirable_items.lua', DesirableItems )
-  table.save( f '{HOME_PATH}/gizmo/map/data/known_players.lua', KnownPlayers )
+  table.save( f '{HOME_PATH}/gizmo/data/player_containers.lua', PlayerContainers )
+  table.save( f '{HOME_PATH}/gizmo/data/potion_affects.lua', PotionAffects )
+  table.save( f '{HOME_PATH}/gizmo/data/desirable_items.lua', DesirableItems )
+  table.save( f '{HOME_PATH}/gizmo/data/known_players.lua', KnownPlayers )
 end
 
 function loadCustomDataTables()
-  table.load( f '{HOME_PATH}/gizmo/map/data/player_containers.lua', PlayerContainers )
-  table.load( f '{HOME_PATH}/gizmo/map/data/potion_affects.lua', PotionAffects )
-  table.load( f '{HOME_PATH}/gizmo/map/data/desirable_items.lua', DesirableItems )
-  table.load( f '{HOME_PATH}/gizmo/map/data/known_players.lua', KnownPlayers )
+  table.load( f '{HOME_PATH}/gizmo/data/player_containers.lua', PlayerContainers )
+  table.load( f '{HOME_PATH}/gizmo/data/potion_affects.lua', PotionAffects )
+  table.load( f '{HOME_PATH}/gizmo/data/desirable_items.lua', DesirableItems )
+  table.load( f '{HOME_PATH}/gizmo/data/known_players.lua', KnownPlayers )
 end
 
 function printCustomDataTable( tbl )
