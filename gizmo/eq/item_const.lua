@@ -1,5 +1,8 @@
 -- File to define a variety of constants for use throughout the new Item data structure.
 
+CLONE_TAG         = "†" -- Appended to flag strings when an item is cloneable
+SPEC_TAG          = "ƒ" -- Appended to flag strings when an item has a random special "procedure" (e.g., a weapon proc)
+
 -- This table defines a data schema for each Item in the Items table; each row in this table defines properties of
 -- item data to help determine the behavior of other functions when capturing and interacting with items. These
 -- properties are:
@@ -68,6 +71,7 @@ ITEM_SCHEMA       = {
   ["decays"]           = {def = false, tier = 0, src = "cap", req = false, typ = "boolean", nick = "", order = 580},
   ["spellLevel"]       = {def = nil, tier = 0, src = "cap", req = false, typ = "number", nick = "", order = 582},
   ["spellList"]        = {def = nil, tier = 0, src = "cap", req = false, typ = "table", nick = "", order = 584},
+  ["spellCharges"]     = {def = nil, tier = 0, src = "cap", req = false, typ = "number", nick = "", order = 586},
   ["identifyText"]     = {def = nil, tier = 2, src = "cap", req = true, typ = "string", nick = "id", order = 590},
 }
 
@@ -165,8 +169,8 @@ ITEM_FLAGS        = {
   ["ANTI-RENT"]         = {nick = "!REN", display = true},
   ["ANTI-THIEF"]        = {nick = "!TH", display = true},
   ["ANTI-WARRIOR"]      = {nick = "!WA", display = true},
-  ["RSPEC"]             = {nick = "ƒ", display = true},
-  ["SHORTSPEC"]         = {nick = "ƒ", display = true},
+  ["RSPEC"]             = {nick = SPEC_TAG, display = true},
+  ["SHORTSPEC"]         = {nick = SPEC_TAG, display = true},
   ["BLESS"]             = {nick = "", display = true},
   ["CLONED"]            = {nick = "", display = true},
   ["DARK"]              = {nick = "", display = true},
@@ -267,3 +271,42 @@ ATTRIBUTE_MAP     = {
   STR            = "str",
   WIS            = "wis",
 }
+
+SPELL_MAP         = {
+  ["blindness"]            = "blind",
+  ["cure blind"]           = "!blind",
+  ["cure critic"]          = "+critic",
+  ["cure light"]           = "+light",
+  ["cure serious"]         = "+serious",
+  ["curse"]                = "curse",
+  ["detect alignment"]     = "daln",
+  ["detect invisibility"]  = "dinv",
+  ["detect magic"]         = "dmag",
+  ["detect poison"]        = "dpoi",
+  ["endure"]               = "end",
+  ["fireshield"]           = "fshield",
+  ["grace of god"]         = "gog",
+  ["great miracle"]        = "+great mira",
+  ["hand of god"]          = "hog",
+  ["heal"]                 = "+heal",
+  ["holy bless"]           = "hbless",
+  ["improve invisibility"] = "imp inv",
+  ["infravision"]          = "infra",
+  ["invisibility"]         = "inv",
+  ["invulnerability"]      = "invuln",
+  ["miracle"]              = "mira",
+  ["paralyze"]             = "para",
+  ["protection from evil"] = "pfe",
+  ["remove curse"]         = "-curse",
+  ["remove paralysis"]     = "-para",
+  ["remove poison"]        = "-poison",
+  ["sanctuary"]            = "sanct",
+  ["sense life"]           = "dlif",
+  ["strength"]             = "str",
+  ["super harm"]           = "sharm",
+  ["swiftness"]            = "swift",
+}
+-- A dummy function to register this file with the auto-reload system
+function touchBoobs()
+  cecho( "You absolute perv." )
+end

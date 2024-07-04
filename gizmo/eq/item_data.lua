@@ -2,6 +2,10 @@
 Items         = Items or {}
 RejectedItems = RejectedItems or {}
 
+-- Keep track of the most recently added item in case we want to "undo" an addition to correct for some
+-- error in the identification process
+LastItem      = LastItem or nil
+
 -- Write the Items table to a datafile for session persistence
 function saveItemData()
   table.save( f '{HOME_PATH}/gizmo/data/items.lua', Items )
@@ -31,7 +35,8 @@ end
 
 -- Uses the ITEM_SCHEMA table including its order attribute to display details about the current item;
 -- useful for validation and feedback during development
-function displayItem( tier, desc )
+function displayItem( desc, tier )
+  if not tier then tier = -1 end
   local item = Items[desc]
   -- A local function to sort the keys in the ITEM_SCHEMA by order for structured output
   local function getOrderedKeys( schema )
@@ -50,7 +55,8 @@ function displayItem( tier, desc )
   sstr       = compositeString( sstr, item.statsString, "<dark_slate_grey>" )
   sstr       = compositeString( sstr, item.affectString, "<ansi_cyan>" )
   sstr       = compositeString( sstr, item.flagString, "<firebrick>" )
-  sstr       = string.gsub( sstr, "ƒ", "<gold>ƒ<reset>" )
+  -- Add flare to the special tags if present
+  sstr       = highlightTags( sstr )
   local slen = cLength( sstr ) + 2
   local dg   = "<dim_grey>"
   hrule( slen, dg )
@@ -87,6 +93,22 @@ function displayItem( tier, desc )
   end
 end
 
+-- Display a list of multiple items by calling displayItem successively for each item in the list;
+-- if the list is empty, display all items in the database; if tier is nil, displayItem will default it to -1
+function displayItems( descList, tier )
+  if not descList or #descList == 0 then
+    descList = {}
+    for desc, _ in pairs( Items ) do
+      if desc and type( desc ) == "string" and desc:find( "%S" ) then
+        table.insert( descList, desc )
+      end
+    end
+  end
+  for _, desc in ipairs( descList ) do
+    displayItem( desc, tier )
+  end
+end
+
 -- Using cout(), display some useful stats about the Items data
 function displayItemDataStats()
   local totalItems     = 0
@@ -100,10 +122,10 @@ function displayItemDataStats()
     local baseType = item.baseType or "Unknown"
     baseTypeCounts[baseType] = (baseTypeCounts[baseType] or 0) + 1
   end
-  cout( f "\nItems identified: {NC}{totalItems}{RC}" )
-  cout( "Items by type:" )
+  cout( f "\nKnown Items: {NC}{totalItems}{RC}" )
+  cout( "  By Type:" )
   for baseType, count in pairs( baseTypeCounts ) do
-    cout( f "  {baseType}: {NC}{count}{RC}" )
+    cout( f "    {SC}{baseType}{RC}: {NC}{count}{RC}" )
   end
 end
 
@@ -122,6 +144,7 @@ function insertItemObject( item )
   end
   cout( f "\n<green_yellow>Accepted{RC}: {SC}{desc}{RC} added to Items" )
   Items[desc] = item
+  LastItem = desc
   saveItemData()
   displayItemDataStats()
 end
@@ -137,15 +160,13 @@ function deleteItem( desc )
   end
 end
 
--- Function to "start from scratch"; useful during development to get a clean
--- slate when fundamental design changes are made.
-function clearItemData()
-  Items         = {}
-  RejectedItems = {}
-  ItemObject    = nil
-  FullIDText    = nil
-  saveItemData()
-  clearScreen()
+-- Delete the most recently added item from the Items table (good for "undo" of badly captured items)
+function deleteLastItem()
+  if LastItem then
+    deleteItem( LastItem )
+  else
+    cout( f "\n<orange_red>Rejected{RC}: No items to delete" )
+  end
 end
 
 -- To help identify items on the ground that are not yet in the database, this function
@@ -158,4 +179,37 @@ function itemIsKnown( longDescription )
     end
   end
   return false
+end
+
+-- Simple helper to determine if an item falls into a consumable baseType
+function consumable( type )
+  return type == "POTION" or type == "SCROLL" or type == "WAND"
+end
+
+-- Item names (short descriptions) in game include modifying strings which indicate additional properties of items
+-- these are not relevant to our purpose and will not be stored in the database, so this function exists to trim & discard
+-- e.g., The Sword of Truth (glowing) (humming) -> The Sword of Truth
+function trimItemName( name )
+  -- Look for known modifiers
+  local flags = {"%(glowing%)", "%(humming%)", "%(invisible%)", "%(cloned%)", "%(lined%)", "%(blue%)"}
+
+  -- Strip them off the end of the name
+  for _, flag in ipairs( flags ) do
+    name = string.gsub( name, flag, '' )
+  end
+  -- Item names can also vary when they are modified by jewelcrafting (e.g., with a buckle);
+  -- here we trim that content so we can match the raw name in the database
+  name = string.gsub( name, ' with %w+ %w+ buckle', '' )
+  return trimCondense( name )
+end
+
+-- Function to "start from scratch"; useful during development to get a clean
+-- slate when fundamental design changes are made.
+local function clearItemData()
+  Items         = {}
+  RejectedItems = {}
+  ItemObject    = nil
+  FullIDText    = nil
+  saveItemData()
+  clearScreen()
 end

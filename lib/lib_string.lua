@@ -4,6 +4,15 @@ function trim( s )
   return s:match( "^%s*(.-)%s*$" )
 end
 
+-- Trim leading/trailing whitespace and condense multiple whitespace characters to a single space
+function trimCondense( s )
+  if not s then return end
+  local trimmedString = trim( s )
+  -- Replace multiple whitespace characters with a single space
+  local condensedString = trimmedString:gsub( "%s+", " " )
+  return condensedString
+end
+
 -- Output number char(s) in a color; useful e.g., to add padding to formatted output by printing
 -- a series of <black> characters.
 function fill( number, char, color )
@@ -220,9 +229,12 @@ function cLength( s )
   -- Remove Mudlet color tags, which can include underscores
   local strippedString = s:gsub( "<[%a_]+>", "" )
   local result = #strippedString
-  -- If the string contains "ƒ", reduce the result by one because it gets counted as two characters
-  if string.find( strippedString, "ƒ" ) then
+  -- Account for characters that evaluate as length two but only take up one space
+  if string.find( strippedString, SPEC_TAG ) then
     result = result - 1
+  end
+  if string.find( strippedString, CLONE_TAG ) then
+    result = result - 2
   end
   return result
 end
