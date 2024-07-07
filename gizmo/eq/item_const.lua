@@ -184,6 +184,7 @@ ITEM_FLAGS        = {
   ["NOBITSNOBITS"]      = {nick = "", display = true},
   ["NODROP"]            = {nick = "", display = true},
   ["NONE"]              = {nick = "", display = true},
+  ["DECAY_ON_RENT"]     = {nick = "!REN", display = true},
 }
 
 -- Item type, or "base type," is a high-level item categorization scheme whose subcategories are more important for determining
@@ -305,7 +306,11 @@ SPELL_MAP         = {
   ["strength"]             = "str",
   ["super harm"]           = "sharm",
   ["swiftness"]            = "swift",
+  ["enchant weapon"]       = "ench weapon",
 }
+
+
+
 -- A dummy function to register this file with the auto-reload system
 function touchBoobs()
   cecho( "You absolute perv." )

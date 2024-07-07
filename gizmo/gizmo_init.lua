@@ -2,6 +2,7 @@
 local commonScripts = {
   'gizmo/config/config_gizmo.lua',
   'gizmo/react/react_trigger.lua',
+  'gizmo/react/react_clock.lua',
   'gizmo/react/react_alias.lua',
   'gizmo/react/react_undead.lua',
   'gizmo/config/config_events.lua',

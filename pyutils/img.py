@@ -4,12 +4,13 @@ from PIL import Image, ImageDraw, ImageFont
 
 # Where you want the output images to be saved
 CLOCK_FOLDER   = 'C:/Dev/mud/mudlet/gizmo/assets/img/t'
+# CLOCK_FOLDER   = 'C:/Dev/test'
 
 # Various size & appearance settings; make sure the font is available on your system
-CLOCK_DIAMETER  = 32
-CLOCK_STEPS     = 120
+CLOCK_DIAMETER  = 64
+CLOCK_STEPS     = 360
 CLOCK_FONT_FACE = "DUBAI-BOLD.TTF"
-CLICK_FONT_SIZE = 13
+CLICK_FONT_SIZE = 16
 
 # Each step of the clock will be an interpolated color value between these state and end points
 START_FG       = '#9ACD32'
@@ -57,23 +58,31 @@ def get_timer_colors( frame, total_frames, start_color, end_color, font_start_co
 
 def create_timer_images():
     """Create a series of clock face images"""
-    image_size = ( CLOCK_DIAMETER, CLOCK_DIAMETER )
+    image_size = (CLOCK_DIAMETER, CLOCK_DIAMETER)
 
     try:
-        font = ImageFont.truetype( CLOCK_FONT_FACE, size = CLICK_FONT_SIZE )
+        font = ImageFont.truetype(CLOCK_FONT_FACE, size=CLICK_FONT_SIZE)
     except IOError:
         font = ImageFont.load_default()
 
-    for i in range( CLOCK_STEPS ):
+    # How many "steps" the clock will spend in each second of the minute
+    steps_per_second = CLOCK_STEPS // 60
 
-        seconds_remaining = ( CLOCK_STEPS - i + 1 ) // 2
+    for i in range(CLOCK_STEPS):
 
-        if i in [115, 117, 119]:
+        # Calculate the number of seconds remaining in the current minute
+        seconds_remaining = (CLOCK_STEPS - i) // steps_per_second
+
+        # Warning track;
+        # If we are in the last two seconds: CLOCK_STEPS - (2 * steps_per_second)
+        # AND i is even, then use warning colors
+        if i in range(CLOCK_STEPS - (4 * steps_per_second), CLOCK_STEPS, 2):
             fill_color, font_color = WARNING_BG, WARNING_FONT
             border_color = WARNING_BORDER
         else:
-            fill_color, font_color = get_timer_colors( i, CLOCK_STEPS - 1, START_FG, END_FG, START_FONT, END_FONT )
+            fill_color, font_color = get_timer_colors(i, CLOCK_STEPS - 1, START_FG, END_FG, START_FONT, END_FONT)
             border_color = CLOCK_BORDER
+            # border_color = font_color
 
         img = Image.new('RGBA', image_size, (0, 0, 0, 0))
         draw = ImageDraw.Draw(img)
@@ -88,10 +97,29 @@ def create_timer_images():
         # Position and draw the seconds text
         text = str(seconds_remaining)
         bbox = draw.textbbox((0, 0), text, font=font)
-        text_position = ((CLOCK_DIAMETER - (bbox[2] - bbox[0])) / 2, (CLOCK_DIAMETER - (bbox[3] - bbox[1])) / 2)
+        text_position = get_text_position(seconds_remaining, bbox, CLOCK_DIAMETER)
         draw.text(text_position, text, fill=font_color, font=font)
 
         # Save the image with the original file naming convention
         img.save(f'{CLOCK_FOLDER}/{i}.png')
 
+def get_text_position(seconds_remaining, bbox, diameter):
+    text_width = bbox[2] - bbox[0]
+    text_height = bbox[3] - bbox[1]
+    center_x = (diameter - text_width) / 2
+    center_y = (diameter - text_height) / 2
+    offset = 10
 
+    if seconds_remaining > 29:
+        # First half: upper left
+        position_x = center_x - 12
+        position_y = center_y - 12
+    else:
+        # Second half: lower right
+        position_x = center_x + 10
+        position_y = center_y + 6
+
+    return position_x, position_y
+
+
+create_timer_images()

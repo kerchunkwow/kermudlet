@@ -109,7 +109,7 @@ end
 -- Populate AreaMobs with a subset of mobs from the mobData table; useful for functions that later
 -- operate within an area so we don't have to iterate over the whole mobData table again
 function loadAreaMobs( areaRNumber )
-  iout( f "Loading mobs for area {NC}{areaRNumber}{RC}" )
+  --iout( f "Loading mobs for area {NC}{areaRNumber}{RC}" )
   -- Clear any existing AreaMobs table
   AreaMobs = nil
   AreaMobs = {}
@@ -193,7 +193,6 @@ function displayMob( rNumber )
   cout( "  Dam: {NC}{dn}d{ds} +{dm} +<medium_sea_green>{hr}{RC}{savd}{RC} ({DC}{tavd}{RC} avg)" )
   cout( "  Flags: {FC}{flg}{RC}" )
   cout( "  Affects: {FC}{aff}{RC}" )
-  cout( "what" )
 
   -- Printing special attacks
   if mob.specialAttacks and #mob.specialAttacks > 0 then
@@ -435,7 +434,7 @@ function updateMobFame( description, fame )
     return
   end
   -- For new/unknown mobs, update the database with observed values
-  local sql = "SELECT fame FROM Mob WHERE shortDescription = '%s'"
+  local sql = "SELECT fame, areaRNumber FROM Mob WHERE shortDescription = '%s'"
   local cursor, conn, env = getCursor( sql, description )
   if not cursor then
     iout( '{EC}Connect failed{RC} in updateMobFame()' )
@@ -447,6 +446,9 @@ function updateMobFame( description, fame )
   if not row then
     iout( f '{EC}Missing mob{RC} for updateMobFame(): {SC}{description}{RC}' )
   elseif not isUnique then
+    -- UPDATE HERE
+    -- Instead of rejecting updates for non-unique mobs, check the areaRNumber for each mob sharing the same
+    -- short description; if they are all within the same area, then update all of the rows with the fame value
     iout( f '{EC}Non-unique{RC} mob: {SC}{description}{RC}' )
   elseif row.fame == nil then
     local updateSql = "UPDATE Mob SET fame = %d WHERE shortDescription = '%s'"

@@ -55,6 +55,7 @@ function loadLibs()
   runLuaFile( 'lib/lib_string.lua' )
   runLuaFile( 'lib/lib_db.lua' )
   runLuaFile( 'lib/lib_trigger.lua' )
+  runLuaFile( 'lib/lib_data.lua' )
 
   -- Now branch into Gizmo-specific scripts
   runLuaFile( 'gizmo/gizmo_init.lua' )

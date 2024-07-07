@@ -56,8 +56,10 @@ end
 PickTrigger = PickTrigger or nil
 PickedTrigger = PickedTrigger or nil
 function sharnPick( door )
-  if PickTrigger then killTrigger( PickTrigger ) end
-  if PickedTrigger then killTrigger( PickedTrigger ) end
+  if PickedTrigger then
+    killTrigger( PickedTrigger )
+    PickedTrigger = nil
+  end
   local pickCommand = f [[pick {door}]]
   if PickTrigger then
     killTrigger( PickTrigger )
@@ -152,13 +154,13 @@ function equipMinion( minion )
       "eater",
       "macabre",
       "macabre",
-      "bodice",
+      "reptilian",
       "helm",
       "zyca",
       "planes",
       "bloody",
       "hell",
-      "plate", -- Ygaddrozil keyword can be a pain
+      "ygaddrozil", -- Ygaddrozil keyword can be a pain
       "flowing",
       "flesh",
       "plane",
@@ -248,6 +250,22 @@ function orderEatCorpse()
   if CorpseIndex > #MINIONS then
     CorpseIndex = 1
   end
+end
+
+-- Used to eat "masses" of dead bodies; invoke orderEatCorpse() the number of times indicated by the
+-- parameter.
+function eatCorpses( corpseCount )
+  for i = 1, corpseCount do
+    orderEatCorpse()
+  end
+end
+
+FeastTimer = FeastTimer or nil
+function orderFeast()
+  if FeastTimer then killTimer( FeastTimer ) end
+  enableTrigger( 'Feast' )
+  FeastTimer = tempTimer( 20, [[disableTrigger( 'Feast' )]] )
+  expandAlias( "mm", true )
 end
 
 function aliasBansheeRecall()

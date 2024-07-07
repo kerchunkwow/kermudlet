@@ -368,66 +368,7 @@ local OB          = "<olive_drab>"
 local DK          = "<dark_khaki>"
 local FB          = "<firebrick>"
 
-function saveCustomDataTables()
-  table.save( f '{HOME_PATH}/gizmo/data/player_containers.lua', PlayerContainers )
-  table.save( f '{HOME_PATH}/gizmo/data/potion_affects.lua', PotionAffects )
-  table.save( f '{HOME_PATH}/gizmo/data/desirable_items.lua', DesirableItems )
-  table.save( f '{HOME_PATH}/gizmo/data/known_players.lua', KnownPlayers )
-end
-
-function loadCustomDataTables()
-  table.load( f '{HOME_PATH}/gizmo/data/player_containers.lua', PlayerContainers )
-  table.load( f '{HOME_PATH}/gizmo/data/potion_affects.lua', PotionAffects )
-  table.load( f '{HOME_PATH}/gizmo/data/desirable_items.lua', DesirableItems )
-  table.load( f '{HOME_PATH}/gizmo/data/known_players.lua', KnownPlayers )
-end
-
-function printCustomDataTable( tbl )
-  for k, v in pairs( tbl ) do
-    cecho( f "\n<royal_blue>{k}<reset> = <violet>{v}<reset>" )
-  end
-end
-
-KnownPlayers = KnownPlayers or {}
-function addKnownPlayer( playerName )
-  iout( f " Player name: {playerName}" )
-  cecho( f [[  + Adding <deep_pink>{pcName}<reset> to {SC}KnownPlayers<reset> +]] )
-  KnownPlayers[playerName] = true
-  table.save( f '{HOME_PATH}/gizmo/map/data/known_players.lua', KnownPlayers )
-end
-
-PotionAffects = PotionAffects or {}
-function addPotionAffect( potionName, affectString )
-  cecho( f [[ + Adding {SC}{potionName}{RC} = {SC}{affectString}{RC} +]] )
-  PotionAffects[potionName] = affectString
-  table.save( f '{HOME_PATH}/gizmo/map/data/potion_affects.lua', PotionAffects )
-end
-
--- When a potion is seen in-game, append its affect data to the end of the line
-function appendPotionAffect()
-  local obj = trim( matches[2] )
-  local vr, meo = "<violet_red>", "<medium_orchid>"
-  if PotionAffects[obj] then
-    local aff = PotionAffects[obj]
-    aff = f " {vr}[{meo}{aff}{vr}]{RC}"
-    cecho( aff )
-  end
-end
-
--- A one-time function to clean up potion affect strings; for each potion in the PotionAffects table this
--- function should remove the leading "(" character and the trailing ")" character from each string in the table
-function cleanPotionAffects()
-  for potion, affect in pairs( PotionAffects ) do
-    local cleanAffect = affect:gsub( "%(", "" ):gsub( "%)", "" )
-    PotionAffects[potion] = cleanAffect
-  end
-  table.save( f '{HOME_PATH}/gizmo/map/data/potion_affects.lua', PotionAffects )
-end
-
-PlayerContainers, PotionAffects, DesirableItems, KnownPlayers = {}, {}, {}, {}
-loadCustomDataTables()
-
-TimeCheck = nil
+TimeCheck         = nil
 
 function parseDateString( dateString )
   local pattern = "(%a+) (%a+) (%d+) (%d+):(%d+):(%d+) (%d+) (%a+)"

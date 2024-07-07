@@ -1,0 +1,2 @@
+return {{[ [[a silvery scale]] ] = [[a school of silvery fish]],[ [[a scaly fin]] ] = [[a hippocamp]],[ [[a trapdoor key]] ] = [[the Chief of the Guard]],[ [[gold coins]] ] = [[the Main Physician]],[ [[a long wooden key dangling on a string]] ] = [[the Headmaster]],},
+}

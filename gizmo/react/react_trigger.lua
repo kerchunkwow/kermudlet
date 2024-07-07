@@ -176,20 +176,13 @@ function triggerPCActivity()
   --if ALT_PC[actor] then deleteLine() end
 end
 
--- Build out from here to create a tick-tracker that keeps tracking of and reports on tick status
-function captureTick()
-  selectString( line, 1 )
-  setFgColor( 102, 205, 170 )
-  resetFormat()
-end
-
 -- Triggered by messages that indicate in-game inspection of items, containers, players, etc.
 -- Temporarily enable the triggers needed to append item stat strings to output from the game
 function triggerEnableItemQuery()
   triggerHighlightLine( [[system]] )
-  tempEnableTrigger( [[EQ Stats]], 30 )
-  tempEnableTrigger( [[Missing EQ]], 30 )
-  tempEnableTrigger( [[Potion Affects]], 30 )
+  tempEnableTrigger( [[EQ Stats]], 5 )
+  tempEnableTrigger( [[Missing EQ]], 5 )
+  tempEnableTrigger( [[Potion Affects]], 5 )
 end
 
 function triggerValidateMove()

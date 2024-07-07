@@ -1,0 +1,10 @@
+return {{[1] = {2},[2] = {3},[3] = {4},[4] = {5},[5] = {6},[6] = {7},[7] = {8},[8] = {9},},
+{[ [[mss]] ] = true,[ [[name]] ] = [[Items]],[ [[msb]] ] = false,},
+{[ [[mss]] ] = true,[ [[name]] ] = [[RejectedItems]],[ [[msb]] ] = false,},
+{[ [[mss]] ] = true,[ [[name]] ] = [[StaticItems]],[ [[msb]] ] = false,},
+{[ [[mss]] ] = true,[ [[name]] ] = [[LoggedLoot]],[ [[msb]] ] = false,},
+{[ [[mss]] ] = true,[ [[name]] ] = [[PlayerContainers]],[ [[msb]] ] = false,},
+{[ [[mss]] ] = true,[ [[name]] ] = [[PotionAffects]],[ [[msb]] ] = false,},
+{[ [[mss]] ] = true,[ [[name]] ] = [[DesirableItems]],[ [[msb]] ] = false,},
+{[ [[mss]] ] = true,[ [[name]] ] = [[KnownPlayers]],[ [[msb]] ] = false,},
+}

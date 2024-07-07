@@ -374,9 +374,9 @@ function createGizmoGUI()
     tickLabel = Geyser.Label:new( {
       name   = "tickLabel",
       x      = "4px",
-      y      = "-40px",
-      width  = "36px",
-      height = "36px"
+      y      = "-68px",
+      width  = "64px",
+      height = "64px"
     }, partyConsole )
 
     -- Give it a transparent background

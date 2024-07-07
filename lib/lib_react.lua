@@ -23,43 +23,6 @@ function resetClock()
   tickStart = nil
 end
 
--- Called from tickbound message triggers, this function keeps the tick timer synchronized
--- Depending on how well the timer stays synchronized once initialized, this may only be needed once
-function synchronizeTickTimer()
-  -- Append an indicator to messages that synch the tick timer (for tracking/debugging)
-  cecho( ' [<spring_green>t<reset>]' )
-
-  -- Once the timer is running, messages should arrive at the beginning of step 0;
-  -- with some variation, anything beyond 2s probably means somethings wrong
-  if tickStep and (tickStep < 119 and tickStep > 1) then
-    iout( "Tick timer reset out of synch: {NC}{tickStep}{RC}:" )
-    iout( "{SC}{line}{RC}" )
-  end
-  tickStep = 0
-  tickStart = getStopWatchTime( "timer" )
-
-  -- If the tick timer isn't running yet, start it
-  if not tickTimer then
-    tickTimer = tempTimer( 0.5, [[updateTickTimer()]], true )
-  end
-end
-
--- Once the timer is synchronized with the first tick-bound message; tickTimer uses
--- this function to animate the clock indefinitely until it's killed
-function updateTickTimer()
-  -- Increment tickStep and reset the clock after the final step using modulo
-  tickStep = (tickStep % TICK_STEPS) + 1
-
-  -- Update the label image to the image corresponding to the current step
-  local tickImage = f [[{ASSETS_PATH}/img/t/{tickStep}.png]]
-  tickLabel:setBackgroundImage( tickImage )
-
-  -- While in combat, 'look' every 10 seconds (20 steps) to see if we're being attacked
-  if AutoLooking and inCombat and tickStep % 21 == 0 then
-    send( 'look', false )
-  end
-end
-
 -- Calculate time until the next tick and sit down until then; set a timer to stand again
 function restUntilTick()
   if restTimer then killTimer( restTimer ) end

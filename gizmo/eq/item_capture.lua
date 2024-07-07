@@ -11,8 +11,6 @@ ItemObject = ItemObject or {}
 -- that keyword (this allows us to identify sword and 2.sword for example)
 IDKeyword = IDKeyword or nil
 
-
-
 -- Triggered by the "informed" message that precedes item identification, performs the necessary
 -- setup to capture the item's data from the id block and additional commands
 function startNewIdentify()
@@ -71,7 +69,7 @@ function endIdentify()
   end
   ItemObject.affectString = getItemaffectString()
   ItemObject.flagString   = getItemFlagString()
-  insertItemObject( ItemObject )
+  addItemObject( ItemObject )
   displayItem( ItemObject.shortDescription, 999 )
   -- Reset the item object table once it has been inserted
   ItemObject = {}
@@ -176,7 +174,8 @@ function getStatString( statList )
   for _, stat in ipairs( statList ) do
     local value     = ItemObject[stat]
     local valueType = type( value )
-    local skip      = ItemObject.baseType == "WEAPON" and (stat == "dr" or stat == "hr")
+    local skip      = (ItemObject.baseType == "WEAPON" or ItemObject.baseType == "MISSILE") and
+        (stat == "dr" or stat == "hr")
     if value and not skip then
       local signedValue = getSignedString( value )
       local label = ITEM_SCHEMA[stat].nick
@@ -187,7 +186,7 @@ function getStatString( statList )
     end
   end
   local resultString = table.concat( result, " " )
-  resultString = trim( resultString )
+  resultString = trimCondense( resultString )
   return resultString
 end
 
@@ -224,7 +223,7 @@ end
 -- damageDice is a string in format "NDS" where N is the number of dice and S is the number of sides on each die
 -- This function assumes damageDice has already been set and is properly formatted which should be guaranteed from the MUD
 function getDamageString()
-  if ItemObject.baseType ~= "WEAPON" then
+  if (ItemObject.baseType ~= "WEAPON" and ItemObject.baseType ~= "MISSILE") then
     return nil
   end
   local damageString = nil
@@ -246,7 +245,6 @@ function getDamageString()
     ItemObject.damageSides   = s
     ItemObject.averageDamage = n * ((s + 1) / 2) + dam
     damageString             = f( "{n}D{s}{drStr}{hrStr} ({ItemObject.averageDamage}avg)" )
-    cecho( damageString )
     return damageString
   else
     local damageError = f( "{EC}getDamageString{RC}(): Invalid damageDice {ItemObject.damageDice}" )
@@ -279,7 +277,11 @@ function getItemFlagString()
   flagString = trimCondense( flagString )
   -- If an item is cloneable, append CLONE_TAG to the end of its flagString (after a space)
   if ItemObject.cloneable then
-    flagString = flagString .. " " .. CLONE_TAG
+    -- Add a space if there's already data in the string
+    if flagString ~= "" then
+      flagString = flagString .. " "
+    end
+    flagString = flagString .. CLONE_TAG
   end
   return flagString
 end
@@ -355,5 +357,34 @@ function idNextItem()
   else
     IDQueue   = nil
     IDKeyword = nil
+  end
+end
+
+-- There's an item in the table where item.worn equals "WORN" which is not valid; find it
+function findBadWorn()
+  for desc, item in pairs( Items ) do
+    if item.baseType == "WORN" then
+      displayItem( desc, 999 )
+    end
+  end
+end
+
+-- The purpose of this function is to act as a "catch all" for items dropped from mobs until they
+-- can be properly vetted and added to our database. For now this function should just associate
+-- an item with the mob that dropped it. If the item is already in the table, it should verify
+-- that it dropped from the same mob and if not it should report that a new mob has dropped an
+-- item that's already in the log.
+function logLoot( item, mob )
+  -- Ignore money
+  if item == "gold coins" then return end
+  if not LoggedLoot[item] then
+    -- If the item is not in the log, add it with the mob who dropped it
+    insertData( "LoggedLoot", item, mob )
+    iout( f "Logged drop: {SC}{item}{RC} from <tomato>{mob}{RC}" )
+  else
+    -- If the item is already in the log, check if it's the same mob
+    if LoggedLoot[item] ~= mob then
+      cecho( f "{EC}Conflict: {NC}{item}{RC} already logged as dropped by {SC}{LoggedLoot[item]}{RC}, now dropped by {SC}{mob}{RC}" )
+    end
   end
 end

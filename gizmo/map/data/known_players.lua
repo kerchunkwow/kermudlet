@@ -1,0 +1,2 @@
+return {{[ [[Nadja]] ] = true,[ [[Anima]] ] = true,[ [[Codee]] ] = true,[ [[Intestine]] ] = true,[ [[Youko]] ] = true,[ [[Tormund]] ] = true,[ [[Connolly]] ] = true,[ [[Manwe]] ] = true,[ [[Alatar]] ] = true,[ [[Irelia]] ] = true,[ [[Turbo]] ] = true,[ [[Youky]] ] = true,[ [[Cellulite]] ] = true,[ [[Youku]] ] = true,[ [[Vassago]] ] = true,[ [[Finarfin]] ] = true,[ [[Glory]] ] = true,[ [[Kaylee]] ] = true,[ [[Nikki]] ] = true,[ [[Cyrus]] ] = true,[ [[Hiccup]] ] = true,[ [[Youke]] ] = true,[ [[Aliya]] ] = true,[ [[Reedus]] ] = true,[ [[Digest]] ] = true,},
+}

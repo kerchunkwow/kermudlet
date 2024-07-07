@@ -186,6 +186,11 @@ function itemQueryAppend( itemName )
     end
     -- Print the final string to the game window (appears after stat'd item)
     if display_string then
+      -- Update the old item query append function to start marking items missing from the new
+      -- Items table.
+      if not Items[itemNameTrimmed] then
+        display_string = f "{display_string} <tomato>*<reset>"
+      end
       cecho( display_string )
     end
     return true
