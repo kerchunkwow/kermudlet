@@ -305,7 +305,10 @@ end
 function loadMobTriggers( mobRNumbers )
   -- Kill any existing triggers and reset the table
   resetMobTriggers()
-
+  if CurrentAreaName == "Northern Midgaard" then
+    iout( f "Skipping loadMobTriggers() for {SC}{CurrentAreaName}{RC}" )
+    return
+  end
   -- Determine whether we are loading triggers for all mobs in the area, or just a subset
   local isSubset = mobRNumbers and next( mobRNumbers ) ~= nil
 

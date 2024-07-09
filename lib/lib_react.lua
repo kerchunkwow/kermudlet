@@ -27,7 +27,7 @@ end
 function restUntilTick()
   if restTimer then killTimer( restTimer ) end
   -- Get time to tick plus a blink
-  local restTime = ((TICK_STEPS - tickStep) / 2) + 0.25
+  local restTime = ((CLOCK_STEPS - tickStep) / 2) + 0.25
   -- Rest and set a timer to stand again
   expandAlias( 'all rest' )
   restTimer = tempTimer( restTime, [[expandAlias( 'all stand' )]] )

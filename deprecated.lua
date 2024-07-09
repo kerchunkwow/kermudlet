@@ -4607,7 +4607,7 @@ IGNORED_AFFECTS    = {
   ['Darkness'] = true,
 }
 -- How many "steps" does the tick clock have (i.e., how many individual images make up the animation)
-TICK_STEPS         = 120
+CLOCK_STEPS        = 120
 
 -- Select which ANTI-FLAGS to include in stat output from eq/eq_db.lua
 function customizeAntiString( antis )

@@ -202,7 +202,7 @@ local function configByUsername()
     }
 
     -- How many "steps" does the tick clock have (i.e., how many individual images make up the animation)
-    TICK_STEPS         = 120
+    CLOCK_STEPS        = 120
 
     -- Select which ANTI-FLAGS to include in stat output from eq/eq_db.lua
     -- Keep this updated w/ who you're trying to equip so you don't get confused about 'missing' flags

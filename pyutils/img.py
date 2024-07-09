@@ -8,7 +8,7 @@ CLOCK_FOLDER   = 'C:/Dev/mud/mudlet/gizmo/assets/img/t'
 
 # Various size & appearance settings; make sure the font is available on your system
 CLOCK_DIAMETER  = 64
-CLOCK_STEPS     = 360
+CLOCK_STEPS     = 180
 CLOCK_FONT_FACE = "DUBAI-BOLD.TTF"
 CLICK_FONT_SIZE = 16
 
@@ -120,6 +120,5 @@ def get_text_position(seconds_remaining, bbox, diameter):
         position_y = center_y + 6
 
     return position_x, position_y
-
 
 create_timer_images()
