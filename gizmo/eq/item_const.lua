@@ -73,6 +73,10 @@ ITEM_SCHEMA       = {
   ["spellList"]        = {def = nil, tier = 0, src = "cap", req = false, typ = "table", nick = "", order = 584},
   ["spellCharges"]     = {def = nil, tier = 0, src = "cap", req = false, typ = "number", nick = "", order = 586},
   ["identifyText"]     = {def = nil, tier = 2, src = "cap", req = true, typ = "string", nick = "id", order = 590},
+  ["savingBreath"]     = {def = nil, tier = 2, src = "cap", req = true, typ = "number", nick = "vBRTH", order = 595},
+  ["savingParalyze"]   = {def = nil, tier = 2, src = "cap", req = true, typ = "number", nick = "vPARA", order = 600},
+  ["savingPetrify"]    = {def = nil, tier = 2, src = "cap", req = true, typ = "number", nick = "vPETR", order = 605},
+  ["savingSpell"]      = {def = nil, tier = 2, src = "cap", req = true, typ = "number", nick = "vSPLL", order = 610},
 }
 
 -- CORE_STATS are considered critical to the function and benefit from an item, and will be

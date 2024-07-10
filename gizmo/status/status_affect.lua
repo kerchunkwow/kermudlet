@@ -98,7 +98,7 @@ end
 -- Called when an affect expiration message is matched in game
 function triggerAffectExpired()
   -- Spell expiration messages double as tick synchronization points
-  if SESSION == 1 then synchronizeTickTimer() end
+  if SESSION == 1 then synchronizeTickClock() end
   local affectRemoved = affectKeywords[matches[2]]
   if SESSION == 1 then
     updateAffect( 1, affectRemoved, -1 )

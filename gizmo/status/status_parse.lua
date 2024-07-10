@@ -4,6 +4,10 @@ StunDelay = StunDelay or false
 TimeSinceCombat = TimeSinceCombat or 0
 TimeLeftCombat = TimeLeftCombat or getStopWatchTime( "timer" )
 TransferDelay = TransferDelay or false
+
+-- Temporary table to track when enemies attack to identify patterns in aggro timing with the tick clock
+AggroTimes = AggroTimes or {}
+
 function triggerParsePrompt()
   -- Parse & typecast current & maximum stat values from the prompt
   -- HP
@@ -30,9 +34,13 @@ function triggerParsePrompt()
   -- Each session has a "local global" for its own combaorder tt state
   local wasInCombat = inCombat
   inCombat          = trg and #trg > 0
-
+  if inCombat and not wasInCombat then
+    -- Insert the current TickTime into the AggroTimes table; TickTime is set
+    -- by the clock module no need to include stopwatch
+    table.insert( AggroTimes, TickTime )
+  end
   -- Keep track of how long it's been since our last combat; for now this is most useful to resume AutoPathing
-  local now         = getStopWatchTime( "timer" )
+  local now = getStopWatchTime( "timer" )
   if not inCombat then
     -- If we just left combat, mark the time so we can resume AutoPathing if needed
     if wasInCombat then
