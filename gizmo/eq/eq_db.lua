@@ -372,3 +372,51 @@ local function transferItems( itemList, container1, container2 )
   end
   ItemsForTransfer = nil
 end
+
+RawItemData = RawItemData or {}
+function loadLegacyItems()
+  local luasql = require "luasql.sqlite3"
+  local env = luasql.sqlite3()
+  local conn = env:connect( DB_PATH )
+
+  if not conn then
+    iout( "{EC}eq_db.lua{RC} failed database connection in loadLegacyItems()" )
+    return
+  end
+  local cur, err = conn:execute( "SELECT * FROM LegacyItem" )
+  if not cur then
+    iout( "{EC}eq_db.lua{RC} failed query in loadLegacyItems(): " .. err )
+    conn:close()
+    env:close()
+    return
+  end
+  local row = cur:fetch( {}, "a" )
+  while row do
+    local id = row.id
+    RawItemData[id] = {}
+    for k, v in pairs( row ) do
+      RawItemData[id][k] = v
+    end
+    row = cur:fetch( row, "a" )
+  end
+  cur:close()
+  conn:close()
+  env:close()
+end
+
+-- This function is designed to help develop a prize/reward structure for players who submit items to
+-- be identified by the new item identification bot system; it iterates through the legacy items and
+-- performs math on various item attributes to try and determine reasonable prize scales for different
+-- item types.
+function planBotPrizes()
+  -- For every item in the RawItemData table, print item.name
+  for id, item in pairs( RawItemData ) do
+    if item.damageDice and item.damageDice ~= 0 then
+      local stats = item.statsString
+      -- The stats string contains the substring "#avg"; extract the number portion and convert it to a number
+      local avg = trim( string.match( stats, "(%d+)avg" ) )
+      avg = tonumber( avg )
+      cecho( avg )
+    end
+  end
+end

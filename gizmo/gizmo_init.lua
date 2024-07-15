@@ -7,11 +7,8 @@ local commonScripts = {
   'gizmo/react/react_undead.lua',
   'gizmo/config/config_events.lua',
   'gizmo/gui/gui_warn.lua',
-  'gizmo/eq/item_const.lua',
-  'gizmo/eq/item_data.lua',
-  'gizmo/eq/item_capture.lua',
-  'gizmo/eq/eq_db.lua',
   'gizmo/status/status_affect.lua',
+  'gizmo/eq/items.lua',
   'gizmo/map/map_const.lua',
   'gizmo/map/map_ux.lua',
   'gizmo/map/data/map_dirs.lua',
@@ -20,7 +17,6 @@ local commonScripts = {
   'gizmo/map/map_queue.lua',
   'gizmo/map/map_main.lua',
   'gizmo/status/status_parse.lua',
-  '/gizmo/eq/item_const.lua',
 }
 
 -- Specific to the main session

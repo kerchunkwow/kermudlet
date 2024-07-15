@@ -3,13 +3,16 @@
 CLONE_TAG         = "†" -- Appended to flag strings when an item is cloneable
 SPEC_TAG          = "ƒ" -- Appended to flag strings when an item has a random special "procedure" (e.g., a weapon proc)
 
--- This table defines a data schema for each Item in the Items table; each row in this table defines properties of
--- item data to help determine the behavior of other functions when capturing and interacting with items. These
--- properties are:
+-- Table defining the data schema for each Item in the Items table; each row in this table defines properties of
+-- the item data; other functions in the data module can refer to this table to validate data captured during the id process;
+-- Properties include:
 -- def: The default value for this field where applicable
--- tier: How important this data is; used by displayItem when varying how much data to show
--- src: How the data is obtained; by CAPture, CALCulated or derived, or obtain via some CoMmanD like 'look'
--- req: If true, this field must be non-nil for an item to be considered valid for insertion
+-- tier: How "important" this data is; used e.g., by displayItem() to decide what to show/hide
+-- src: How the data is obtained; by CAPture, CALCulated, or derived via some CoMmanD like 'look' or 'wear'
+-- req: If true, this field must be non-nil for an item to be considered complete & valid
+-- typ: The type of data that belongs in this field; useful when the table index is nil and we want to validate caputred data
+-- nick: Some properties have short-hand nicknames to condense in-game displays
+-- order: When displayItem() shows many fields, this determines their order to improve readability
 ITEM_SCHEMA       = {
   ["shortDescription"] = {def = nil, tier = 0, src = "cmd", req = true, typ = "string", nick = "short", order = 20},
   ["statsString"]      = {def = nil, tier = 0, src = "calc", req = true, typ = "string", nick = "stats", order = 30},
@@ -54,6 +57,7 @@ ITEM_SCHEMA       = {
   ["skillDodge"]       = {def = nil, tier = 2, src = "cap", req = false, typ = "number", nick = "DDGE", order = 410},
   ["skillDual"]        = {def = nil, tier = 2, src = "cap", req = false, typ = "number", nick = "DUAL", order = 420},
   ["skillHide"]        = {def = nil, tier = 2, src = "cap", req = false, typ = "number", nick = "HIDE", order = 430},
+  ["skillKick"]        = {def = nil, tier = 2, src = "cap", req = false, typ = "number", nick = "KICK", order = 435},
   ["skillKnock"]       = {def = nil, tier = 2, src = "cap", req = false, typ = "number", nick = "KNCK", order = 440},
   ["skillParry"]       = {def = nil, tier = 2, src = "cap", req = false, typ = "number", nick = "PRRY", order = 450},
   ["skillPeek"]        = {def = nil, tier = 2, src = "cap", req = false, typ = "number", nick = "PEEK", order = 460},
@@ -140,10 +144,9 @@ PERMANENT_AFFECTS = {
 }
 
 -- ITEM_FLAGS contains all possible "flags" that appear on items; flags describe a range of item properties, most importantly
--- identifying which characters can use the item based on their class, gender, and alignment.
--- Like PERMANENT_AFFECTS, flags are captured as a space-delim'd string, stored in a table in ItemObject,
--- and a JSON column in the Item table of gizwrld.db,
--- and "nick" and "display" are used to help build condensed in-game display strings.
+-- identifying which characters can use the item based on their class, sex, and alignment.
+-- Like PERMANENT_AFFECTS, flags are captured as a space-delim'd string and will be stored as a table in ItemObject;
+-- Using nick & display, this table is used to create condensed strings for in-game display (and filter out unwanted data)
 -- Item flags can be captured from one of two lines in the id block:
 -- ^Item is: (.+)\s*$
 -- ^Undead antis: (.+)\s*$
@@ -262,6 +265,7 @@ ATTRIBUTE_MAP     = {
   SKILL_DODGE    = "skillDodge",
   SKILL_DUAL     = "skillDual",
   SKILL_HIDE     = "skillHide",
+  SKILL_KICK     = "skillKick",
   SKILL_KNOCK    = "skillKnock",
   SKILL_PARRY    = "skillParry",
   SKILL_PEEK     = "skillPeek",
@@ -312,8 +316,6 @@ SPELL_MAP         = {
   ["swiftness"]            = "swift",
   ["enchant weapon"]       = "ench weapon",
 }
-
-
 
 -- A dummy function to register this file with the auto-reload system
 function touchBoobs()

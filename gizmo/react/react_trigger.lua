@@ -294,3 +294,17 @@ function createQuestHighlightTriggers()
 highlightQuest( matches[1] )
 ]] )
 end
+
+function queueReconnect( t )
+  local host, port = getConnectionInfo()
+  local connectTrigger = tempTrigger( "land of GizmoMUD", function ()
+    send( "n", true )
+    send( "save", true )
+  end, 1 )
+  tempTimer( t, function ()
+    connectToServer( host, port )
+  end )
+  tempTimer( t + 10, function ()
+    killTrigger( connectTrigger )
+  end )
+end

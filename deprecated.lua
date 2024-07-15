@@ -1,7 +1,106 @@
----@diagnostic disable: undefined-global, assign-type-mismatch
-nanMode = nanMode or nil
+---@diagnostic disable: undefined-global, assign-type-mismatch, cast-local-type
 
-function swapGear()
+-- Print all variables currently in _G (Lua's table for all variables); probably
+-- not very readable but might be helpful
+local function printVariables()
+  for k, v in pairs( _G ) do
+    local nameStr, typeStr, valStr = nil, nil, nil
+    local vName, vType, vVal       = nil, nil, nil
+
+    vType                          = type( v )
+    vName                          = tostring( k )
+    vVal                           = tostring( v )
+
+    nameStr                        = "<sea_green>" .. vName .. "<reset>"
+    typeStr                        = "<ansi_magenta>" .. vType .. "<reset>"
+    valStr                         = "<cyan>" .. vVal .. "<reset>"
+
+    if vType == "number" or vType == "boolean" then
+      cecho( f "\n{nameStr} ({typeStr}) == {valStr}\n-----" )
+    elseif vType == "string" then
+      cecho( f "\n{nameStr} ({typeStr}) ==\n{valStr}\n-----" )
+    end
+  end
+end
+
+-- Feed the contents of a file line-by-line as if it came from the MUD
+local function feedFile( feedPath )
+  local feedRate = 0.01
+  local file = io.open( feedPath, "r" )
+
+  local lines = file:lines()
+
+  local function feedLine()
+    local nextLine = lines()
+    if nextLine then
+      cfeedTriggers( nextLine )
+      tempTimer( feedRate, feedLine )
+    else
+      file:close()
+    end
+  end
+
+  feedLine()
+end
+
+-- Guess a string is regex if it starts with ^, ends with $, or contains a backslash
+local function isRegex( str )
+  if string.sub( str, 1, 1 ) == '^' then
+    return true
+  end
+  if string.sub( str, -1 ) == '$' then
+    return true
+  end
+  if string.find( str, "\\" ) then
+    return true
+  end
+  return false
+end
+
+-- Parse a WINTIN-style action/trigger definition into a table of its components
+-- "#ACTION {pattern} {command} {priority}" = { "pattern", "command", "priorisy" }
+-- Intended as part of a solution for importing WINTIN/TINTIN files into a Mudlet project
+local function parseWintinAction( actionString )
+  local pattern, command, priority = "", "", ""
+  local section = 1
+  local braceDepth = 0
+  local temp = ""
+
+  for i = 1, #actionString do
+    local char = actionString:sub( i, i )
+
+    -- Do some ridiculous bullshit to deal with nested braces
+    if char == "{" then
+      braceDepth = braceDepth + 1
+      if braceDepth == 1 then
+        -- Open section
+        temp = ""
+      else
+        temp = temp .. char
+      end
+    elseif char == "}" then
+      braceDepth = braceDepth - 1
+      if braceDepth == 0 then
+        -- Close section
+        if section == 1 then
+          pattern = temp
+        elseif section == 2 then
+          command = temp
+        elseif section == 3 then
+          priority = temp
+        end
+        section = section + 1
+      else
+        temp = temp .. char
+      end
+    elseif braceDepth > 0 then
+      temp = temp .. char
+    end
+  end
+  return trim( pattern ), trim( command ), trim( priority )
+end
+
+local function swapGear()
   -- Define the swappable gear sets; the last two items must be 'wield' and 'hold'
   local dpsGear = {"onyx", "onyx", "cape", "cape", "platemail", "masoch", "flaming", "flaming", "cudgel", "scalpel"}
   local tankGear = {"one", "one", "skin", "skin", "vest", "kings", "fanra", "fanra", "cutlass", "bangle"}
@@ -31,7 +130,7 @@ function swapGear()
 end
 
 -- Prepare the swap by removing the current gear set and getting the next set from storage
-function prepSwap()
+local function prepSwap()
   for i = 1, #currentGear do
     expandAlias( f 'nan remove {currentGear[i]}', false )
     expandAlias( f 'col get {nextGear[i]} stocking', false )
@@ -39,7 +138,7 @@ function prepSwap()
 end
 
 -- Perform the swap through the sensual art of mutual giving
-function doSwap()
+local function doSwap()
   -- Ignore the first call of this function so we only proceed when both swappers are prepped
   doReady = doReady + 1
   if doReady < 2 then return end
@@ -51,7 +150,7 @@ function doSwap()
   end
 end
 
-function finishSwap()
+local function finishSwap()
   -- Ignore calls to this function until all items have been given (and Nandor's holdable has been removed which is why +1)
   finishReady = finishReady + 1
   if finishReady < (#nextGear + 1) then return end
@@ -67,7 +166,7 @@ function finishSwap()
   currentGear, nextGear, doReady, finishReady = nil, nil, nil, nil
 end
 
-function getFullDirs( srcID, dstID )
+local function getFullDirs( srcID, dstID )
   -- Clear Mudlet's pathing globals
   speedWalkDir = nil
   speedWalkPath = nil
@@ -108,7 +207,7 @@ function getFullDirs( srcID, dstID )
 end
 
 -- Display one or more mobs whose keywords include the specified string(s)
-function displayMobByKeyword( keywords )
+local function displayMobByKeyword( keywords )
   local NC = "<dark_orange>"
   local SC = "<royal_blue>"
   local DC = "<gold>"
@@ -159,7 +258,7 @@ function displayMobByKeyword( keywords )
   env:close()
 end
 
-function getMob( rNumber )
+local function getMob( rNumber )
   -- Convert rNumber to a number in case it's passed as a string
   rNumber = tonumber( rNumber )
 
@@ -173,7 +272,7 @@ function getMob( rNumber )
   return nil
 end
 
-function populateMobAreas()
+local function populateMobAreas()
   local luasql     = require "luasql.sqlite3"
   local env        = luasql.sqlite3()
   local conn, cerr = env:connect( "C:/Dev/mud/gizmo/data/gizwrld.db" )
@@ -184,7 +283,7 @@ function populateMobAreas()
   end
 end
 
-function getMobArea( rn )
+local function getMobArea( rn )
   local sql = string.format( "SELECT * FROM Mob WHERE rnumber = %d", rn )
   local dbpath = "C:/Dev/mud/gizmo/data/gizwrld.db"
   local cursor, conn, env = getCursor( dbpath, sql )
@@ -210,7 +309,7 @@ function getMobArea( rn )
   return mobAreaName
 end
 
-function calculateMobDamage( rn )
+local function calculateMobDamage( rn )
   local DC, SC, R = "<maroon>", "<medium_violet_red>", "<reset>"
   local dbpath = "C:/Dev/mud/gizmo/data/gizwrld.db"
   -- SQL statement to select the mob by rnumber
@@ -254,7 +353,7 @@ function calculateMobDamage( rn )
   end
 end
 
-function listMobsWithSpecialAttacks()
+local function listMobsWithSpecialAttacks()
   local dbpath = "C:/Dev/mud/gizmo/data/gizwrld.db"
   local sql = [[
     SELECT DISTINCT Mob.shortDescription
@@ -283,127 +382,7 @@ function listMobsWithSpecialAttacks()
   env:close()
 end
 
--- Special Attacks:
--- ^\s*(\d+)\s*(\d+)D\s*(\d+)\s*\+(\d+)\s*(-?\d+)\s*(\d+)\s*(\d+) (.+?)$
-
-specialAttacks = {
-  [810] = {{40, 6, 7, 1, 0, 0, 2, "impale/impales"}},
-  [817] = {{10, 10, 20, 5, 3, 0, 6, "bite/bites"}},
-  [997] = {{100, 100, 10, 0, 0, 0, 236, ""}, {100, 100, 10, 0, 0, 0, 236, ""}},
-  [1008] = {{100, 10, 10, 0, 0, 0, 236, ""}, {100, 10, 10, 0, 0, 0, 236, ""}},
-  [1496] = {{25, 75, 3, 0, 10, 6, 6, "bite/bites"}, {50, 100, 2, 0, 10, 0, 6, "bite/bites"}, {75, 125, 2, 0, 10, 0, 6, "bite/bites"}, {100, 150, 2, 0, 10, 0, 6, "bite/bites"}, {100, 200, 2, 0, 10, 0, 6, "bite/bites"}, {100, 200, 2, 0, 10, 0, 6, "bite/bites"}},
-  [1497] = {{50, 50, 10, 50, 0, 0, 0, "ferocious splash/sends a ferocious splash towards"}, {75, 10, 45, 0, 10, 0, 0, ""}, {100, 3, 125, 0, 10, 0, 0, ""}, {100, 3, 125, 0, 10, 0, 0, ""}},
-  [1500] = {{25, 1, 50, 20, 10, 3, 4, "tail thrash/thrashes it's tail at"}, {100, 2, 30, 20, 0, 0, 8, "stomp/stomps on"}},
-  [1503] = {{100, 24, 10, 100, 0, 0, 0, "thick jet of saltwater/shoots a thick jet of saltwater at"}, {100, 24, 10, 100, 0, 0, 0, "thick jet of saltwater/shoots a thick jet of saltwater at"}},
-  [1504] = {{100, 24, 10, 100, 0, 0, 0, "thick jet of saltwater/shoots a thick jet of saltwater at"}, {100, 24, 10, 100, 0, 0, 0, "thick jet of saltwater/shoots a thick jet of saltwater at"}},
-  [1505] = {{50, 75, 3, 50, 10, 6, 4, ""}, {75, 150, 4, 50, 10, 0, 0, ""}, {100, 200, 5, 50, 10, 0, 0, ""}, {100, 44, 4, 50, 10, 0, 0, "thick jet of saltwater/shoots a thick jet of saltwater at"}},
-  [1552] = {{100, 10, 10, 20, 20, 1, 1, "atomic hammer/atomizes with its warhammer"}, {100, 4, 10, 10, 10, 1, 1, ""}, {80, 10, 4, 20, 5, 1, 1, "harpoon/harpoons"}, {90, 10, 3, 10, 10, 1, 1, "warglove/crushes with its warglove"}, {80, 10, 5, 20, 5, 1, 1, "silver chakra/hurls its chakra at"}},
-  [1615] = {{5, 50, 25, 0, 0, 1, 236, ""}, {100, 20, 39, 10, 0, 0, 236, ""}},
-  [1620] = {{25, 20, 20, 0, 0, 6, 236, "ringing bell/rings his bell at"}, {50, 30, 20, 0, 0, 5, 236, "bell cord/wraps his bell cord around"}, {100, 20, 40, 0, 0, 0, 236, ""}},
-  [1623] = {{25, 22, 100, 0, 0, 5, 236, "assaulting salt/assaults"}, {100, 17, 100, 0, 0, 0, 236, ""}},
-  [1624] = {{25, 11, 100, 0, 0, 6, 236, "pepper shaker/peppers"}, {100, 17, 100, 0, 0, 0, 236, ""}},
-  [1627] = {{50, 100, 5, 0, 0, 6, 236, "a shower of sparks/showers sparks on"}, {100, 60, 50, 0, 0, 0, 236, ""}},
-  [1629] = {{15, 26, 25, 0, 0, 1, 236, "honed blade/swings his honed blade at"}, {100, 12, 39, 10, 0, 0, 236, ""}},
-  [1635] = {{25, 52, 50, 0, 0, 1, 236, "sharp spur/digs his sharp spur at"}, {100, 40, 40, 0, 0, 6, 236, ""}},
-  [1641] = {{5, 100, 50, 0, 0, 1, 236, "fury/shares his fury"}, {10, 20, 50, 10, 0, 1542, 236, "whirl/whirls"}, {100, 100, 80, 0, 0, 0, 236, ""}},
-  [1655] = {{35, 4, 110, 25, 14, 0, 3, "razor fin/swings a razor fin and shaves"}, {50, 4, 60, 25, 16, 0, 1, "tail/tail slaps"}, {80, 4, 20, 25, 18, 0, 8, "thump/body thumps"}, {100, 4, 10, 25, 20, 0, 6, ""}},
-  [1673] = {{40, 8, 6, 0, 0, 0, 2, "gore/gores"}, {90, 8, 6, 0, 0, 0, 8, ""}},
-  [1674] = {{40, 8, 6, 0, 0, 0, 2, "headbutt/headbutts"}, {90, 8, 6, 0, 0, 0, 8, ""}},
-  [1675] = {{30, 11, 8, 0, 0, 0, 6, ""}, {90, 10, 8, 0, 0, 0, 5, ""}},
-  [1676] = {{5, 4, 10, 0, 0, 2, 1, ""}, {90, 4, 10, 0, 0, 0, 8, ""}},
-  [1677] = {{100, 4, 10, 0, 0, 0, 6, ""}},
-  [1678] = {{5, 10, 4, 0, 0, 2, 2, "gore/gores"}, {90, 3, 20, 0, 0, 0, 8, ""}},
-  [1679] = {{5, 10, 4, 0, 0, 2, 8, "trample/tramples"}, {100, 4, 10, 0, 0, 0, 8, ""}},
-  [1680] = {{30, 4, 8, 0, 0, 0, 6, ""}, {90, 4, 8, 0, 0, 0, 8, ""}},
-  [1681] = {{4, 4, 6, 0, 0, 2, 3, ""}, {90, 4, 6, 0, 0, 0, 3, ""}},
-  [1682] = {{100, 4, 6, 0, 0, 0, 2, ""}},
-  [1683] = {{5, 3, 8, 0, 0, 2, 0, "flurry/flurries"}, {90, 3, 8, 0, 0, 0, 0, "kick/kicks"}},
-  [1684] = {{100, 4, 10, 0, 0, 0, 8, "tramples/tramples"}},
-  [1685] = {{100, 4, 9, 0, 0, 0, 3, ""}},
-  [1686] = {{10, 4, 13, 0, 0, 2, 8, "trample/tramples"}, {90, 4, 14, 0, 0, 0, 2, "gore/gores"}},
-  [1687] = {{10, 11, 10, 0, 0, 0, 5, ""}, {90, 10, 10, 0, 0, 0, 6, ""}},
-  [1688] = {{100, 100, 100, 0, 0, 2, 1, ""}},
-  [1705] = {{20, 5, 20, 0, 20, 1, 1, ""}, {30, 30, 11, 0, 10, 2, 0, ""}, {100, 100, 9, 0, 0, 0, 0, ""}},
-  [1786] = {{100, 80, 6, 0, 0, 0, 1, "sting/stings"}},
-  [1935] = {{35, 4, 110, 25, 14, 1, 8, "unholy shockwave/unleashes an unholy shockwave down upon"}, {50, 4, 60, 25, 16, 1, 8, "hair raising war cry/screams a hair raising war cry at"}, {80, 4, 20, 25, 18, 1, 2, "flesh shredding bite/takes a flesh shredding bite out of"}, {100, 4, 10, 25, 20, 1, 8, "rib smashing bloody fist/throws a rib smashing, bloody fist at"}},
-  [2006] = {{25, 1, 1, 20, 0, 1, 1, "poison spit/spits poison on"}, {100, 2, 2, 0, 0, 0, 1, "claw/claws"}},
-  [2007] = {{25, 1, 1, 20, 10, 1, 1, "poison spit/spits poison on"}, {100, 2, 2, 0, 0, 0, 1, "claw/claws"}},
-  [2008] = {{5, 5, 5, 20, 0, 1, 1, "stomp/stomps"}, {35, 1, 1, 10, 0, 1, 1, "tail lash/tail lashes"}, {100, 4, 4, 0, 0, 0, 1, "bite/bites"}},
-  [2010] = {{30, 30, 8, 0, 10, 2, 1, "bite/bites"}, {100, 40, 9, 0, 0, 2, 1, "claw/claws"}, {100, 30, 10, 0, 0, 1, 1, "pound/pounds"}},
-  [2011] = {{100, 3, 6, 0, 0, 1, 1, "gnaw/gnaws"}},
-  [2012] = {{30, 4, 6, 6, 6, 1, 1, "tailbat/tailbats"}, {100, 6, 6, 0, 0, 1, 1, "gnaw/gnaws"}},
-  [2013] = {{35, 6, 10, 10, 10, 1, 1, "tailsmash/tailsmashes"}, {100, 8, 10, 0, 0, 1, 1, "gnaw/gnaws"}},
-  [2049] = {{50, 20, 30, 0, 0, 6, 236, "tailwhip/tailwhips"}, {75, 20, 30, 0, 0, 5, 236, "scratch/scratches"}, {100, 30, 30, 0, 0, 0, 236, ""}},
-  [2050] = {{50, 50, 7, 0, 0, 0, 8, ""}, {100, 50, 7, 0, 0, 0, 8, ""}},
-  [2051] = {{50, 50, 13, 0, 0, 0, 8, ""}, {100, 50, 13, 0, 0, 0, 8, ""}},
-  [2052] = {{50, 50, 9, 0, 0, 0, 8, ""}, {100, 50, 9, 0, 0, 0, 8, ""}},
-  [2053] = {{50, 50, 15, 0, 0, 0, 8, ""}, {100, 50, 15, 0, 0, 0, 8, ""}},
-  [2054] = {{50, 10, 55, 0, 0, 0, 8, ""}, {100, 10, 55, 0, 0, 0, 8, ""}},
-  [2055] = {{50, 50, 20, 0, 0, 5, 236, "stomp/stomps"}, {50, 50, 20, 0, 0, 0, 8, ""}, {100, 50, 20, 0, 0, 0, 8, ""}},
-  [2059] = {{50, 50, 2, 50, 0, 5, 236, ""}},
-  [2060] = {{1, 99, 99, 99, 99, 1, 0, ""}, {2, 99, 20, 50, 0, 1, 0, ""}, {7, 99, 10, 50, 0, 1, 0, ""}, {90, 99, 4, 50, 0, 1, 0, ""}},
-  [2070] = {{3, 99, 25, 50, 0, 4, 0, ""}, {6, 99, 3, 50, 0, 6, 0, ""}, {12, 75, 3, 50, 0, 6, 0, ""}, {25, 50, 3, 50, 0, 6, 0, ""}},
-  [2075] = {{15, 0, 0, 210, 50, 0, 236, "dragon punch/punches"}, {100, 20, 8, 55, 20, 0, 236, ""}},
-  [2076] = {{5, 5, 8, 25, -10, 0, 236, "hasted strike/flurry of attacks hits"}, {10, 10, 8, 25, -5, 0, 236, "lunging pierce/flurry of attacks hits"}, {20, 20, 8, 25, 0, 0, 236, "rakish lunge/flurry of attacks hits"}, {30, 30, 8, 25, 5, 0, 236, "targeted attack/flurry of attacks hits"}, {100, 40, 8, 25, 15, 0, 236, ""}},
-  [2077] = {{15, 5, 5, 120, 5, 1, 236, ""}, {100, 5, 5, 120, 5, 0, 236, ""}},
-  [2079] = {{5, 20, 9, 25, 2, 0, 236, "draining touch/draining touch grasps"}, {15, 30, 14, 15, 7, 0, 236, "chilling touch/chilling touch grasps"}, {100, 50, 7, 15, 12, 0, 236, "chilling touch/chilling touch grasps"}},
-  [2080] = {{5, 15, 50, 0, 2, 1, 236, "spiritual hammer/spiritual hammer strikes"}, {15, 15, 15, 0, 7, 1, 236, "holy strike/holy strike hits"}, {100, 15, 30, 30, 12, 0, 236, ""}},
-  [2085] = {{100, 4, 8, 18, 2, 0, 236, "chilling touch/chilling touch hits"}},
-  [2086] = {{10, 0, 0, 20, 4, 0, 236, "blast of acid/acid blasts"}, {100, 8, 6, 20, 4, 0, 236, "chilling touch/chilling touch hits"}},
-  [2087] = {{5, 4, 8, 55, 4, 0, 236, "blast of acid/acid blasts"}, {100, 4, 8, 105, 4, 0, 236, "blast of acid/acid blasts"}},
-  [2088] = {{5, 100, 2, 50, 10, 0, 236, "lashing tentacle/lashing tentacle"}, {100, 50, 5, 50, 10, 0, 236, "blast of acid/acid blasts"}},
-  [2089] = {{100, 4, 8, 18, 2, 0, 236, "cyclone/cyclone hits"}},
-  [2090] = {{100, 8, 6, 20, 4, 0, 236, "cyclone/cyclone hits"}},
-  [2091] = {{5, 4, 8, 55, 4, 0, 236, "debris cloud/debris cloud"}, {100, 4, 8, 105, 4, 0, 236, "cyclone/cyclone hits"}},
-  [2092] = {{5, 100, 2, 50, 50, 0, 236, "debris cloud/debris cloud"}, {100, 50, 5, 50, 10, 0, 236, "cyclone/cyclone hits"}},
-  [2093] = {{100, 4, 8, 18, 2, 0, 236, "burning hands/burning hands"}},
-  [2094] = {{100, 8, 6, 20, 4, 0, 236, "burning hands/burning hands"}},
-  [2095] = {{5, 4, 8, 105, 5, 0, 236, "scathing wind/scathing wind"}, {100, 4, 8, 105, 5, 0, 236, "burning hands/burning hands"}},
-  [2096] = {{5, 100, 2, 50, 10, 1, 236, "breath of fire/breathes fire on"}, {100, 50, 5, 50, 10, 0, 236, "burning hands/burning hands"}},
-  [2097] = {{100, 4, 8, 18, 2, 0, 236, "stone fist/stone fist hits"}},
-  [2098] = {{100, 8, 6, 20, 4, 0, 236, "stone fist/stone fist hits"}},
-  [2099] = {{15, 4, 8, 55, 4, 0, 236, "boulder/boulder"}, {100, 4, 8, 105, 4, 0, 236, "stone fist/stone fist"}},
-  [2100] = {{5, 100, 2, 100, 80, 0, 236, "avalanche/avalanche hits"}, {10, 50, 5, 50, 0, 2, 236, "earthquake/earthquake shakes"}, {100, 50, 5, 50, 5, 0, 236, "clenched fist/clenched fist hits"}},
-  [2104] = {{25, 2, 6, 200, 30, 2, 7, "swarming mist/swarming mists"}, {33, 25, 7, 75, 0, 0, 236, ""}, {100, 25, 7, 75, 0, 0, 236, ""}},
-  [2106] = {{10, 2, 6, 200, 5, 0, 7, "spectral grasp/spectral grasp"}, {25, 2, 6, 200, 80, 1, 0, "prismatic spray/prismatic spray"}, {80, 25, 9, 70, 0, 0, 236, ""}, {100, 25, 9, 70, 0, 0, 236, ""}},
-  [2107] = {{10, 1, 1, 250, 0, 0, 0, "soul rending pierce/soul rending pierce"}, {25, 5, 10, 75, 0, 1, 0, "acrobatic kick/acrobatic kick"}, {80, 25, 10, 75, 0, 0, 236, ""}, {100, 25, 10, 75, 0, 0, 236, ""}},
-  [2108] = {{5, 25, 16, 50, 0, 2, 0, "spray of green gas/spray of green gas"}, {20, 25, 12, 100, 0, 0, 236, ""}, {100, 25, 12, 100, 0, 0, 236, ""}},
-  [2109] = {{5, 1, 1, 200, 0, 1, 6, "barb covered tentacle/barb covered tentacle"}, {10, 25, 16, 25, 0, 0, 8, "spine covered psuedopod/spine covered psuedopod"}, {100, 25, 15, 50, 0, 0, 236, ""}},
-  [2120] = {{25, 25, 20, 100, 0, 0, 236, ""}, {100, 25, 20, 100, 0, 0, 236, ""}},
-  [2121] = {{25, 25, 24, 100, 0, 0, 236, ""}, {100, 25, 24, 100, 0, 0, 236, ""}},
-  [2124] = {{10, 1, 1, 500, 50, 2, 0, "swirling firestorm/swirling firestorm"}, {20, 20, 19, 25, 5, 0, 8, "flaming clenched fist/flaming clenched fist"}, {25, 30, 29, 150, 0, 0, 236, ""}, {100, 30, 29, 150, 0, 0, 236, ""}},
-  [2125] = {{10, 1, 1, 400, 0, 1, 4, "firey tentacle/firey tentacle"}, {25, 1, 1, 400, 0, 1, 4, "firey tentacle/firey tentacle"}, {25, 21, 29, 50, 0, 0, 4, ""}, {100, 21, 29, 50, 0, 0, 4, ""}},
-  [2126] = {{5, 100, 3, 150, 0, 1, 3, "demonic black claws/demonic black claws"}, {40, 28, 20, 70, 0, 0, 8, ""}, {100, 28, 20, 70, 0, 0, 8, ""}},
-  [2127] = {{5, 1, 1, 800, 0, 0, 6, "crushing grasp/crushing grasp"}, {10, 1, 1, 500, 0, 0, 0, "massive stomp/massive stomp"}, {20, 25, 24, 75, 0, 0, 5, ""}, {100, 25, 24, 75, 0, 0, 5, ""}},
-  [2128] = {{30, 35, 14, 100, 0, 0, 0, ""}, {100, 35, 14, 100, 0, 0, 0, ""}},
-  [2129] = {{30, 28, 29, 100, 0, 0, 236, ""}, {100, 28, 29, 100, 0, 0, 236, ""}},
-  [2132] = {{100, 2, 88, 25, 10, 0, 236, ""}},
-  [2133] = {{5, 25, 19, 100, 0, 0, 3, ""}, {20, 25, 19, 100, 0, 0, 3, ""}, {45, 25, 19, 100, 0, 0, 3, ""}, {100, 25, 19, 100, 0, 0, 3, ""}},
-  [2134] = {{100, 25, 10, 100, 0, 0, 2, ""}},
-  [2135] = {{100, 25, 13, 100, 0, 0, 8, ""}},
-  [2136] = {{100, 25, 24, 125, 0, 0, 2, ""}},
-  [2137] = {{10, 25, 16, 100, 0, 0, 0, ""}, {40, 25, 16, 100, 0, 0, 0, ""}, {100, 25, 16, 100, 0, 0, 0, ""}},
-  [2138] = {{100, 25, 10, 100, 0, 0, 236, ""}},
-  [2139] = {{100, 25, 13, 100, 0, 0, 8, ""}},
-  [2140] = {{100, 25, 13, 100, 0, 0, 2, ""}},
-  [2141] = {{100, 25, 14, 100, 0, 0, 2, ""}, {100, 25, 14, 100, 0, 0, 3, ""}},
-  [2142] = {{100, 25, 19, 100, 0, 0, 3, ""}},
-  [2143] = {{100, 100, 9, 500, 10, 0, 236, ""}},
-  [2152] = {{100, 8, 6, 10, 24, 0, 5, ""}},
-  [2153] = {{100, 8, 6, 10, 24, 0, 5, ""}},
-  [2154] = {{100, 8, 4, 15, 25, 0, 5, ""}},
-  [2155] = {{100, 8, 6, 10, 24, 0, 5, ""}},
-  [2156] = {{100, 8, 4, 15, 25, 0, 5, ""}},
-  [2157] = {{100, 5, 5, 50, 20, 0, 0, "draining touch/drains"}},
-  [2158] = {{10, 20, 15, 50, 50, 0, 5, ""}, {35, 20, 15, 50, 50, 0, 5, ""}, {100, 20, 15, 100, 50, 0, 5, ""}},
-  [2159] = {{20, 30, 15, 10, 50, 0, 5, ""}, {100, 30, 15, 200, 50, 0, 5, ""}},
-  [2160] = {{5, 30, 5, 50, 50, 0, 0, ""}, {100, 30, 15, 50, 50, 0, 0, ""}},
-  [2161] = {{100, 20, 10, 85, 30, 0, 5, "savage kick/savagely kicks"}},
-  [2203] = {{15, 30, 30, 80, 5, 257, 236, "claw/claws"}, {100, 25, 25, 80, 10, 0, 5, ""}},
-  [2206] = {{20, 40, 45, 100, 10, 257, 4, "whip/whips"}, {100, 20, 60, 100, 15, 0, 5, ""}}
-}
-
-function insertSpecialAttacks()
+local function insertSpecialAttacks()
   for rNumber, mob in pairs( specialAttacks ) do
     for _, spec in pairs( mob ) do
       local chance            = spec[1]
@@ -434,7 +413,7 @@ function insertSpecialAttacks()
 end
 
 -- Triggered by a "multi-line match" as a result of the 'stat' command to trap all mob stats
-function parseStatBlock()
+local function parseStatBlock()
   local statBlock = {}
   for l = 1, #multimatches do
     for m = 2, #multimatches[l] do
@@ -486,7 +465,7 @@ function parseStatBlock()
 end
 
 -- Return the area name of a captured/scanned mob (or string version of room number for unknown areas)
-function getWhereArea( number )
+local function getWhereArea( number )
   for _, area in ipairs( whereMap ) do
     local startNum, endNum, name = unpack( area )
     if number >= startNum and number <= endNum then
@@ -497,7 +476,7 @@ function getWhereArea( number )
   return tostring( number )
 end
 
-function loadMobsIntoDatabase()
+local function loadMobsIntoDatabase()
   local luasql     = require "luasql.sqlite3"
   local env        = luasql.sqlite3()
   local conn, cerr = env:connect( "C:/Dev/mud/gizmo/data/gizwrld.db" )
@@ -572,7 +551,7 @@ function loadMobsIntoDatabase()
 end
 
 -- The last 'where' command returned 'Couldn't find that entity'; log the error
-function badKeyword()
+local function badKeyword()
   local errorString = f( "{currentMobKeyword} ({currentMobIndex-1}) returned no entities from 'where'" )
   cecho( "info", f "\n<orange_red>{errorString}<reset>" )
 end
@@ -586,7 +565,7 @@ CHANCE DAMAGE HITROLL TARGET TYPE STRINGS
  20   25D12+100    0       0   236
 100   25D12+100    0       0   236
 --]]
-function parseSpecialAttack()
+local function parseSpecialAttack()
   local chance, diceNum, diceSides, diceModifier = tonumber( matches[2] ), tonumber( matches[3] ), tonumber( matches[4] ),
       tonumber( matches[5] )
   local hitRoll, target, type = tonumber( matches[6] ), tonumber( matches[7] ), tonumber( matches[8] )
@@ -613,32 +592,10 @@ function parseSpecialAttack()
   end
 end
 
--- The goal of this module will be to issue a 'where <mob>' command for each entry in the mobKeywords list and capture the resulting output
-
--- The 'where' command returns a list of mobs throughout the world in the following format:
--- [index] short_description - room_name [room_vnum]
--- Here is an example of a 'where' command output:
--- [ 3] the ace of clubs              - A Shallow Recess in the Tower  [2355]
--- To parse these lines, consider:
--- 1. There is a variable amount of whitespace in several areas
--- 2. The hyphen acts as a separator, but hyphens may also appear in both mob and room names
--- 3. Room numbers are vnums while our map data generally uses rnums, we have to translate if we want to compare
--- 4. Short description are NOT unique and therefore we must combine this w/ area information to get a unique mob
-
--- Table to hold all (unique) mobs and the stats captured from 'where' and 'stat' commands
-mobsCaptured = {}
-table.load( f '{homeDirectory}gizmo/map/data/mob_data.lua', mobsCaptured )
--- An index to traverse the mobKeywords table in order until complete
-currentMobIndex   = 1
--- The current keyword from mobKeywords, subject of the current 'where' command
-currentMobKeyword = ""
--- Keep track of the current stat key so we can match it in functions beyond parseStatBlock
-currentKey        = ""
-
 -- mobKeywords is a predefined list of comprehensive keywords designed to cover as many mobs as possible;
 -- This function will issue a 'where' command for each keyword in the list, the output from which should
 -- trigger the capture and 'stat'ing of each mob
-function whereNextMob()
+local function whereNextMob()
   if mobKeywords[currentMobIndex] then
     currentMobKeyword = mobKeywords[currentMobIndex]
     whereMob( currentMobKeyword )
@@ -653,7 +610,7 @@ function whereNextMob()
 end
 
 -- Issue a 'where' command to find all mobs matching the specified keyword
-function whereMob( keyword )
+local function whereMob( keyword )
   -- Use a temporary regex to match the next prompt indicating the 'where' is complete and we can stat any
   -- new mobs.
   tempRegexTrigger( "\\s*^<", statCapturedMobs, 1 )
@@ -662,7 +619,7 @@ end
 
 -- This function is triggered once for each line of 'where' output in order to capture the mob on that line
 -- A unique key is created by combining the mobs short description and area; unique mobs are queued for 'stat'ing
-function captureWhereMobs()
+local function captureWhereMobs()
   -- windex is the position within the 'where' command itself and must be saved for subsequent 'stat' command;
   -- note that this is NOT a static value so 'stat' must be issued shortly after where or this may change
   local windex = trim( matches[2] )
@@ -686,7 +643,7 @@ end
 -- Immediately after a 'where' command concludes, we want to 'stat' any newly added mobs due to the dynamic nature
 -- of the index number which can change as new mobs spawn/areas reset; for any mobs in the mobsCaptured that have
 -- not been 'stat'ed, this function queues a stat command at a rate of 0.5 seconds per mob
-function statCapturedMobs()
+local function statCapturedMobs()
   local statRate   = 0.75 -- Time to delay between each stat command
   local statOffset = 0    -- Start with no offset and increase for each mob
   for uniqueKey, mob in pairs( mobsToStat ) do
@@ -701,1868 +658,9 @@ function statCapturedMobs()
   tempTimer( whereOffset, whereNextMob )
 end
 
-mobKeywords = {
-  'aaron',
-  'abbess',
-  'abel',
-  'abigail',
-  'abom',
-  'abomination',
-  'ace',
-  'acid',
-  'acolyte',
-  'actor',
-  'adamantite',
-  'adatha',
-  'adrin',
-  'adult',
-  'adv',
-  'adventurer',
-  'adviser',
-  'aeacus',
-  'aello',
-  'african',
-  'agannar',
-  'agb',
-  'agent',
-  'air',
-  'aisha',
-  'akinra',
-  'alchemical',
-  'alchemist',
-  'alecto',
-  'aleja',
-  'alien',
-  'alligator',
-  'alsatian',
-  'alys',
-  'amazon',
-  'american',
-  'amizir',
-  'amon',
-  'anaconda',
-  'anc',
-  'ancient',
-  'andara',
-  'anderson',
-  'andre',
-  'andrew',
-  'andro',
-  'andromeda',
-  'andronym',
-  'angel',
-  'angry',
-  'animal',
-  'anne',
-  'ant',
-  'anti',
-  'antip',
-  'antipaladin',
-  'antithief',
-  'anua',
-  'anubis',
-  'ap',
-  'ape',
-  'apollo',
-  'apple',
-  'apprentice',
-  'aquarius',
-  'arachnid',
-  'arch',
-  'archivist',
-  'archmagi',
-  'arena',
-  'argot',
-  'ariel',
-  'aries',
-  'arkel',
-  'arknos',
-  'armand',
-  'armourer',
-  'ashdra',
-  'ashmedai',
-  'aspiring',
-  'ass',
-  'assassin',
-  'assistant',
-  'astrasi',
-  'astrologer',
-  'atlag',
-  'attendant',
-  'auctioneer',
-  'automaton',
-  'avatar',
-  'averland',
-  'axean',
-  'baatezu',
-  'baby',
-  'bad',
-  'baggins',
-  'baker',
-  'balash',
-  'baleful',
-  'ballerina',
-  'bamboo',
-  'bander',
-  'bandersnatch',
-  'bandit',
-  'banker',
-  'bard',
-  'barker',
-  'baron',
-  'barrack',
-  'bartender',
-  'bartholemew',
-  'basalt',
-  'basilisk',
-  'basket',
-  'basking',
-  'bassist',
-  'bat',
-  'bath',
-  'batherington',
-  'battle',
-  'baug',
-  'bautzan',
-  'beagle',
-  'bear',
-  'beast',
-  'beastman',
-  'beaten',
-  'beauty',
-  'beaver',
-  'bed',
-  'bedbug',
-  'bee',
-  'beest',
-  'beetle',
-  'beggar',
-  'begger',
-  'begli',
-  'behemoth',
-  'being',
-  'believer',
-  'bellied',
-  'belt',
-  'berric',
-  'berserker',
-  'bert',
-  'bertram',
-  'big',
-  'bigbird',
-  'bilbo',
-  'billows',
-  'biped',
-  'bird',
-  'bishop',
-  'bittering',
-  'bittersteel',
-  'black',
-  'blacksmith',
-  'blade',
-  'blademaster',
-  'blithering',
-  'blob',
-  'blossom',
-  'blue',
-  'bluebird',
-  'boa',
-  'board',
-  'body',
-  'bodyguard',
-  'bone',
-  'bones',
-  'bony',
-  'boofo',
-  'book',
-  'bookkeeper',
-  'boris',
-  'boss',
-  'boulder',
-  'boy',
-  'branches',
-  'brat',
-  'brewer',
-  'brian',
-  'bride',
-  'brien',
-  'bright',
-  'broker',
-  'bronze',
-  'brother',
-  'brown',
-  'brownie',
-  'brughal',
-  'brute',
-  'buffalo',
-  'bug',
-  'bull',
-  'bumpkin',
-  'bunny',
-  'buquet',
-  'burgonmaster',
-  'burmese',
-  'bush',
-  'bushboogie',
-  'butcher',
-  'butler',
-  'bv',
-  'bylos',
-  'calf',
-  'camel',
-  'cancer',
-  'candle',
-  'cannibal',
-  'canopy',
-  'cape',
-  'capricorn',
-  'captain',
-  'captive',
-  'cara',
-  'card',
-  'caretaker',
-  'carlotta',
-  'carrion',
-  'cassiopeia',
-  'castle',
-  'cat',
-  'caveman',
-  'cavern',
-  'cedar',
-  'celeborn',
-  'celeno',
-  'celeste',
-  'celestial',
-  'cellist',
-  'centaur',
-  'centipede',
-  'ceo',
-  'cepheus',
-  'cesar',
-  'chak',
-  'cham',
-  'champion',
-  'chandelier',
-  'channeler',
-  'chaos',
-  'charybdis',
-  'chatundah',
-  'chazegreth',
-  'che',
-  'check',
-  'chef',
-  'cherry',
-  'chest',
-  'chi',
-  'chia',
-  'chic',
-  'chicken',
-  'chief',
-  'chieftain',
-  'child',
-  'chimera',
-  'chinese',
-  'chirugeon',
-  'chirurgeon',
-  'choir',
-  'choker',
-  'chorlach',
-  'chorlachtogna',
-  'christian',
-  'christine',
-  'chronicleer',
-  'citizen',
-  'city',
-  'cityguard',
-  'cl',
-  'clae',
-  'claegon',
-  'clay',
-  'cleaner',
-  'cleaning',
-  'cleric',
-  'climber',
-  'clive',
-  'cloak',
-  'clock',
-  'cloud',
-  'club',
-  'clubs',
-  'clyde',
-  'coach',
-  'coachman',
-  'coat',
-  'coatrack',
-  'cobra',
-  'cochineal',
-  'codys',
-  'collins',
-  'colonel',
-  'comet',
-  'commander',
-  'commando',
-  'commoner',
-  'company',
-  'condor',
-  'conductor',
-  'conductors',
-  'confessor',
-  'conger',
-  'conglomerate',
-  'constrictor',
-  'cook',
-  'copper',
-  'corpse',
-  'count',
-  'country',
-  'cousin',
-  'cow',
-  'cowering',
-  'coyle',
-  'crab',
-  'craftsman',
-  'crank',
-  'crawdad',
-  'crazed',
-  'crazy',
-  'creature',
-  'creeper',
-  'crested',
-  'crew',
-  'cricket',
-  'crier',
-  'crimson',
-  'critic',
-  'cro',
-  'crocodile',
-  'crone',
-  'crotus',
-  'crow',
-  'crowd',
-  'cruel',
-  'crusa',
-  'crystalline',
-  'cur',
-  'curator',
-  'cute',
-  'cuttlefish',
-  'cyclops',
-  'cyprine',
-  'd',
-  'daae',
-  'daemon',
-  'dagrat',
-  'daigure',
-  'dalzn',
-  'dancer',
-  'dap',
-  'dark',
-  'darklord',
-  'darkness',
-  'darst',
-  'daughter',
-  'daunting',
-  'david',
-  'dawnman',
-  'death',
-  'decay',
-  'deceit',
-  'deer',
-  'deformed',
-  'della',
-  'demented',
-  'demi',
-  'demiwolf',
-  'demon',
-  'demonic',
-  'demonologist',
-  'desade',
-  'desert',
-  'despina',
-  'destroyer',
-  'devil',
-  'devotee',
-  'dg',
-  'diamond',
-  'diamonds',
-  'dick',
-  'dif',
-  'difwife',
-  'dignitary',
-  'dire',
-  'director',
-  'dirty',
-  'disembodied',
-  'displacer',
-  'diumbra',
-  'dock',
-  'dockhand',
-  'dockmaster',
-  'doctor',
-  'doe',
-  'dog',
-  'doljet',
-  'dolphin',
-  'dolt',
-  'donna',
-  'door',
-  'doorkeeper',
-  'doorman',
-  'dopple',
-  'doppleganger',
-  'dorek',
-  'dra',
-  'draco',
-  'dragon',
-  'dragonfly',
-  'dragonmaster',
-  'dragonmistress',
-  'dragonrider',
-  'drake',
-  'dralogh',
-  'dranum',
-  'dreia',
-  'driver',
-  'dromaer',
-  'dromedary',
-  'drone',
-  'drow',
-  'druid',
-  'druj',
-  'drunk',
-  'drunken',
-  'dryad',
-  'dtam',
-  'duck',
-  'duckling',
-  'ducky',
-  'duergar',
-  'dummy',
-  'durban',
-  'durgathel',
-  'durnan',
-  'durso',
-  'durzagon',
-  'dust',
-  'duty',
-  'dwarf',
-  'dwarven',
-  'dwell',
-  'dweller',
-  'dylanis',
-  'dynzee',
-  'earth',
-  'eater',
-  'ed',
-  'eddie',
-  'edgar',
-  'edrin',
-  'efreet',
-  'efreeti',
-  'eight',
-  'ekaziel',
-  'ekitom',
-  'elder',
-  'ele',
-  'element',
-  'elemental',
-  'elephant',
-  'elf',
-  'elite',
-  'elk',
-  'elven',
-  'emaciated',
-  'emerald',
-  'emissary',
-  'empress',
-  'enchanter',
-  'enchantress',
-  'energy',
-  'english',
-  'eniera',
-  'enormous',
-  'enraged',
-  'enri',
-  'ent',
-  'erik',
-  'erinyes',
-  'erratic',
-  'erudite',
-  'erzuli',
-  'escaped',
-  'escort',
-  'esmira',
-  'estelle',
-  'et',
-  'etcher',
-  'ether',
-  'etheral',
-  'ethereal',
-  'etienne',
-  'ett',
-  'ettin',
-  'eunuch',
-  'european',
-  'euryale',
-  'evil',
-  'ewe',
-  'excavator',
-  'excommunicated',
-  'executioner',
-  'explorer',
-  'extractor',
-  'eye',
-  'fadh',
-  'faerie',
-  'faeryn',
-  'fairy',
-  'faith',
-  'fallen',
-  'familiar',
-  'fan',
-  'fanatical',
-  'farh',
-  'farmer',
-  'father',
-  'feline',
-  'felnor',
-  'fem',
-  'female',
-  'ferocious',
-  'ferry',
-  'ferryman',
-  'fido',
-  'fiel',
-  'fiend',
-  'fighter',
-  'figure',
-  'filthy',
-  'fire',
-  'firedrake',
-  'firmin',
-  'first',
-  'fish',
-  'five',
-  'flake',
-  'flame',
-  'flaming',
-  'flesh',
-  'floor',
-  'floorboard',
-  'florist',
-  'flowering',
-  'fly',
-  'flying',
-  'flytrap',
-  'fog',
-  'fool',
-  'foreman',
-  'forest',
-  'form',
-  'formless',
-  'fountain',
-  'four',
-  'fox',
-  'frebjin',
-  'frenal',
-  'french',
-  'friend',
-  'fronds',
-  'frost',
-  'frump',
-  'fungi',
-  'furies',
-  'furious',
-  'fury',
-  'gabrielle',
-  'galadriel',
-  'gamgee',
-  'ganger',
-  'ganth',
-  'ganymede',
-  'garat',
-  'gardener',
-  'gargantuan',
-  'gargon',
-  'gargoyle',
-  'gaston',
-  'gate',
-  'gateguard',
-  'gatekeeper',
-  'gatemaster',
-  'gator',
-  'gaunt',
-  'gaz',
-  'gazelle',
-  'gecko',
-  'gelatinous',
-  'gemini',
-  'gen',
-  'general',
-  'genevieve',
-  'genius',
-  'gertrute',
-  'ghast',
-  'ghizyon',
-  'ghost',
-  'ghostly',
-  'ghoul',
-  'ghuz',
-  'giant',
-  'gigantic',
-  'gilded',
-  'giraffe',
-  'girl',
-  'giry',
-  'githyaddi',
-  'gladiator',
-  'glaucus',
-  'glavius',
-  'glowworm',
-  'gnash',
-  'gnoll',
-  'gnome',
-  'goat',
-  'goblin',
-  'god',
-  'golaud',
-  'gold',
-  'golden',
-  'golem',
-  'goliathus',
-  'gonjin',
-  'good',
-  'goose',
-  'goracka',
-  'gorgon',
-  'gorilla',
-  'gorth',
-  'gossip',
-  'goth',
-  'graceful',
-  'graff',
-  'grand',
-  'grandfather',
-  'granite',
-  'granny',
-  'grazz',
-  'green',
-  'gremlin',
-  'grey',
-  'griffin',
-  'griffon',
-  'grizzled',
-  'grizzly',
-  'grocer',
-  'ground',
-  'gruesome',
-  'grumbiter',
-  'grytha',
-  'gryttefel',
-  'guard',
-  'guarddog',
-  'guardian',
-  'guerrilla',
-  'guest',
-  'guide',
-  'guildmaster',
-  'gull',
-  'gulth',
-  'gurundi',
-  'gwark',
-  'gypsy',
-  'gyrnath',
-  'hades',
-  'hag',
-  'haggard',
-  'halfbreed',
-  'halfling',
-  'hand',
-  'hands',
-  'hans',
-  'harlan',
-  'harlans',
-  'harpy',
-  'hashaii',
-  'hat',
-  'hatamoto',
-  'hatchling',
-  'haughty',
-  'hayden',
-  'head',
-  'headmaster',
-  'healer',
-  'heap',
-  'hearts',
-  'heather',
-  'hecate',
-  'heckkingrel',
-  'hedge',
-  'hekkezth',
-  'hell',
-  'herakleous',
-  'herald',
-  'hercules',
-  'hermit',
-  'hero',
-  'hideous',
-  'high',
-  'hippo',
-  'hippocamp',
-  'hippopotamus',
-  'hobgoblin',
-  'hoeur',
-  'hog',
-  'holy',
-  'horn',
-  'horned',
-  'horror',
-  'horse',
-  'horsehead',
-  'houdini',
-  'hound',
-  'hovering',
-  'hrandor',
-  'huge',
-  'human',
-  'humanoid',
-  'hunchback',
-  'hunter',
-  'hunting',
-  'hurricane',
-  'hydra',
-  'hyena',
-  'hyokki',
-  'hypnos',
-  'hyrum',
-  'ice',
-  'id',
-  'idiot',
-  'ikelian',
-  'illusionist',
-  'imp',
-  'impala',
-  'impaled',
-  'incalae',
-  'infant',
-  'ingenue',
-  'injured',
-  'ink',
-  'inmate',
-  'innkeeper',
-  'innocent',
-  'insane',
-  'inscect',
-  'insect',
-  'instrument',
-  'inventor',
-  'iron',
-  'isha',
-  'ix',
-  'ixthian',
-  'jack',
-  'jacques',
-  'jaguar',
-  'jail',
-  'jailor',
-  'james',
-  'janitor',
-  'janus',
-  'jao',
-  'japanese',
-  'jastil',
-  'jaw',
-  'jaws',
-  'jeanette',
-  'jellyfish',
-  'jenny',
-  'jerry',
-  'jester',
-  'jeweler',
-  'jim',
-  'jimbo',
-  'jochem',
-  'joe',
-  'john',
-  'joseph',
-  'josh',
-  'jubi',
-  'judge',
-  'juggernaut',
-  'jungle',
-  'junior',
-  'justine',
-  'kadrym',
-  'kafkefoni',
-  'kalas',
-  'kalek',
-  'kalten',
-  'kamila',
-  'karen',
-  'kasumi',
-  'kazic',
-  'keeper',
-  'keg',
-  'kegroch',
-  'kelezir',
-  'kendal',
-  'keris',
-  'keseth',
-  'kestirin',
-  'khun',
-  'ki',
-  'kid',
-  'kikyo',
-  'kimuran',
-  'kindly',
-  'kineyer',
-  'king',
-  'kingfisher',
-  'kingsnake',
-  'kirhea',
-  'kirin',
-  'kitten',
-  'kitty',
-  'klath',
-  'klizgisin',
-  'knight',
-  'knives',
-  'kobold',
-  'komodo',
-  'kosseth',
-  'kraken',
-  'kranch',
-  'kretz',
-  'krynel',
-  'krytun',
-  'kuo',
-  'laborer',
-  'lac',
-  'lachenel',
-  'ladder',
-  'lady',
-  'lahac',
-  'lamia',
-  'lanky',
-  'lao',
-  'large',
-  'larger',
-  'laurana',
-  'lava',
-  'layman',
-  'lazlo',
-  'lead',
-  'leader',
-  'leaf',
-  'leather',
-  'leayr',
-  'lecturer',
-  'leech',
-  'legend',
-  'lehamic',
-  'leo',
-  'leopard',
-  'lestat',
-  'lgp',
-  'liantao',
-  'libra',
-  'librarian',
-  'lich',
-  'lifeguard',
-  'light',
-  'lightning',
-  'lil',
-  'lilith',
-  'linave',
-  'lingula',
-  'lion',
-  'lioness',
-  'lithe',
-  'lizard',
-  'llama',
-  'local',
-  'loci',
-  'loftwick',
-  'lohar',
-  'lookout',
-  'lord',
-  'lorelei',
-  'lorin',
-  'lormick',
-  'lost',
-  'lostgod',
-  'lotharian',
-  'lotus',
-  'louis',
-  'lucretia',
-  'lumberjack',
-  'lunar',
-  'lunatic',
-  'luriel',
-  'm',
-  'macaw',
-  'machine',
-  'mackerel',
-  'mad',
-  'madame',
-  'madeleine',
-  'maestro',
-  'mage',
-  'magi',
-  'magic',
-  'magician',
-  'magister',
-  'magneto',
-  'magus',
-  'maharajah',
-  'maid',
-  'maiden',
-  'main',
-  'maintenance',
-  'major',
-  'malachite',
-  'malann',
-  'malcontent',
-  'male',
-  'malgorath',
-  'malthus',
-  'mamba',
-  'mammal',
-  'mammoth',
-  'man',
-  'manticore',
-  'mantok',
-  'marauder',
-  'mari',
-  'mariko',
-  'marisa',
-  'marisothil',
-  'marsh',
-  'marshall',
-  'martos',
-  'masoch',
-  'masochist',
-  'mass',
-  'master',
-  'mastersmith',
-  'mastodon',
-  'mate',
-  'matriarch',
-  'matron',
-  'matsyansana',
-  'matt',
-  'mature',
-  'mayor',
-  'mazekeeper',
-  'Mazer',
-  'meager',
-  'medium',
-  'medusa',
-  'meek',
-  'meg',
-  'megaera',
-  'mel',
-  'melane',
-  'melisande',
-  'member',
-  'meng',
-  'mengoroth',
-  'mentor',
-  'mephesteus',
-  'mercenary',
-  'merchant',
-  'mercier',
-  'mermaid',
-  'metal',
-  'metaman',
-  'metaphysician',
-  'michael',
-  'mick',
-  'middenheim',
-  'mighty',
-  'migo',
-  'mill',
-  'miller',
-  'mimic',
-  'mindless',
-  'mine',
-  'miner',
-  'mineworker',
-  'minion',
-  'minos',
-  'minotaur',
-  'minstrel',
-  'mir',
-  'mirissa',
-  'mirror',
-  'mist',
-  'mistress',
-  'mizir',
-  'mme',
-  'mod',
-  'moira',
-  'mole',
-  'mongrel',
-  'monk',
-  'monkey',
-  'monoceros',
-  'monsieur',
-  'monster',
-  'monstrosity',
-  'moose',
-  'moray',
-  'mored',
-  'mos',
-  'mosquito',
-  'moss',
-  'mother',
-  'mountain',
-  'mountainclimber',
-  'mred',
-  'mud',
-  'mudder',
-  'muglo',
-  'mummy',
-  'murex',
-  'mus',
-  'muse',
-  'mushroom',
-  'music',
-  'musician',
-  'muskelounge',
-  'musky',
-  'mutant',
-  'myree',
-  'mysterious',
-  'mystic',
-  'naga',
-  'nalsureii',
-  'nameless',
-  'nasty',
-  'nebula',
-  'necro',
-  'necromancer',
-  'nectromanticus',
-  'neptune',
-  'nether',
-  'neutral',
-  'neutrality',
-  'new',
-  'newt',
-  'ni',
-  'nice',
-  'nicolas',
-  'night',
-  'nightgaunt',
-  'nightmare',
-  'nil',
-  'nile',
-  'nine',
-  'ninja',
-  'nix',
-  'noble',
-  'nomad',
-  'nothing',
-  'nurse',
-  'nursemaid',
-  'nyarlathotep',
-  'oak',
-  'oaken',
-  'observer',
-  'oceanid',
-  'octalon',
-  'ocypete',
-  'odei',
-  'odif',
-  'of',
-  'off',
-  'offduty',
-  'officer',
-  'oggas',
-  'ogre',
-  'ogress',
-  'ogun',
-  'oil',
-  'old',
-  'older',
-  'oldman',
-  'olga',
-  'olvan',
-  'omen',
-  'omnai',
-  'one',
-  'onyx',
-  'opera',
-  'orak',
-  'orc',
-  'orchestra',
-  'orexis',
-  'orion',
-  'ornithopter',
-  'ostermark',
-  'ostrich',
-  'outpost',
-  'overlord',
-  'owl',
-  'owner',
-  'ox',
-  'pack',
-  'packrat',
-  'page',
-  'paladin',
-  'pale',
-  'paltro',
-  'panua',
-  'paperboy',
-  'parisian',
-  'parrot',
-  'particle',
-  'paste',
-  'patient',
-  'patriarch',
-  'patron',
-  'paxman',
-  'peacock',
-  'pebble',
-  'peddler',
-  'pegasus',
-  'pel',
-  'pelican',
-  'pelleas',
-  'penny',
-  'peon',
-  'peppery',
-  'percussist',
-  'periwinkle',
-  'perluna',
-  'pern',
-  'pernicious',
-  'perry',
-  'persian',
-  'persimmons',
-  'pet',
-  'pete',
-  'peter',
-  'petrified',
-  'phantom',
-  'phauryal',
-  'philosopher',
-  'physician',
-  'physicist',
-  'piangi',
-  'piano',
-  'pierre',
-  'pig',
-  'pilgrim',
-  'piotr',
-  'pirate',
-  'pirates',
-  'pisces',
-  'pit',
-  'pitch',
-  'pitchblack',
-  'pitcher',
-  'pixie',
-  'plant',
-  'plaster',
-  'player',
-  'playerpiano',
-  'pleiades',
-  'po',
-  'poisonous',
-  'polar',
-  'polaris',
-  'pony',
-  'poor',
-  'portal',
-  'portrait',
-  'postman',
-  'pot',
-  'pound',
-  'poxman',
-  'prairie',
-  'preserver',
-  'pretentious',
-  'priest',
-  'priestess',
-  'prima',
-  'prince',
-  'princess',
-  'prison',
-  'prisoner',
-  'prophet',
-  'proserpina',
-  'protector',
-  'psemapod',
-  'ptilol',
-  'puddle',
-  'pupil',
-  'puppy',
-  'pureblood',
-  'purple',
-  'pussy',
-  'pyr',
-  'pyruleth',
-  'pyrver',
-  'python',
-  'quartz',
-  'queen',
-  'questmaster',
-  'quickling',
-  'quintor',
-  'rabbit',
-  'rabit',
-  'racehorse',
-  'rack',
-  'Rackham',
-  'radamanthus',
-  'radiant',
-  'rahin',
-  'raider',
-  'rainbow',
-  'rakjak',
-  'raoul',
-  'rat',
-  'rattlesnake',
-  'raven',
-  'reaper',
-  'receptionist',
-  'recruit',
-  'red',
-  'redmonton',
-  'regal',
-  'reina',
-  'reptile',
-  'reptilian',
-  'republican',
-  'research',
-  'researcher',
-  'retired',
-  'retiree',
-  'reton',
-  'rewey',
-  'rezlan',
-  'rhabyn',
-  'rhino',
-  'rhinoceros',
-  'rider',
-  'rin',
-  'ring',
-  'ripper',
-  'risen',
-  'robin',
-  'robot',
-  'roc',
-  'rock',
-  'roe',
-  'rogue',
-  'romnian',
-  'ron',
-  'rook',
-  'rose',
-  'roshan',
-  'rostrai',
-  'rot',
-  'rottweiler',
-  'rotund',
-  'rotworm',
-  'rover',
-  'royal',
-  'rubber',
-  'rubberducky',
-  'ruler',
-  'run',
-  'rust',
-  'rygor',
-  'sabastian',
-  'sabre',
-  'sacrifice',
-  'sadist',
-  'saeyrk',
-  'safari',
-  'sag',
-  'sage',
-  'sagely',
-  'sagittarius',
-  'sagreth',
-  'sagrethi',
-  'sailor',
-  'saint',
-  'sal',
-  'salamander',
-  'sales',
-  'salt',
-  'salty',
-  'salvatore',
-  'salvia',
-  'salvias',
-  'sammael',
-  'samurai',
-  'sandstone',
-  'santiago',
-  'sapphire',
-  'sas',
-  'sasquatch',
-  'saule',
-  'savant',
-  'scabri',
-  'scar',
-  'scavenger',
-  'scene',
-  'scholar',
-  'school',
-  'scientist',
-  'scorpat',
-  'scorpio',
-  'scorpion',
-  'scout',
-  'scullery',
-  'scylla',
-  'sea',
-  'seal',
-  'seasoned',
-  'secretary',
-  'security',
-  'seeker',
-  'seelie',
-  'seeress',
-  'sen',
-  'senior',
-  'sennyo',
-  'sentinel',
-  'sentry',
-  'seraphim',
-  'sergeant',
-  'serkhet',
-  'serpent',
-  'servant',
-  'servitor',
-  'seth',
-  'seven',
-  'sewing',
-  'sexton',
-  'shade',
-  'shadow',
-  'shadowdancer',
-  'shadowman',
-  'shadowmaster',
-  'shadows',
-  'shadowy',
-  'shaiyn',
-  'shaman',
-  'shamble',
-  'shambling',
-  'shantak',
-  'shargugh',
-  'shark',
-  'she',
-  'sheep',
-  'sheepherder',
-  'shepherd',
-  'shev',
-  'shifter',
-  'shimmering',
-  'shiragiku',
-  'shiriff',
-  'shopkeeper',
-  'shopsmith',
-  'shullush',
-  'siana',
-  'sidewinder',
-  'silver',
-  'silverback',
-  'silvery',
-  'simeon',
-  'singer',
-  'siren',
-  'sirlth',
-  'sirrin',
-  'sister',
-  'six',
-  'skeletal',
-  'skeleton',
-  'slave',
-  'slavedriver',
-  'slayer',
-  'slimy',
-  'sloth',
-  'slug',
-  'small',
-  'smilodon',
-  'smith',
-  'snail',
-  'snake',
-  'snap',
-  'snapper',
-  'snatch',
-  'snob',
-  'snow',
-  'snowcat',
-  'snowflake',
-  'snowman',
-  'snowrabbit',
-  'snowshoe',
-  'socialite',
-  'soldier',
-  'son',
-  'sondereel',
-  'songbird',
-  'sorcerer',
-  'sorelli',
-  'soul',
-  'souls',
-  'sous',
-  'spades',
-  'spark',
-  'sparrow',
-  'speckled',
-  'specter',
-  'spectral',
-  'spectre',
-  'speedy',
-  'spellcaster',
-  'sphen',
-  'sphere',
-  'sphinx',
-  'spi',
-  'spider',
-  'spindly',
-  'spiny',
-  'spiral',
-  'spirit',
-  'spitting',
-  'splendid',
-  'spoldovian',
-  'squid',
-  'squigglywig',
-  'squire',
-  'squirrel',
-  'sslessi',
-  'stable',
-  'stableboy',
-  'stablehand',
-  'stacia',
-  'stage',
-  'stair',
-  'staircase',
-  'stairs',
-  'stalker',
-  'standing',
-  'stanislaw',
-  'star',
-  'statue',
-  'stefan',
-  'steverph',
-  'stheno',
-  'stirge',
-  'stockbroker',
-  'stone',
-  'stoned',
-  'storekeeper',
-  'storm',
-  'stranger',
-  'stray',
-  'street',
-  'strength',
-  'succubi',
-  'succubus',
-  'sui',
-  'suithiess',
-  'sulfur',
-  'sultan',
-  'sundew',
-  'sunyo',
-  'super',
-  'supergiant',
-  'superior',
-  'supervisor',
-  'surveyor',
-  'swab',
-  'swallow',
-  'swamp',
-  'swan',
-  'sweeper',
-  'swordpupil',
-  'sxuvu',
-  'sylph',
-  'tako',
-  'talkinghorse',
-  'tall',
-  'tam',
-  'taninniver',
-  'taskmaster',
-  'taurus',
-  'teacher',
-  'teller',
-  'templar',
-  'ten',
-  'tentacled',
-  'tephanis',
-  'terror',
-  'terroroxulus',
-  'tester',
-  'teyrdok',
-  'th',
-  'thad',
-  'thain',
-  'the',
-  'theatre',
-  'thessen',
-  'thief',
-  'thiess',
-  'thieved',
-  'thrag',
-  'three',
-  'threggi',
-  'thule',
-  'thusk',
-  'tiarella',
-  'tiefling',
-  'tiger',
-  'tim',
-  'timber',
-  'timid',
-  'tiny',
-  'tirag',
-  'tisiphone',
-  'titan',
-  'toa',
-  'toad',
-  'todd',
-  'toddler',
-  'togna',
-  'toktok',
-  'tom',
-  'tome',
-  'tomoko',
-  'topiary',
-  'tordek',
-  'tortoise',
-  'tortured',
-  'toucan',
-  'touen',
-  'tower',
-  'townsperson',
-  'toy',
-  'tracker',
-  'trader',
-  'trainee',
-  'trainer',
-  'trainingmaster',
-  'traveler',
-  'traz',
-  'treant',
-  'treasure',
-  'treasurer',
-  'tree',
-  'treebeard',
-  'treeman',
-  'trien',
-  'troll',
-  'trollkin',
-  'trout',
-  'trouth',
-  'trylan',
-  'tsetse',
-  'tuptim',
-  'tur',
-  'turimalga',
-  'twilo',
-  'two',
-  'tymora',
-  'tyrand',
-  'tyrant',
-  'tythox',
-  'tzeentch',
-  'tzyr',
-  'ugishka',
-  'ugly',
-  'undead',
-  'unholy',
-  'unicorn',
-  'unseelie',
-  'unspeakable',
-  'unwanted',
-  'ura',
-  'urbanite',
-  'urchin',
-  'ursa',
-  'usher',
-  'usiel',
-  'usuvia',
-  'utter',
-  'vadhb',
-  'vadhp',
-  'vadir',
-  'vadpb',
-  'vadpr',
-  'vadser',
-  'vaisyo',
-  'vald',
-  'valmont',
-  'vamp',
-  'vampire',
-  'vanyel',
-  'varimthrax',
-  'varka',
-  'vault',
-  'vaultdweller',
-  'vedder',
-  'vendor',
-  'vengeful',
-  'venzu',
-  'veteran',
-  'vicar',
-  'vicious',
-  'victim',
-  'vile',
-  'villager',
-  'vine',
-  'vintner',
-  'viola',
-  'violin',
-  'viper',
-  'virgo',
-  'vizier',
-  'vlad',
-  'volunteer',
-  'vorn',
-  'voskian',
-  'vulture',
-  'vyman',
-  'vyrinth',
-  'waiter',
-  'waiting',
-  'waitress',
-  'walker',
-  'wall',
-  'wandering',
-  'war',
-  'warden',
-  'warder',
-  'wardrobe',
-  'warg',
-  'warlock',
-  'warrior',
-  'wart',
-  'warthog',
-  'wasp',
-  'water',
-  'waterbaby',
-  'waurk',
-  'weak',
-  'weaponsmaster',
-  'weaponsmith',
-  'weary',
-  'weasel',
-  'weaver',
-  'weeds',
-  'welmar',
-  'wen',
-  'westenra',
-  'wet',
-  'whale',
-  'wheels',
-  'whi',
-  'whirlpool',
-  'white',
-  'wife',
-  'wight',
-  'wil',
-  'wild',
-  'wildebeest',
-  'winged',
-  'winter',
-  'wiseman',
-  'witch',
-  'withered',
-  'wizard',
-  'wolf',
-  'wolven',
-  'woman',
-  'wooden',
-  'woolly',
-  'worker',
-  'world',
-  'worlds',
-  'worm',
-  'wormwood',
-  'worshipper',
-  'wraith',
-  'wynona',
-  'wyrm',
-  'wyvern',
-  'xandian',
-  'xandolap',
-  'xavier',
-  'xerui',
-  'xfxqrfmwfgjp',
-  'xia',
-  'xist',
-  'yabon',
-  'yadeth',
-  'yathos',
-  'yeti',
-  'yevaud',
-  'ygaddrozil',
-  'yltsaeb',
-  'ymymry',
-  'ynoild',
-  'young',
-  'younger',
-  'youngster',
-  'yousei',
-  'youth',
-  'yrgroch',
-  'yssa',
-  'yul',
-  'yulmazil',
-  'yvie',
-  'zartug',
-  'zealot',
-  'zebra',
-  'zombie',
-  'zoo',
-  'zookeeper',
-  'zovanak',
-  'zyca',
-  'zyekian',
-  'zylas',
-}
-
-whereMap = {
-  {1,     399,   [[The Shrines]]},
-  {401,   499,   [[The Etheral Plane]]},
-  {501,   599,   [[The Maritime Museum]]},
-  {800,   899,   [[The Dragon Caves]]},
-  {901,   999,   [[The Spirit Woods]]},
-  {1000,  1099,  [[Allemonde]]},
-  {1100,  1199,  [[The Shire]]},
-  {1200,  1399,  [[The Canticle]]},
-  {1401,  1499,  [[God Rooms]]},
-  {1701,  1799,  [[The Garden]]},
-  {1801,  1820,  [[The Death Tower]]},
-  {1821,  1999,  [[The Lands]]},
-  {2001,  2078,  [[The Galaxy]]},
-  {2101,  2199,  [[Zhalur the Golden]]},
-  {2301,  2399,  [[The Warring Roses]]},
-  {2501,  2599,  [[The New Graveyard]]},
-  {2600,  2699,  [[The Zoo]]},
-  {2701,  2799,  [[The Chateau of the Dead]]},
-  {2801,  2899,  [[The Ivory Tower]]},
-  {2900,  2950,  [[The Newt Caves]]},
-  {3000,  3099,  [[Northern Midgaard]]},
-  {3100,  3199,  [[Southern Midgaard]]},
-  {3200,  3299,  [[The River and Tower of Sorcery]]},
-  {3300,  3399,  [[The Buildings of Midgaard]]},
-  {3400,  3499,  [[The Graveyard Plus]]},
-  {3551,  3599,  [[Le Chateau d'Angoisse]]},
-  {3601,  3623,  [[The Martial Arts Dojo]]},
-  {3701,  3799,  [[The Mayor's House]]},
-  {3801,  3899,  [[The Pixies' Garden]]},
-  {3901,  3999,  [[The Cathedral of Mortal Heroes]]},
-  {4000,  4099,  [[Mt. Durgathel]]},
-  {4100,  4299,  [[The House of Horror]]},
-  {4501,  4520,  [[The Goblin Kingdom]]},
-  {4601,  4699,  [[The Evil Palace]]},
-  {4701,  4799,  [[The Myree Orchard]]},
-  {4801,  4899,  [[The Halfing Village]]},
-  {5001,  5099,  [[The Lost City]]},
-  {5100,  5199,  [[Drow City]]},
-  {5200,  5299,  [[The City of Thalos]]},
-  {5301,  5350,  [[The Deserted Village]]},
-  {5400,  5499,  [[The Wasteland]]},
-  {5601,  5699,  [[Piotrsgrad]]},
-  {5700,  5799,  [[The Great Pyramid]]},
-  {6000,  6099,  [[Haon Dor Light~]]},
-  {6100,  6199,  [[Haon Dor Dark]]},
-  {6201,  6299,  [[Ozymar's City]]},
-  {6301,  6399,  [[The Arachnid Archives]]},
-  {6401,  6499,  [[The Ghost Ship]]},
-  {6500,  6599,  [[The Dwarven Kingdom]]},
-  {6600,  6699,  [[Gurundi Forest]]},
-  {6700,  6799,  [[The Threggi Pit]]},
-  {6801,  6899,  [[The Alien's Den]]},
-  {6900,  6999,  [[Quifael's Shop]]},
-  {7000,  7099,  [[The Evil Outpost]]},
-  {7101,  7199,  [[The Midgaard Asylum]]},
-  {7201,  7299,  [[Vadir Temple]]},
-  {7301,  7399,  [[The Battlefield]]},
-  {7401,  7499,  [[The Battlefield Village]]},
-  {7500,  7599,  [[The Pirate Ship]]},
-  {7601,  7699,  [[The Hall of the Lost Gods]]},
-  {7900,  7999,  [[Redferne's Residence]]},
-  {8001,  8099,  [[Cei'Arda]]},
-  {8104,  8199,  [[The Ocean]]},
-  {8201,  8299,  [[The Sea of Love]]},
-  {8301,  8399,  [[The Beach]]},
-  {8401,  8499,  [[The Festival of Antiquity]]},
-  {8501,  8599,  [[The Desert and Lake]]},
-  {8600,  8699,  [[The Quest for the Holy Grail]]},
-  {8800,  8899,  [[Le Theatre des Vampyres]]},
-  {8901,  8955,  [[The King's Castle]]},
-  {9101,  9199,  [[Cloud City]]},
-  {9301,  9399,  [[Loftwick]]},
-  {9401,  9460,  [[The Elemental Canyon]]},
-  {9501,  9550,  [[The Wolves Cave]]},
-  {9600,  9699,  [[Morgoth]]},
-  {10001, 10099, [[The Dark Cathedral]]},
-  {10300, 10399, [[The Monk Monastary]]},
-  {10401, 10449, [[QuickLand]]},
-  {10501, 10599, [[The Great Desert]]},
-  {10601, 10699, [[Blackpool Swamp]]},
-  {10701, 10799, [[The Golem Kingdom]]},
-  {10801, 10899, [[Chaos Lands]]},
-  {10900, 10999, [[Zyca City]]},
-  {11000, 11299, [[The UnderWorld]]},
-  {11300, 11369, [[The Village of Romnia]]},
-  {11401, 11440, [[The Castle of Despair]]},
-  {11500, 11599, [[Phantom I]]},
-  {11601, 11699, [[Lorien]]},
-  {11700, 11799, [[Phantom II]]},
-  {11800, 11899, [[Straits of Messia]]},
-  {12000, 12200, [[The Swamp]]},
-  {12201, 12300, [[The Swamp and Secret Caves]]},
-  {12801, 12899, [[The Nightmare]]},
-  {12901, 12999, [[The Prison of Souls]]},
-  {13001, 13099, [[The Roc Aviary]]},
-  {13100, 13199, [[The Templars Mercador]]},
-  {13200, 13299, [[Rainforest of Janus]]},
-  {13600, 13699, [[The Gnoll Fortress]]},
-  {13700, 13799, [[The Cave of the Sag'rethi]]},
-  {13800, 13899, [[The Safari]]},
-  {14201, 14299, [[Slaadi Jungle]]},
-  {14301, 14399, [[Dark Kingdom I]]},
-  {14400, 14499, [[Dark Kingdom II]]},
-  {14501, 14599, [[Forgotten Valley]]},
-  {14601, 14699, [[The Dwarven Lunar Mines I]]},
-  {14700, 14799, [[The Dwarven Lunar Mines II]]},
-  {15400, 15499, [[Dark Kingdom III]]},
-  {16601, 16645, [[The Heour]]},
-  {17601, 17699, [[The Gladiator Arena]]},
-  {17900, 17993, [[The Wood of Ngai]]},
-  {18700, 18799, [[The Midgaard Museum]]},
-  {19200, 19299, [[Castle Mistamere]]},
-  {20001, 20099, [[Undead Realm]]},
-  {20100, 20199, [[The Undead Realm II]]},
-  {22000, 22052, [[Phantom III]]},
-  {22401, 22499, [[The DarkFall]]},
-  {24456, 24999, [[The Hospital]]},
-  {25000, 25099, [[The Abyss]]},
-  {25201, 25299, [[FrostHolme]]},
-  {25301, 25399, [[UtterFrost Cavern]]},
-  {25501, 25599, [[Wyvern Wood]]},
-  {26500, 26583, [[The Druid Grove of Gyrnath]]},
-  {26601, 26699, [[The Ekitom Mines]]},
-  {26701, 26799, [[Midgaard Tar Pit]]},
-  {28000, 28099, [[MirIsland]]},
-  {28100, 28199, [[Mir Crusade]]},
-  {28200, 28299, [[KoboldsI]]}
-}
-
 -- This function is triggered once for each line of 'where' output in order to capture the mob on that line
 -- A unique key is created by combining the mobs short description and area; unique mobs are queued for 'stat'ing
-function captureWhereMobs()
+local function captureWhereMobs()
   -- windex is the position within the 'where' command itself and must be saved for subsequent 'stat' command;
   -- note that this is NOT a static value so 'stat' must be issued shortly after where or this may change
   local windex = trim( matches[2] )
@@ -2602,7 +700,7 @@ function captureWhereMobs()
 end
 
 -- Function to initiate stat command for the next unstated mob
-function statNextMob()
+local function statNextMob()
   cecho( f "\n<yellow_green>statNextMob()<reset>" )
   local foundUnstated = false
 
@@ -2627,7 +725,7 @@ function statNextMob()
 end
 
 -- Stat block seen with "PC" type; remove this entry from the capturedMobs table
-function removeCapturedPC( pcName )
+local function removeCapturedPC( pcName )
   cecho( "info", f "\nRemoving <royal_blue>{pcName}<reset> from capturedMobs" )
   for i = #capturedMobs, 1, -1 do
     if capturedMobs[i].short == pcName then
@@ -2639,7 +737,7 @@ end
 
 -- I already have a trim() function; you don't need to implement one.
 -- Triggered by lines returned by the 'where' command; add or update mob data in the capturedMobs list
-function captureWhereMob()
+local function captureWhereMob()
   local mobIndex = tonumber( matches[2] )
   local mobShort = trim( matches[3] )
   local roomID   = tonumber( matches[5] )
@@ -2672,7 +770,7 @@ end
 
 -- Mudlet has a built-in table.contains() function, you don't need to implement one.
 -- Print the content of the capturedMobs table filtered by the first letter of the mob's name
-function displayCapturedMobsByLetter( letter )
+local function displayCapturedMobsByLetter( letter )
   local filterLetter = letter:lower() -- To handle case insensitivity
   cecho( "\n<green>--- Captured Mobs Starting with '" .. letter .. "' ---<reset>" )
 
@@ -2702,7 +800,7 @@ function displayCapturedMobsByLetter( letter )
 end
 
 -- Function to calculate duration
-function calculateDuration( pc, spellName )
+local function calculateDuration( pc, spellName )
   local endTime = getStopWatchTime( "timer" )
   local startTime = affectStartTimes[pc][spellName]
   if startTime then
@@ -2724,7 +822,7 @@ function calculateDuration( pc, spellName )
   return nil
 end
 
-function feedFile()
+local function feedFile()
   local testRate = 0.01
   local filePath = "C:\\Dev\\mud\\mudlet\\wheres.txt" -- Update the path as necessary
   local file = io.open( filePath, "r" )               -- Open the file for reading
@@ -2744,10 +842,8 @@ function feedFile()
   feedLine() -- Start the process
 end
 
----@diagnostic disable: cast-local-type
-
 -- Parse prompt components and trigger an update if anything has changed; ignore maximum values
-function triggerParsePrompt()
+local function triggerParsePrompt()
   -- Grab current HP, MANA, MOVE from prompt
   local hpc, mnc, mvc = tonumber( matches[2] ), tonumber( matches[3] ), tonumber( matches[4] )
 
@@ -2784,7 +880,7 @@ function triggerParsePrompt()
 end
 
 -- Parse score components and send them to the main session
-function triggerParseScore()
+local function triggerParseScore()
   -- Just need this to fire once each time we 'score'
   disableTrigger( "Parse Score" )
 
@@ -2810,9 +906,9 @@ function triggerParseScore()
   raiseGlobalEvent( "event_pcStatus_score", SESSION, dam, maxHP, hit, mnm, arm, mvm, mac, aln, exp, exh, exl, gld )
 end
 
----@diagnostic disable: cast-local-type
+
 -- Pull stats from the prompt and update status & status table
-function triggerParsePromptOld()
+local function triggerParsePromptOld()
   -- Get current HP, MANA, MOVE from prompt
   local hpc, mnc, mvc = tonumber( matches[2] ), tonumber( matches[3] ), tonumber( matches[4] )
 
@@ -2844,54 +940,7 @@ function triggerParsePromptOld()
   end
 end
 
--- Items to ignore when checking to see whether something has been added to the database;
--- this is going to get way too long and needs another solution eventually.
-ignoredItems = {
-  ["a vanity chit"]                        = true,
-  ["potion of healing"]                    = true,
-  ["Cradle of the Forest"]                 = true,
-  ["a brilliant blue aquamarine"]          = true,
-  ["a beazor"]                             = true,
-  ["a brilliant red ruby"]                 = true,
-  ["a small pile of precious metals"]      = true,
-  ["a piece of diamond"]                   = true,
-  ["a delicate pair of lapidary's pliers"] = true,
-  ["a shimmering filament of gold"]        = true,
-  ["a lavish opium pipe"]                  = true,
-  ["a durable mining helmet"]              = true,
-  ["a piece of Commiphora wightii bark"]   = true,
-  ["a scroll of healing"]                  = true,
-  ["an Amber Elixir"]                      = true,
-  ["a bottle of greenish ooze"]            = true,
-  ["a Delicate Daisy"]                     = true,
-  ["a pair of dice"]                       = true,
-  ["the trust flag"]                       = true,
-  ["a bread"]                              = true,
-  ["a waterskin"]                          = true,
-  ["glowing potion"]                       = true,
-  ["transparent potion"]                   = true,
-  ["a yellow potion of see invisible"]     = true,
-  ["a snowball"]                           = true,
-  ["a golden goblet"]                      = true,
-  ["a scroll of recall"]                   = true,
-  ["an olive branch"]                      = true,
-  ["a small ball of Labdanum resin"]       = true,
-  ["a raft"]                               = true,
-  ["a Seawater Potion"]                    = true,
-  ["a bag"]                                = true,
-  ["a bottle of red potion"]               = true,
-  ["a pouch of irridescent pollen"]        = true,
-  ["a Frosty Potion"]                      = true,
-  ["a bloody brew"]                        = true,
-  ["a strong-smelling brew"]               = true,
-  ["a five cheesecake chit"]               = true,
-  ["a five brownie chit"]                  = true,
-  ["a milky orange potion"]                = true,
-  ["a small ice opal"]                     = true,
-  ["a Christmas Stocking"]                 = true,
-}
-
-function isIgnoredItem( item )
+local function isIgnoredItem( item )
   local ignoredItemPatterns = {
     ["^.*chit$"] = true,
     ["^.*[Pp]otion.*$"] = true,
@@ -2905,7 +954,7 @@ function isIgnoredItem( item )
   return false
 end
 
-function laswield()
+local function laswield()
   expandAlias( 'las rem ring', false )
   expandAlias( 'las rem leg', false )
   expandAlias( 'las rem gloves', false )
@@ -2927,7 +976,7 @@ function laswield()
   expandAlias( 'las wear leg', false )
 end
 
-function nanwield()
+local function nanwield()
   expandAlias( 'nan rem onyx', false )
   expandAlias( 'nan wear gauntlets', false )
   expandAlias( 'nan wear sky', false )
@@ -2942,7 +991,7 @@ function nanwield()
 end
 
 -- Called repeatedly to iterate each list of cloning assignments until complete
-function doClone()
+local function doClone()
   -- First/last call condition
   if not nadjaClones then
     startClone()
@@ -2972,7 +1021,7 @@ function doClone()
   end
 end
 
-function endClone()
+local function endClone()
   if lasCloneTrigger then killTrigger( lasCloneTrigger ) end
   if nadCloneTrigger then killTrigger( nadCloneTrigger ) end
   if nadjaClones then nadjaClones = nil end
@@ -3005,7 +1054,7 @@ function endClone()
 end
 
 -- Prepare cloning sequence with gear assignments
-function startClone()
+local function startClone()
   nadjaClones = {'cuffs', 'skin'}
   laszloClones = {'halo'}
 
@@ -3018,7 +1067,7 @@ function startClone()
   expandAlias( 'nad rem cuffs', false )
 end
 
-function nadwield()
+local function nadwield()
   expandAlias( 'nad rem ring', false )
   expandAlias( 'nad rem gloves', false )
   expandAlias( 'nad rem leg', false )
@@ -3038,7 +1087,7 @@ function nadwield()
   expandAlias( 'nad wear leg', false )
 end
 
-function colwield()
+local function colwield()
   expandAlias( 'col rem ring', false )
   expandAlias( 'col rem greaves', false )
   expandAlias( 'col wear sky', false )
@@ -3057,7 +1106,7 @@ function colwield()
 end
 
 -- Use with cecho etc. to colorize output without massively long f-strings
-function ec( s, c )
+local function ec( s, c )
   local colors = {
     err  = "orange_red",   -- Error
     dbg  = "dodger_blue",  -- Debug
@@ -3074,21 +1123,8 @@ function ec( s, c )
   end
 end
 
--- Some rooms are currently unmappable (i.e., I couldn't reach them on my IMM.)
-ignoredRooms = {
-  [0] = true,
-  [8284] = true,
-  [6275] = true,
-  [2276] = true,
-  [2223] = true,
-  [1290] = true,
-  [979] = true,
-  [1284] = true, -- Alchemist's Shoppe after an explosion?
-  [1285] = true, -- Temple Avenue outside the Alchemist's Shoppe after an explosion?
-}
-
 -- Group related areas into a contiguous group for labeling purposes
-function getLabelArea()
+local function getLabelArea()
   if currentAreaNumber == 21 or currentAreaNumber == 30 or currentAreaNumber == 24 or currentAreaNumber == 22 or currentAreaData == 110 then
     return 21
   elseif currentAreaNumber == 89 or currentAreaNumber == 116 or currentAreaNumber == 87 then
@@ -3101,7 +1137,7 @@ function getLabelArea()
 end
 
 -- Prototype/beta function for importing Wintin commands from an external file
-function importWintinActions()
+local function importWintinActions()
   local testActions = {}
   -- Make an empty group to hold the imported triggers
   permRegexTrigger( "Imported", "", {"^#"}, "" )
@@ -3124,7 +1160,7 @@ function importWintinActions()
 end
 
 -- Clean up minimum room numbers corrupted by my dumb ass
-function fixMinimumRoomNumbers()
+local function fixMinimumRoomNumbers()
   local aid = 0
   while worldData[aid] do
     local roomsData = worldData[aid].rooms
@@ -3145,7 +1181,7 @@ function fixMinimumRoomNumbers()
 end
 
 -- One-Time Load all of the door data into the doorData table and save it
-function loadDoorData()
+local function loadDoorData()
   local doorCount = 0
   local allRooms = getRooms()
   doorData = {} -- Initialize the doorData table
@@ -3178,7 +1214,7 @@ function loadDoorData()
 end
 
 -- Help create the master door data table (one time load)
-function getDoorData( id, dir )
+local function getDoorData( id, dir )
   local exitData = worldData[roomToAreaMap[id]].rooms[id].exits
   for _, exit in pairs( exitData ) do
     if SDIR[exit.exitDirection] == dir then
@@ -3190,7 +1226,7 @@ function getDoorData( id, dir )
 end
 
 -- Run some checks on the doorData table/file to make sure it's valid
-function validateDoorData()
+local function validateDoorData()
   --loadTable( "doorData" ) -- Load the doorData table from file
   local errorCount = 0
   local verifiedCount = 0
@@ -3234,7 +1270,7 @@ function validateDoorData()
 end
 
 -- Original function to instantiate an empty world
-function createEmptyAreas()
+local function createEmptyAreas()
   for _, areaData in pairs( worldData ) do
     local areaName, areaID = areaData.areaName, areaData.areaRNumber
     if areaID ~= 0 then
@@ -3251,7 +1287,7 @@ end
 
 -- Given a list of room numbers, traverse them virtually while looking for doors in our path; add
 -- open commands as needed and produce a WINTIN-compatible command list including opens and moves.
-function traverseRooms( roomList )
+local function traverseRooms( roomList )
   -- Check if the room list is valid
   if not roomList or #roomList == 0 then
     cecho( "\nError: Invalid room list provided." )
@@ -3316,7 +1352,7 @@ function traverseRooms( roomList )
 end
 
 -- Replaced by getFullPath/getAreaDirs
-function getMSPath()
+local function getMSPath()
   -- Clear the path globals
   local dirString = nil
   speedWalkDir = nil
@@ -3339,7 +1375,7 @@ function getMSPath()
 end
 
 -- Original function to populate areaDirs table
-function getAreaDirs()
+local function getAreaDirs()
   local fullDirs = getFullDirs( 1121, currentRoomNumber )
   local roomArea = getRoomArea( currentRoomNumber )
   if fullDirs then
@@ -3357,7 +1393,7 @@ function getAreaDirs()
 end
 
 -- Not as good an attempt to do getAreaDirs()
-function getAreaDirs()
+local function getAreaDirs()
   for _, roomID in ipairs( areaFirstRooms ) do
     local pathString = getFullDirs( 1121, roomID ) -- Assuming 1121 is your starting room (e.g., Market Square)
     if pathString then
@@ -3369,7 +1405,7 @@ function getAreaDirs()
 end
 
 --Brute force find the room that's closest to our current location that belongs to the given area
-function findArea( id )
+local function findArea( id )
   local allRooms           = getRooms()
   local shortestDirsLength = 750000 -- Initialize to a very high number
   local shortestDirs       = nil
@@ -3397,7 +1433,7 @@ function findArea( id )
   end
 end
 
-function buildAreaMap()
+local function buildAreaMap()
   areaMap = {}
   for areaID in pairs( areaDirs ) do
     local areaName = getRoomAreaName( areaID )
@@ -3411,7 +1447,7 @@ function buildAreaMap()
   end
 end
 
-function combinePhantom()
+local function combinePhantom()
   local phantom1 = worldData[102].rooms
   local phantom2 = worldData[103].rooms
   local phantom3 = worldData[108].rooms
@@ -3433,7 +1469,7 @@ function combinePhantom()
   cecho( f "\n{movedRooms} rooms moved to Phantom Zone." )
 end
 
-function areaHunt()
+local function areaHunt()
   local rooms = getRooms()
   local areaID = 1
   for areaID = 1, 128 do
@@ -3458,7 +1494,7 @@ end
 
 -- Report on Rooms which have been moved in the Mudlet client to an Area other than their original
 -- Area from the database.
-function movedRoomsReport()
+local function movedRoomsReport()
   local ac = MAP_COLOR["area"]
   for areaID = 1, 128 do
     -- Skip Area 107; it's missing from our database
@@ -3478,7 +1514,7 @@ end
 
 -- Like findNewRoom(), but globally; search every Area in the MUD for a Room that has an Exit leading
 -- to a Room that hasn't been mapped yet.
-function findNewLand()
+local function findNewLand()
   local ac = MAP_COLOR["area"]
   -- getRooms() dumps a global list of mapped Room Names & IDs with no other detail
   for id, name in pairs( getRooms() ) do
@@ -3504,7 +1540,7 @@ function findNewLand()
 end
 
 -- Search every room in the current Area for one that has an Exit to a room we haven't mapped yet.
-function findNewRoom()
+local function findNewRoom()
   -- Get a list of every Room in the area
   local allRooms = getAreaRooms( currentAreaNumber )
   -- Which is zero-based for some godforsaken reason...
@@ -3532,7 +1568,7 @@ function findNewRoom()
   cecho( "\n<green_yellow>No unmapped rooms found at this time.<reset>" )
 end
 
-function areaReport()
+local function areaReport()
   local nc = MAP_COLOR["number"]
   local ac = MAP_COLOR["area"]
   mapInfo( f "Map report for {ac}{currentAreaName}<reset> [{ac}{currentAreaNumber}<reset>]" )
@@ -3553,7 +1589,7 @@ function areaReport()
   mapInfo( f '<olive_drab>Mudlet<reset> rooms: {nc}{mudletCount}<reset>' )
 end
 
-function worldReport()
+local function worldReport()
   local nc          = MAP_COLOR["number"]
   local ac          = MAP_COLOR["area"]
   local worldCount  = 0
@@ -3585,13 +1621,13 @@ function worldReport()
 end
 
 -- Basically just getPathAlias but automatically follow the route.
-function gotoAlias()
+local function gotoAlias()
   getPathAlias()
   doSpeedWalk()
 end
 
 -- Use built-in Mudlet path finding to get a path to the specified room.
-function getPathAlias()
+local function getPathAlias()
   -- Clear the path globals
   speedWalkDir = nil
   speedWalkPath = nil
@@ -3623,7 +1659,7 @@ end
 
 -- Iterate over all rooms in the map; for any room with an up/down exit, add a gradient highlight circle;
 -- uses getModifiedColor() to create a highlight based off the room's current color (terrain type)
-function highlightStairs()
+local function highlightStairs()
   -- Map room types to their respective environment IDs (color table index)
   local TYPE_MAP = {
     ['Forest']    = COLOR_FOREST,
@@ -3659,7 +1695,7 @@ function highlightStairs()
   cecho( f "\nChecked {roomsChecked} rooms." )
 end
 
-function showAreaPaths()
+local function showAreaPaths()
   cecho( f "\nGlobal Area Paths:\n" )
   for areaID, entryData in pairs( entryRooms ) do
     local roomNumber = entryData.roomNumber
@@ -3673,7 +1709,7 @@ function showAreaPaths()
   end
 end
 
-function updateAreaPaths()
+local function updateAreaPaths()
   cecho( f "\nGlobal Area Paths:\n" )
   for areaID, entryData in pairs( entryRooms ) do
     local roomNumber = entryData.roomNumber
@@ -3693,7 +1729,7 @@ function updateAreaPaths()
 end
 
 -- For all rooms globally delete any exit which leads to its own origin (and store that exit in culledExits)
-function cullLoopedExits()
+local function cullLoopedExits()
   local cullCount = 0
   local allRooms = getRooms()
   for id, name in pairs( allRooms ) do
@@ -3713,7 +1749,7 @@ function cullLoopedExits()
   table.save( 'C:/Dev/mud/mudlet/gizmo/data/culledExits.lua', culledExits )
 end
 
-function combineArea( dstArea, srcArea )
+local function combineArea( dstArea, srcArea )
   local srcRooms = getAreaRooms( srcArea )
   for _, srcRoom in ipairs( srcRooms ) do
     setRoomArea( srcRoom, dstArea )
@@ -3721,7 +1757,7 @@ function combineArea( dstArea, srcArea )
   updateMap()
 end
 
-function getRoomStringOld( id, detail )
+local function getRoomStringOld( id, detail )
   detail = detail or 1
   local specTag = ""
   local roomString = nil
@@ -3762,7 +1798,7 @@ function getRoomStringOld( id, detail )
 end
 
 -- Attempt a "virtual move"; on success report on area transitions and update virtual coordinates.
-function moveExitOld( direction )
+local function moveExitOld( direction )
   local nc = MAP_COLOR["number"]
   -- Guard against variations in the Exit data by searching for the Exit in question
   for _, exit in pairs( currentRoomData.exits ) do
@@ -3781,10 +1817,8 @@ function moveExitOld( direction )
   return false
 end
 
-exitData = exitData or {}
-
 -- Load all Exit data from the gizwrld.db database into a Lua table
-function loadExitData()
+local function loadExitData()
   local luasql = require "luasql.sqlite3"
   local env = luasql.sqlite3()
   local conn = env:connect( 'C:/Dev/mud/gizmo/data/gizwrld.db' )
@@ -3829,7 +1863,7 @@ function loadExitData()
 end
 
 -- Load all Exit data from the gizwrld.db database into a Lua table
-function loadExitData()
+local function loadExitData()
   local luasql = require "luasql.sqlite3"
   local env = luasql.sqlite3()
   local conn = env:connect( 'C:/Dev/mud/gizmo/data/gizwrld.db' )
@@ -3874,12 +1908,12 @@ function loadExitData()
 end
 
 -- Get the Area data for a given areaRNumber
-function getAreaData( areaRNumber )
+local function getAreaData( areaRNumber )
   return worldData[areaRNumber]
 end
 
 -- Get the Room data for a given roomRNumber
-function getRoomData( roomRNumber )
+local function getRoomData( roomRNumber )
   local areaRNumber = roomToAreaMap[roomRNumber]
   if areaRNumber and worldData[areaRNumber] then
     return worldData[areaRNumber].rooms[roomRNumber]
@@ -3887,7 +1921,7 @@ function getRoomData( roomRNumber )
 end
 
 -- Use a breadth-first-search (BFS) to find the shortest path between two rooms
-function findShortestPath( srcRoom, dstRoom )
+local function findShortestPath( srcRoom, dstRoom )
   if srcRoom == dstRoom then return {srcRoom} end
   -- Table for visisted rooms to avoid revisiting
   local visitedRooms = {}
@@ -3936,7 +1970,7 @@ function findShortestPath( srcRoom, dstRoom )
   return nil
 end
 
-function roomsReport()
+local function roomsReport()
   local minRoom = worldData[currentAreaNumber].areaMinRoomRNumber
   local maxRoom = worldData[currentAreaNumber].areaMaxRoomRNumber
   local roomsMapped = 0
@@ -3979,12 +2013,12 @@ function roomsReport()
   mapInfo( f '<olive_drab>World<reset> total: {nc}{worldRoomsCount}<reset>' )
 end
 
-function roomTag()
+local function roomTag()
   return f "<light_steel_blue>currentRoomName<reset> [<royal_blue>currentRoomNumber<reset>]"
 end
 
 -- Function to find all neighboring rooms with exits leading to a specific roomRNumber
-function findNeighbors( targetRoomRNumber )
+local function findNeighbors( targetRoomRNumber )
   local neighbors = {}
   local nc = MAP_COLOR["number"]
   local minR, maxR = currentAreaData.areaMinRoomRNumber, currentAreaData.areaMaxRoomRNumber
@@ -4001,7 +2035,7 @@ function findNeighbors( targetRoomRNumber )
   display( neighbors )
 end
 
-function setMinimumRoomNumber( areaID, newMinimum )
+local function setMinimumRoomNumber( areaID, newMinimum )
   local luasql = require "luasql.sqlite3"
   local env = luasql.sqlite3()
   local conn = env:connect( 'C:/Dev/mud/gizmo/data/gizwrld.db' )
@@ -4042,7 +2076,7 @@ function setMinimumRoomNumber( areaID, newMinimum )
 end
 
 -- From the current room, search for neighboring rooms in this Area;
-function auditAreaCoordinates()
+local function auditAreaCoordinates()
   local nc = MAP_COLOR["number"]
   local areaCoordinates = {}
   local minRoom = worldData[currentAreaNumber].areaMinRoomRNumber
@@ -4065,7 +2099,7 @@ function auditAreaCoordinates()
   end
 end
 
-function countRooms()
+local function countRooms()
   local areaCounts = {}
   local allRooms = getRooms()
   for id, name in pairs( allRooms ) do
@@ -4077,7 +2111,7 @@ function countRooms()
 end
 
 -- A function to determine whether a Room belongs to a given Area
-function isInArea( roomID, areaID )
+local function isInArea( roomID, areaID )
   local roomArea = getRoomArea( roomID )
   -- If the Room exists (i.e., it has been mapped), then use Mudlet as our source of truth
   if roomArea == areaID or roomArea == getRoomArea( currentRoomNumber ) then
@@ -4090,7 +2124,7 @@ function isInArea( roomID, areaID )
 end
 
 -- From the gizwrld database, load the Area, Room, and Exit data into a Lua table
-function loadWorldData()
+local function loadWorldData()
   local luasql = require "luasql.sqlite3"
   local env = luasql.sqlite3()
   local conn = env:connect( 'C:/Dev/mud/gizmo/data/gizwrld.db' )
@@ -4179,7 +2213,7 @@ function loadWorldData()
 end
 
 --[[
-Functions to load, query, and interact with data from the database: 'C:/Dev/mud/gizmo/data/gizwrld.db'
+local functions to load, query, and interact with data from the database: 'C:/Dev/mud/gizmo/data/gizwrld.db'
 
 Table Structure:
   Area Table:
@@ -4215,7 +2249,7 @@ Table Structure:
   roomRNumber INTEGER; Foreign key to the Room in which this Exit belongs
 --]]
 -- From the gizwrld database, load the Area, Room, and Exit data into a Lua table
-function loadFollowData()
+local function loadFollowData()
   local luasql = require "luasql.sqlite3"
   local env = luasql.sqlite3()
   local conn = env:connect( 'C:/Dev/mud/gizmo/data/gizwrld.db' )
@@ -4290,24 +2324,14 @@ function loadFollowData()
   return areas
 end
 
-roomToAreaMap = {}
-worldData = {}
-currentAreaData = {}
-currentRoomData = {}
-currentAreaNumber = -1
-currentAreaName = ""
-currentRoomNumber = -1
-currentRoomName = ""
-roomExits = {}
-
 -- Basically just getPathAlias but automatically follow the route.
-function gotoAlias()
+local function gotoAlias()
   getPathAlias()
   doWintin( walkPath )
 end
 
 -- Use built-in Mudlet path finding to get a path to the specified room.
-function getPathAlias()
+local function getPathAlias()
   -- Clear the pathing globals
   speedWalkDir = nil
   speedWalkPath = nil
@@ -4333,9 +2357,8 @@ function getPathAlias()
   end
 end
 
-worldData = loadFollowData()
 -- Create all Exits, Exit Stubs, and/or Doors from the Current Room to adjacent Rooms
-function updateExits()
+local function updateExits()
   if true then return end
   for _, exit in ipairs( currentRoomData.exits ) do
     local exitDirection = exit.exitDirection
@@ -4382,7 +2405,7 @@ function updateExits()
 end
 
 -- Cull redundant (leading to the same room) exits from a given room
-function cullRedundantExits( roomID )
+local function cullRedundantExits( roomID )
   local roomExits = getRoomExits( roomID )
   local exitCounts = {}
 
@@ -4436,7 +2459,7 @@ function cullRedundantExits( roomID )
 end
 
 -- Set & update the player's location, updating coordinates & creating rooms as necessary
-function updatePlayerLocationyy( roomRNumber, direction )
+local function updatePlayerLocationyy( roomRNumber, direction )
   -- Store data about where we "came from" to get here
   if direction then
     lastDir = direction
@@ -4454,163 +2477,15 @@ function updatePlayerLocationyy( roomRNumber, direction )
   centerview( currentRoomNumber )
 end
 
-function splitPrint( str, delimiter )
+local function splitPrint( str, delimiter )
   local substrings = split( str, delimiter )
   for _, substring in ipairs( substrings ) do
     print( substring )
   end
 end
 
--- Create a local copy of this file named client_config.lua in this location; customize it to your
--- local environment and preference, and make sure it"s in your .gitignore so we don"t cross streams.
-
--- Localized project paths
-ASSETS_DIR     = 'C:/Dev/mud/mudlet/gizmo/assets'
-DB_PATH        = 'C:/Dev/mud/gizmo/data/gizwrld.db'
-HOME_PATH      = 'C:/Dev/mud/mudlet'
-pcNames        = {"Colin", "Nadja", "Laszlo", "Nandor"}
-containers     = {"stocking", "cradle", "cradle", "cradle"}
-waterskin      = "waterskin"
-food           = "bread"
-
--- These should be the abbreviations you use to issue commands to session windows; they're used by the
--- aliasSessionCommand function in config_events.lua to raise the event matching the desired session.
--- e.g., issuing 'col command' will raise event_command_1
-sessionAliases = {"col", "nad", "las", "nan"}
-sessionNumbers = {
-  ["col"] = 1, ["nad"] = 2, ["las"] = 3, ["nan"] = 4
-}
-
-
--- Using this table, define which spells are castable from specific player positions within your party;
--- use this table anywhere you need to select from among a set of possible casters (e.g., when rebuffing).
-partySpells        = {
-  ['vitality'] = {1, 2, 3}
-}
-
--- Local customization options for GUI windows; expand this list for more GUI customizations later
--- These are only needed to create the GUI/console and will be nil'd in deleteConsoleStyles()
-customChatFontFace = "Bitstream Vera Sans Mono"
-customChatFontSize = 14
-customInfoFontFace = "Bitstream Vera Sans Mono"
-customInfoFontSize = 14
-customChatWrap     = 60
-customInfoWrap     = 60
-customConsoleFonts = {
-  ["label"]     = "Ebrima",
-  ["gauge_sm"]  = "Bitstream Vera Sans Mono",
-  ["gauge_lrg"] = "Montserrat",
-  ["room"]      = "Consolas",
-}
-
--- Global color-code definitions for use throughout the project; use in conjunction with cout() and iout() to
--- avoid overly-long lines incorporating specific color codes and <reset> flags
-NC                 = "<orange>"          -- Numbers
-RC                 = "<reset>"           -- Reset Color
-EC                 = "<deep_pink>"       -- Errors & Warnings
-DC                 = "<ansi_yellow>"     -- Derived or Calculated Values
-FC                 = "<maroon>"          -- Flags & Effects
-SC                 = "<cornflower_blue>" -- String Literals
-
--- Used when updating the pcStatus table to decide whether to send a warning about someone's health
--- A warning will be sent if the health falls below low% or loses more than big% in a single update
--- Make sure to align these values with the order of your party (same as in pcNames, etc.)
-healthMonitor      = {
-  --[#] = {low%, big%}
-  [1] = {50, 20},
-  [2] = {80, 10},
-  [3] = {80, 10},
-  [4] = {25, 20},
-}
-
--- Customize colors for your PCs; local for now 'cause it's only used to make the tags below
-local pcColors     = {
-  "<cornflower_blue>",
-  "<medium_violet_red>",
-  "<dark_violet>",
-  "<dark_orange>",
-}
-
--- Customized nametags for each player; primarily useful for warnings echoed to the info window
-pcTags             = {
-  f "<reset>[{pcColors[1]}{pcNames[1]}<reset>]",
-  f "<reset>[{pcColors[2]}{pcNames[2]}<reset>]",
-  f "<reset>[{pcColors[3]}{pcNames[3]}<reset>]",
-  f "<reset>[{pcColors[4]}{pcNames[4]}<reset>]",
-}
-
--- Customize chat output colors
-messageColors      = {
-  ["auction"] = "<navajo_white>",
-  ["debug"]   = "<dodger_blue>",
-  ["say"]     = "<cyan>",
-  ["gossip"]  = "<chartreuse>",
-  ["replies"] = "<pale_violet_red>",
-  ["quest"]   = "<gold>",
-  ["whisper"] = "<deep_pink>",
-}
-
--- You can send these messages to the "Info" window with the showWarning function; this
--- window belongs to session 1, so other sessions must raise eventWarn to pass warnings
-warningMessages    = {
-  ["water"]     = "Needs <powder_blue>Water<reset>",
-  ["mvs"]       = "Low <gold>Moves<reset>",
-  ["food"]      = "Needs <olive_drab>Food<reset>",
-  ["whacked"]   = "🩸 <medium_violet_red>.w.h.A.C.K.e.d.<reset>",
-  ["switched"]  = "👿 Targeted",
-  ["hp"]        = "🤕 Critical <tomato>HP<reset> ",
-  ["exhausted"] = "👟 No Moves",
-  ["norecall"]  = "🌀 Out of Recalls"
-}
-
--- Critical warnings will play bloop.wav when sent.
-criticalWarnings   = {
-  ["whacked"]   = true,
-  ["exhausted"] = true,
-  ["hp"]        = true,
-  ["switched"]  = true,
-  ["norecall"]  = true,
-}
--- Customize your affect info to match the duration of your own buffs and desired colors & characters
-affectInfo         = {
-  ["Sanctuary"]            = {duration = 7, color = "lavender_blush", char = "🌟"},
-  ["Bless"]                = {duration = 6, color = "light_goldenrod", char = "🙏"},
-  ["Fury"]                 = {duration = 2, color = "tomato", char = "😡"},
-  ["Armor"]                = {duration = 24, color = "steel_blue", char = "🛡️"},
-  ["Endure"]               = {duration = 24, color = "orange", char = "💪"},
-  ["Protection from evil"] = {duration = 24, color = "gold", char = "🧿"},
-  ["Achilles' last stand"] = {duration = 4, color = "medium_violet_red", char = "⚔️"}
-}
--- Colors to use in the Party Console labels to indicate duration of affects
-affectDuration     = {
-  ['high'] = "YellowGreen",
-  ['med']  = "Orange",
-  ['low']  = "Crimson",
-}
--- These keywords are captured in trigger phrases to indicate which spell has been applied or removed.
--- They are used to map to the spell name in applyAffect() and removeAffect().
-affectKeywords     = {
-  ["glowing"]           = "Sanctuary",
-  ["aura"]              = "Sanctuary",
-  ["righteous"]         = "Bless",
-  ["angry"]             = "Fury",
-  ["calm"]              = "Fury",
-  ["protecting"]        = "Armor",
-  ["protected"]         = "Armor",
-  ["righteous feeling"] = "Protection from evil"
-}
-
--- Affects that do not need to be tracked or displayed on the Party/Player Console (and don't print a warning)
-IGNORED_AFFECTS    = {
-  ['Strength'] = true,
-  ['Invulnerability'] = true,
-  ['Darkness'] = true,
-}
--- How many "steps" does the tick clock have (i.e., how many individual images make up the animation)
-CLOCK_STEPS        = 120
-
 -- Select which ANTI-FLAGS to include in stat output from eq/eq_db.lua
-function customizeAntiString( antis )
+local function customizeAntiString( antis )
   local includedFlags = {
     ["!NEU"] = true,
     ["!GOO"] = true,
@@ -4638,45 +2513,6 @@ function customizeAntiString( antis )
   -- Trim and condense
   return antis:gsub( "%s+", " " ):trim()
 end
-
--- Table & following function sets the initial state for Triggers, Keys, and Aliases; localizing this
--- should allow for some personalization (e.g., if you don't want Map-related stuff enabled by default).
--- This list does not need to be exhaustive, but it should include anything you want to guarantee is in
--- a certain state at startup (e.g., this is a good time to make sure temporary triggers start disabled).
-local initialReactionState = {
-  -- ++ON for everyone
-  {name = "PC Login",                  type = "trigger", state = true,  scope = 'All'},
-  {name = "Total Recall (wor)",        type = "alias",   state = true,  scope = 'All'},
-  {name = "All Rec Recall (rr)",       type = "alias",   state = true,  scope = 'All'},
-  -- --OFF for everyone
-  {name = "hunger",                    type = "trigger", state = false, scope = 'All'},
-  {name = "thirst",                    type = "trigger", state = false, scope = 'All'},
-  {name = "fountain",                  type = "trigger", state = false, scope = 'All'},
-  {name = "Group XP",                  type = "trigger", state = false, scope = 'All'},
-  {name = "Solo XP",                   type = "trigger", state = false, scope = 'All'},
-  {name = "EQ Stats",                  type = "trigger", state = false, scope = 'All'},
-  {name = "Missing EQ",                type = "trigger", state = false, scope = 'All'},
-  {name = "Parse Score",               type = "trigger", state = false, scope = 'All'},
-  {name = "List Fonts (lfonts)",       type = "alias",   state = false, scope = 'All'},
-  {name = "Print Variables (pvars)",   type = "alias",   state = false, scope = 'All'},
-  -- ++ON for Main session
-  {name = "Main Format",               type = "trigger", state = true,  scope = 'Main'},
-  {name = "gather",                    type = "trigger", state = true,  scope = 'Main'},
-  {name = "Tank Condition (automira)", type = "trigger", state = true,  scope = 'Main'},
-  {name = "map",                       type = "trigger", state = true,  scope = 'Main'},
-  {name = "Movement (Map)",            type = "key",     state = true,  scope = 'Main'},
-  -- --OFF for Main session
-  {name = "Alt Gags",                  type = "trigger", state = false, scope = 'Main'},
-  -- ++ON for Alts
-  {name = "Movement (Raw)",            type = "key",     state = true,  scope = 'Alts'},
-  {name = "Alt Gags",                  type = "trigger", state = true,  scope = 'Alts'},
-  -- --OFF for Alts
-  {name = "gather",                    type = "trigger", state = false, scope = 'Alts'},
-  {name = "Tank Condition (automira)", type = "trigger", state = false, scope = 'Alts'},
-  {name = "Main Format",               type = "trigger", state = false, scope = 'Alts'},
-  {name = "map",                       type = "trigger", state = false, scope = 'Alts'},
-  {name = "Movement (Map)",            type = "key",     state = false, scope = 'Alts'},
-}
 
 local function initializeReactions()
   cecho( "\nInitial Trigger, Alias, and Key states\n" )
@@ -4720,10 +2556,8 @@ local function initializeReactions()
   end
 end
 
-initializeReactions()
-
 -- Override moveExit while offline to simulate movement and display virtual rooms
-function nextCmd( direction )
+local function nextCmd( direction )
   if CreatingPath then
     addCommandToPath( direction )
   end
@@ -4746,7 +2580,7 @@ function nextCmd( direction )
 end
 
 -- Simulate a 'scroll of recall'; magical item in game that returns the player to the starting room
-function virtualRecall()
+local function virtualRecall()
   cecho( f "\n\n<orchid>You recite a <deep_pink>scroll of recall<orchid>.<reset>\n" )
   setPlayerRoom( 1121 )
   displayRoom( 1121, true )
@@ -4754,7 +2588,7 @@ end
 
 -- Display a full "simulated" room including name, description (if not brief), and exits
 -- By default, display the current room in brief mode (no room description)
-function displayRoom( id, brief )
+local function displayRoom( id, brief )
   local rd = MAP_COLOR["roomDesc"]
   cfeedTriggers( f "\n\n{getRoomString(id, 2)}" )
   if not brief then
@@ -4767,7 +2601,7 @@ end
 -- Virtually traverse an exit from the players' current location to an adjoining room;
 -- This is the primary function used to "follow" the PCs position in the Map; it is synchronized
 -- with the MUD through the use of the mapQueue
-function moveExit( direction )
+local function moveExit( direction )
   -- Make sure direction is long-version like 'north' to align with getRoomExits()
   local dir = LDIR[direction]
   local exits = getRoomExits( currentRoomNumber )
@@ -4787,7 +2621,7 @@ end
 
 -- Build a "line" of all exits from the current room, color-coded based on the attributes of
 -- the exit or destination room.
-function getExitString( id )
+local function getExitString( id )
   local exitData    = getRoomExits( id )
   local exitString  = ""
   local isFirstExit = true
@@ -4819,7 +2653,7 @@ end
 
 -- Select one of the predefined colors to display an Exit based on Door and Destination status
 -- Prioritize colros and exit early as soon as the first condition is met
-function getExitColor( to, dir )
+local function getExitColor( to, dir )
   local isMissing = not roomExists( to )
   if isMissing then return ERRC end
   local toFlags = getRoomUserData( to, "roomFlags" )
@@ -4833,12 +2667,12 @@ function getExitColor( to, dir )
 end
 
 -- Get a useful string representation of an Area including it's ID number for output (e.g., with cecho)
-function getAreaTag()
+local function getAreaTag()
   return f "<medium_violet_red>{CurrentAreaName}<reset> [<maroon>{CurrentAreaNumber}<reset>]"
 end
 
 -- Get a string representing a door depending on its status and key value
-function getDoorString( word, key )
+local function getDoorString( word, key )
   -- Double declaration because VSCode is confused by f-string interpolation
   local doorString, keyString, wordString = nil, nil, nil
   doorString, keyString, wordString = "", "", ""
@@ -4848,7 +2682,7 @@ function getDoorString( word, key )
   return doorString
 end
 
-function displayExits( id )
+local function displayExits( id )
   local exitString = ""
   if not id or id < 1 then
     exitString = "<dim_grey>   Obvious Exits:   <dim_grey>[No Data]<reset>"

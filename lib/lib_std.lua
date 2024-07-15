@@ -1,33 +1,30 @@
--- Compile and execute a lua function directly from the Mudlet command-line; used
--- throughout other scripts and in aliases as 'lua <command> <args>'
+-- Compile and execute a Lua function directly from the Mudlet command-line
+-- @param matches Built-in Mudlet table capturing command-line arguments
 function runLuaLine()
   local args = matches[2]
+
   -- Try to compile an expression.
   local func, err = loadstring( "return " .. args )
 
   -- If that fails, try a statement.
   if not func then
-    func, err = assert( loadstring( args ) )
+    func, err = loadstring( args )
+    if not func then
+      error( err )
+    end
   end
-  -- If that fails, raise an error.
-  if not func then
-    error( err )
+  -- Create and call the function to display the result if not empty
+  local function runFunc( ... )
+    if not table.is_empty( {...} ) then
+      display( ... )
+    end
   end
-  -- Create the function
-  local runFunc =
 
-      function ( ... )
-        if not table.is_empty( {...} ) then
-          display( ... )
-        end
-      end
-
-  -- Call it
   runFunc( func() )
 end
 
--- Run (interpret) a lua file using doFile(); this function frees us up from using the in-client editor in Mudlet
--- to write and organize our scripts.
+-- Run (interpret) a Lua file using dofile()
+-- @param file The path of the Lua file to be executed
 function runLuaFile( file )
   local filePath = f '{homeDirectory}{file}'
   if lfs.attributes( filePath, "mode" ) == "file" then
@@ -38,22 +35,29 @@ function runLuaFile( file )
 end
 
 -- Use runLuaFile to run a table of Lua files
+-- @param files Table containing paths of Lua files to be executed
 function runLuaFiles( files )
   for _, file in ipairs( files ) do
     runLuaFile( file )
   end
 end
 
--- Function to check if a value is in a list or table
-function contains( table, value, usePairs )
-  if usePairs then
-    for _, v in pairs( table ) do
+-- Function to check if a value is in a list/table
+-- @param table The table to search
+-- @param value The value to search for
+-- @param sequential Boolean indicating whether to use ipairs (true) or pairs (false) for iteration
+-- @return Boolean indicating if the value is found in the table
+function contains( table, value, sequential )
+  if sequential then
+    -- Use ipairs for sequential arrays/lists with consecutive integer keys
+    for _, v in ipairs( table ) do
       if v == value then
         return true
       end
     end
   else
-    for _, v in ipairs( table ) do
+    -- Use pairs for tables that may have non-integer keys or gaps in integer keys
+    for _, v in pairs( table ) do
       if v == value then
         return true
       end
@@ -63,133 +67,81 @@ function contains( table, value, usePairs )
 end
 
 -- Ensure a value remains within a fixed range
+-- @param value The value to be clamped
+-- @param min The minimum allowable value
+-- @param max The maximum allowable value
+-- @return The clamped value, ensuring it is within the range [min, max]
 function clamp( value, min, max )
   return math.max( min, math.min( max, value ) )
 end
 
--- Get a random FP value between lower and upper bounds
-function randomFloat( lower, upper )
-  return lower + math.random() * (upper - lower)
-end
-
--- Round n to the nearest s
+-- Round a number to the nearest multiple of a specified step
+-- @param n The number to be rounded
+-- @param s The step to which the number should be rounded; defaults to 0.05 if not specified
+-- @return The number rounded to the nearest multiple of the step
 function round( n, s )
   s = s or 0.05
   return math.floor( n / s + 0.5 ) * s
 end
 
--- Where n is the number of dice, s is the number of sides, and m is the modifier,
--- return the average exepected outcome of a dice roll; e.g., for the average of 3d8+2
--- invoke as averageDice( 3, 8, 2 )
+-- Calculate the average expected outcome of a dice roll
+-- @param n The number of dice to be rolled
+-- @param s The number of sides on each die
+-- @param m The modifier to be added to the result
+-- @return The average expected outcome of the dice roll
 function averageDice( n, s, m )
-  return (((n * s) + n) / 2) + m
+  return (n * (s + 1) / 2) + m
 end
 
--- Delete the current line then any of the subsequent 3 lines that are either empty or "prompt only"
-function deleteComplete()
-  deleteLine()
-  tempLineTrigger( 1, 3, [[completeDelete()]] )
-end
-
--- Support deleteComplete() by deleteing the current line if it's empty or "prompt only"
-function completeDelete()
-  local justAPrompt = string.match( line, "< %d+%(%d+%) %d+%(%d+%) %d+%(%d+%) > $" )
-  if justAPrompt or #line <= 0 then
-    deleteLine()
-  end
-end
-
--- Invoked when sysPathChanged event fires for files previously registered by addFileWatchers();
--- nils all global definitions sourced from the modofied file then reloads its script from disk
+-- Invoked when sysPathChanged event fires for files previously registered by addFileWatchers()
+-- Nils all global definitions sourced from the modified file then reloads its script from disk
+-- @param _ unused (name of event that)
+-- @param path The path of the modified file
 function fileModifiedEvent( _, path )
-  -- Throttle this event 'cause VS-Code extensions fire extra modifications with each save
-  local fileModifiedDelay = 5 -- seconds between auto-reloads
+  -- VSCode extensions trigger sysPathChanged repeatedly, so throttle the handler
+  local fileModifiedDelay = 5 -- Seconds between auto-reloads
   if not fileModifiedEventDelayed then
     fileModifiedEventDelayed = true
     tempTimer( fileModifiedDelay, [[fileModifiedEventDelayed = nil]] )
-    -- If it's the Mudlet module that was changed, refresh the XML file
-    if path:match( 'mpackage' ) then
-      refreshModuleXML()
-      return
-    end
-    -- nil all existing functions that reference this file as their source
+    -- Unload all existing functions that reference this file as their source
     local function unloadFile( path )
       for k, v in pairs( _G ) do
-        -- Don't 💀 ourselves
+        -- Don't unload ourselves
         if type( v ) == "function" and k ~= "fileModifiedEvent" then
-          local functionInfo = debug.getinfo( v )
-          local functionSource = functionInfo.source
-          functionSource = functionSource:sub( 2 )
+          local functionSource = debug.getinfo( v ).source:sub( 2 )
           if functionSource:match( path ) then
             _G[k] = nil
           end
         end
       end
     end
+
     unloadFile( path )
-    -- Just reload the file; we know it's there since it had stuff in _G[]
+    -- Reload the file; we know it's there since it had stuff in _G
     dofile( path )
   end
 end
 
+-- Get a formatted timestamp
+-- @param format Optional. The desired format for the timestamp. Defaults to "%H:%M".
+-- @return A string representing the current time formatted according to the specified or default format.
+function getCurrentTime( format )
+  return os.date( format or "%H:%M" )
+end
+
 -- Transform a uniformly distributed random value and skew it in favor of lower values
+-- @param min: the minimum value of the desired range
+-- @param max: the maximum value of the desired range
+-- @param skewFactor: the factor by which to skew the distribution towards lower values
+-- @return a skewed random value within the specified range
 function skewedRandom( min, max, skewFactor )
   -- Generate a uniformly distributed random number between 0 and 1
   local uniformRandom = math.random()
 
   -- Apply a transformation to skew the distribution towards lower values
-  -- A higher skewFactor will now more aggressively bias towards lower values.
+  -- A higher skewFactor will more aggressively bias towards lower values.
   local skewedRandom = uniformRandom ^ skewFactor
 
   -- Scale and shift the result to the desired range (min to max)
   return min + (max - min) * skewedRandom
-end
-
--- Get a formatted timestamp.
-function getCurrentTime( format )
-  local fmt = format or "%H:%M"
-  return os.date( fmt )
-end
-
--- Print all variables currently in _G (Lua's table for all variables); probably
--- not very readable but might be helpful
-local function printVariables()
-  for k, v in pairs( _G ) do
-    local nameStr, typeStr, valStr = nil, nil, nil
-    local vName, vType, vVal       = nil, nil, nil
-
-    vType                          = type( v )
-    vName                          = tostring( k )
-    vVal                           = tostring( v )
-
-    nameStr                        = "<sea_green>" .. vName .. "<reset>"
-    typeStr                        = "<ansi_magenta>" .. vType .. "<reset>"
-    valStr                         = "<cyan>" .. vVal .. "<reset>"
-
-    if vType == "number" or vType == "boolean" then
-      cecho( f "\n{nameStr} ({typeStr}) == {valStr}\n-----" )
-    elseif vType == "string" then
-      cecho( f "\n{nameStr} ({typeStr}) ==\n{valStr}\n-----" )
-    end
-  end
-end
-
--- Feed the contents of a file line-by-line as if it came from the MUD
-local function feedFile( feedPath )
-  local feedRate = 0.01
-  local file = io.open( feedPath, "r" )
-
-  local lines = file:lines()
-
-  local function feedLine()
-    local nextLine = lines()
-    if nextLine then
-      cfeedTriggers( nextLine )
-      tempTimer( feedRate, feedLine )
-    else
-      file:close()
-    end
-  end
-
-  feedLine()
 end

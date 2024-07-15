@@ -47,6 +47,8 @@ local function configByUsername()
     ASSETS_PATH        = [[C:/Dev/mud/mudlet/gizmo/assets]]
     DB_PATH            = [[C:/Dev/mud/gizmo/data/gizwrld.db]]
     HOME_PATH          = [[C:/Dev/mud/mudlet]]
+    DATA_PATH          = [[C:/Dev/mud/mudlet/gizmo/data/]]
+    BACKUP_PATH        = [[C:/Dev/mud/gizmo/data/backup/]]
 
     -- Player Names, Containers, and Basic Consumables
     pcNames            = {"Kaylee", "Nadja", "Laszlo", "Nandor"}
@@ -90,12 +92,13 @@ local function configByUsername()
     -- Use these shorthand color tags in string literals in order to limit their length
     -- Example instead of iout(f"<orange_red>text<reset>") you can use iout("{EC}text{RC}")
     -- Sacrifices some readiability for concise strings without overhead of a function call or table lookup
+    SC                 = "<cornflower_blue>" -- String Literals or Text
     NC                 = "<orange>"          -- Numbers
-    VC                 = "<dark_violet>"     -- Values (Boolean, etc.)
-    EC                 = "<orange_red>"      -- Errors & Warnings
+    VC                 = "<dark_violet>"     -- Non-Number Variable Values
+    EC                 = "<orange_red>"      -- Critical Errors & Warnings
     DC                 = "<ansi_yellow>"     -- Derived or Calculated Values
-    FC                 = "<maroon>"          -- Flags & Affects like 'Sanctuary'
-    SC                 = "<cornflower_blue>" -- String Literals such as Room & Mob Names
+    FC                 = "<maroon>"          -- Magical Flags & Affects like 'Sanctuary'
+    MC                 = "<coral>"           -- Mob & mob-related activities (enemies)
     SYC                = "<ansi_magenta>"    -- System Messages (Client Status, etc.)
     RC                 = "<reset>"           -- Reset Color (do not use </reset> or </color> syntax)
 
@@ -200,9 +203,6 @@ local function configByUsername()
       ["Achilles' last stand"] = true,
       ["Protection from evil"] = true,
     }
-
-    -- How many "steps" does the tick clock have (i.e., how many individual images make up the animation)
-    CLOCK_STEPS        = 120
 
     -- Select which ANTI-FLAGS to include in stat output from eq/eq_db.lua
     -- Keep this updated w/ who you're trying to equip so you don't get confused about 'missing' flags
@@ -313,7 +313,7 @@ local function configByUsername()
             end
           end
           local formattedReaction = formatReactionState( reaction, isEnabled )
-          cecho( f "\n{formattedReaction}" )
+          --cecho( f "\n{formattedReaction}" )
         end
       end
     end

@@ -1,112 +1,29 @@
--- Keep track of the most recently added item in case we want to "undo" an addition to correct for some
--- error in the identification process
-LastItem = LastItem or nil
+function addRejectedItem( item )
+  table.insert( RejectedItems, item )
+  FILE_STATUS.RejectedItems.mss = true
+  FILE_STATUS.RejectedItems.msb = true
+end
 
--- Uses the ITEM_SCHEMA table including its order attribute to display details about the current item;
--- useful for validation and feedback during development
-function displayItem( desc, tier )
-  if not tier then tier = -1 end
-  local item = Items[desc]
-  if not item then
-    cout( f "\n{EC}displayItem{RC}: no such Item {SC}{desc}{RC}" )
+-- Insert a new ItemObject into the Items table (or RejectedItems if it exists)
+function addItemObject( item )
+  -- If an item with the same short already appears in the archives; do a deep compare to
+  -- see if they are identical.
+  local desc = item.shortDescription
+  local foundItem = Items[desc]
+  if foundItem then
+    -- If the items are exactly identical, we don't want to store any data
+    if deepCompare( foundItem, item ) then
+      rejectDuplicate()
+    end
     return
   end
-  -- A local function to sort the keys in the ITEM_SCHEMA by order for structured output
-  local function getOrderedKeys( schema )
-    local keys = {}
-    for key in pairs( schema ) do
-      table.insert( keys, key )
-    end
-    table.sort( keys, function ( a, b )
-      return schema[a].order < schema[b].order
-    end )
-    return keys
-  end
-
-  -- Compose a "title card" for the item including its core stats, flags, and affects
-  local sstr = compositeString( "", item.shortDescription, "<green_yellow>" )
-  sstr       = compositeString( sstr, item.statsString, "<dark_slate_grey>" )
-  -- Add value information to treasure items
-  if item.baseType == "TREASURE" and item.value > 0 then
-    local valueString = expandNumber( item.value )
-    sstr              = compositeString( sstr, f "{valueString}gp", "<gold>" )
-  end
-  sstr       = compositeString( sstr, item.affectString, "<ansi_cyan>" )
-  sstr       = compositeString( sstr, item.flagString, "<firebrick>" )
-  -- Add flare to the special tags if present
-  sstr       = highlightTags( sstr )
-  local slen = cLength( sstr ) + 2
-  local dg   = "<dim_grey>"
-  hrule( slen, dg )
-  cout( f "{dg}| {sstr}{dg} |" )
-  hrule( slen, dg )
-
-  if tier == -1 then return end
-  local op = "<indian_red> = <reset>"
-  local keys = getOrderedKeys( ITEM_SCHEMA )
-  -- Iterate through the ITEM_SCHEMA based on the defined tier
-  for _, key in ipairs( keys ) do
-    local properties = ITEM_SCHEMA[key]
-    if tier == nil or properties.tier <= tier then
-      local value = item[key]
-      local typ = ITEM_SCHEMA[key].typ
-      -- Boolean values are important even when they're false
-      if value or typ == "boolean" then
-        if typ == "boolean" then value = tostring( value ) end
-        local ks = f "{SC}{key}{RC}"
-        local vs = nil
-        local isNumber = type( value ) == "number" and (value ~= 0 or key == "cloneable" or key == "holdable")
-        local isString = type( value ) == "string" and value ~= ""
-        local isBig = isNumber and (value >= 10000 or value <= -10000)
-        if isNumber and isBig then value = expandNumber( value ) end
-        if type( value ) == "table" and next( value ) ~= nil then
-          vs = f "{dg}{table.concat(value, ', ')}{RC}"
-        elseif isNumber or isString then
-          vs = f "{dg}{value}{RC}"
-        end
-        if vs then
-          cout( f "{ks}{op}{vs}" )
-        end
-      end
-    end
-  end
+  cout( f "\n<green_yellow>Accepted{RC}: {SC}{desc}{RC} added to Items" )
+  insertData( "Items", desc, item )
+  LastItem = desc
 end
 
--- Display a list of multiple items by calling displayItem successively for each item in the list;
--- if the list is empty, display all items in the database; if tier is nil, displayItem will default it to -1
-function displayItems( descList, tier )
-  if not descList or #descList == 0 then
-    descList = {}
-    for desc, _ in pairs( Items ) do
-      if desc and type( desc ) == "string" and desc:find( "%S" ) then
-        table.insert( descList, desc )
-      end
-    end
-  end
-  for _, desc in ipairs( descList ) do
-    displayItem( desc, tier )
-  end
-end
-
--- Using cout(), display some useful stats about the Items data
-function displayItemDataStats()
-  local totalItems     = 0
-  local baseTypeCounts = {}
-  local totalWeight    = 0
-  local totalValue     = 0
-
-  for _, item in pairs( Items ) do
-    totalItems = totalItems + 1
-    -- Aggregate count of item by type
-    local baseType = item.baseType or "Unknown"
-    baseTypeCounts[baseType] = (baseTypeCounts[baseType] or 0) + 1
-  end
-  cout( f "\n<orchid>Known Items:   {NC}{totalItems}{RC}" )
-  for baseType, count in pairs( baseTypeCounts ) do
-    local btl = #baseType
-    local pad = 10 - btl
-    cout( f "    <slate_blue>{baseType}{RC}:{string.rep(' ', pad)}{NC}{count}{RC}" )
-  end
+-- If we're in "bot" mode, we will need to make sure to return duplicate items to their owner(s)
+function rejectDuplicate()
 end
 
 -- Delete an item by short description; epsecially useful during dev/testing when bad items are being added
@@ -125,6 +42,69 @@ function deleteLastItem()
     deleteItem( LastItem )
   else
     cout( f "\n<orange_red>Rejected{RC}: No items to delete" )
+  end
+end
+
+-- This function does a slightly more thorough comparison between an incoming item and existing items in
+-- the database to help identify duplicates and potentially items with variable stats that could be merged
+function itemKnown( newItem )
+  local newItemName = newItem.shortDescription
+  local existingItem = Items[newItemName]
+  -- If there's another item with the same short description, evaluate true equality by comparing the
+  -- longDescription, baseType, and worn location of both items.
+  if existingItem then
+    if existingItem.longDescription == newItem.longDescription and
+        existingItem.baseType == newItem.baseType and
+        existingItem.worn == newItem.worn then
+      deepCompare( existingItem, newItem )
+    end
+  end
+end
+
+-- Compare two tables which might contain tables
+function deepCompare( t1, t2 )
+  -- tbl to hold diff
+  local d = {}
+
+  -- recursive compare
+  local function compare( v1, v2, k )
+    -- for tables; compare sub-pairs
+    if type( v1 ) == "table" and type( v2 ) == "table" then
+      for sk, sv1 in pairs( v1 ) do
+        local sv2 = v2[sk]
+        compare( sv1, sv2, k .. "." .. sk )
+      end
+      -- check for sub-keys in v2 not in v1
+      for sk in pairs( v2 ) do
+        if v1[sk] == nil then
+          table.insert( d, k .. "." .. sk )
+        end
+      end
+    else
+      -- compare non-tables directly
+      if v1 ~= v2 then
+        table.insert( d, k )
+      end
+    end
+  end
+
+  -- compare pairs in t1 to t2
+  for k, v1 in pairs( t1 ) do
+    local v2 = t2[k]
+    compare( v1, v2, k )
+  end
+  -- then check for keys in t2 not in t1
+  for k in pairs( t2 ) do
+    if t1[k] == nil then
+      table.insert( d, k )
+    end
+  end
+  -- For now, just return a boolean indicating whether the tables are identical; later
+  -- it might be useful to do something with the differences
+  if #d == 0 then
+    return true
+  else
+    return false
   end
 end
 

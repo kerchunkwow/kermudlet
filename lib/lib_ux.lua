@@ -25,6 +25,18 @@ function clearScreen()
   end
 end
 
+-- Print a formatted string to the "main" console; mainly used to report on in-game events or
+-- alert the player to important events or necessary actions
+function cout( s )
+  cecho( "\n" .. f( s ) )
+end
+
+-- Print a formatted string to the "Info" console; used more like a status or debug window for Mudlet
+-- to report on internal functionality and provide additional context for certain functions
+function iout( s )
+  cecho( "info", "\n" .. f( s ) )
+end
+
 -- List all fonts available in Mudlet.
 function listFonts()
   local availableFonts = getAvailableFonts()
@@ -60,6 +72,20 @@ function hrule( n, c )
   local fi = fill( n, '-', c )
   local line = f "\n{c}+{fi}{c}+<reset>"
   cecho( line )
+end
+
+-- Delete the current line then any of the subsequent 3 lines that are either empty or "prompt only"
+function deleteComplete()
+  deleteLine()
+  tempLineTrigger( 1, 3, [[completeDelete()]] )
+end
+
+-- Support deleteComplete() by deleteing the current line if it's empty or "prompt only"
+function completeDelete()
+  local justAPrompt = string.match( line, "< %d+%(%d+%) %d+%(%d+%) %d+%(%d+%) > $" )
+  if justAPrompt or #line <= 0 then
+    deleteLine()
+  end
 end
 
 -- Create and/or open a basic user window into which you can echo output; uses _G to

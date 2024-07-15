@@ -314,29 +314,23 @@ function defineCustomEnvColors()
   updateMap()
 end
 
--- Set the color of the current Room on the map based on terrain type or attributes
+-- Style rooms based on user data
 function setRoomStyle( id )
-  --local id = CurrentRoomNumber
   local roomFlags = getRoomUserData( id, "roomFlags" )
-  local roomSpec = tonumber( getRoomUserData( id, "roomSpec" ) )
-  local roomType = getRoomUserData( id, "roomType" )
+  local roomSpec  = tonumber( getRoomUserData( id, "roomSpec" ) )
+  local roomType  = getRoomUserData( id, "roomType" )
   -- Check if 'DEATH' is present in roomFlags
   if (roomFlags and string.find( roomFlags, "DEATH" )) then
-    unHighlightRoom( id )
     setRoomEnv( id, COLOR_DEATH )
     setRoomChar( id, "💀 " )
     lockRoom( id, true ) -- Lock this room so it won't ever be used for speedwalking
   elseif roomSpec > 0 then
-    unHighlightRoom( id )
     setRoomEnv( id, COLOR_PROC )
-    setRoomChar( id, "📁 " )
-    if roomFlags and string.find( roomFlags, "CLUB" ) then
-      cecho( f "\n\n<deep_pink>WARNING: {id} with PROC flag and CLUB flag<reset>\n\n" )
-    end
+    setRoomChar( id, "📁 " ) -- Rooms with special procedures get the folder icon
   elseif roomFlags and string.find( roomFlags, "CLUB" ) then
     unHighlightRoom( id )
     setRoomEnv( id, COLOR_CLUB )
-    setRoomChar( id, "💤" )
+    setRoomChar( id, "💤" ) -- Mana or resting rooms
   else
     -- Check roomType and set color accordingly
     local roomTypeToColor = {
@@ -498,4 +492,44 @@ local function styleAllRooms()
   for id, name in pairs( allRooms ) do
     setRoomStyle( id )
   end
+end
+
+
+function styleAllRooms()
+  local rooms = getRooms()
+  for id, name in pairs( rooms ) do
+    setRoomStyle( id )
+  end
+end
+
+-- Set room character & style based on user data
+function setRoomStyle( id )
+  -- Retrieve data from the room
+  local roomFlags   = getRoomUserData( id, "roomFlags" )
+  local roomTerrain = getRoomUserData( id, "roomTerrain" )
+
+  -- Style rooms with special flags, otherwise use terrain type
+  if (roomFlags and string.find( roomFlags, "DEATH" )) then
+    setRoomEnv( id, COLOR_DEATH )
+    setRoomChar( id, "💀" )
+    lockRoom( id, true ) -- Lock this room so it won't ever be used for speedwalking
+  elseif roomFlags and string.find( roomFlags, "CLUB" ) then
+    unHighlightRoom( id )
+    setRoomEnv( id, COLOR_CLUB )
+    setRoomChar( id, "💤" ) -- Mana or resting rooms
+  else
+    setRoomEnv( id, getEnvColorByTerrain( roomTerrain ) )
+  end
+  updateMap()
+end
+
+function getEnvColorByTerrain( terrain )
+  -- Set environment/color by terrain type
+  local terrainToColorMap = {
+    ["Inside"]    = COLOR_INSIDE,
+    ["Forest"]    = COLOR_FOREST,
+    ["Mountains"] = COLOR_MOUNTAINS,
+    -- etc.
+  }
+  return terrainToColorMap[terrain]
 end

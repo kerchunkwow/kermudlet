@@ -37,7 +37,7 @@ end
 function initCloning()
   -- Initialize CloneList, CloneCount, and CurrentClone
   CloneList    = CloneList or {
-    ["kings"]        = 3,
+    ["kings"]        = 2,
     ["helm"]         = 1,
     ["lies"]         = 3,
     ["sickle"]       = 1,

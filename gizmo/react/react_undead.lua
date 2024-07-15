@@ -130,7 +130,7 @@ function equipMinion( minion )
       "stone",
       "agony",
       "serpentine",
-      "shield",
+      "lies",
       "spider",
       "order",
       "freezing",
@@ -160,9 +160,9 @@ function equipMinion( minion )
       "planes",
       "bloody",
       "hell",
-      "ygaddrozil", -- Ygaddrozil keyword can be a pain
+      "lies", -- Ygaddrozil keyword can be a pain
       "flowing",
-      "flesh",
+      "burnt",
       "plane",
       "plane",
       "sickle",
@@ -177,10 +177,6 @@ function equipMinion( minion )
     send( f 'get {item} {container}', true )
     send( f 'give {item} {minion}', true )
   end
-  -- local getBoatCmd  = f [[get {boat} {container}]]
-  -- local giveBoatCmd = f [[give {boat} {minion}]]
-  -- Issue the orders to wear, wield, hold, and light
-
   tempTimer( 7, function ()
     guaranteeOrder( minion, [[wear all]], MINION_WEAR )
   end )
@@ -197,10 +193,6 @@ function equipMinion( minion )
   end
   tempTimer( 7.8, function ()
     guaranteeOrder( minion, gobletCmd, [[gives you]] )
-    -- tempTrigger( [[gives you]], function ()
-    --   send( getBoatCmd, true )
-    --   send( giveBoatCmd, true )
-    -- end, 1 )
   end )
 end
 

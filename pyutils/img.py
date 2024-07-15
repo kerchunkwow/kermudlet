@@ -3,7 +3,7 @@
 from PIL import Image, ImageDraw, ImageFont
 
 # Where you want the output images to be saved
-CLOCK_FOLDER   = 'C:/Dev/mud/mudlet/gizmo/assets/img/t'
+CLOCK_FOLDER   = 'C:/Where/You/Want/Your/Images'
 
 # Various size & appearance settings; make sure the font is available on your system
 CLOCK_DIAMETER  = 64
@@ -115,5 +115,3 @@ def get_text_position(seconds_remaining, bbox, diameter):
         position_y = center_y + 6
 
     return position_x, position_y
-
-create_timer_images()

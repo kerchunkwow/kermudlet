@@ -2,8 +2,6 @@
 A module to manage the loading, saving, and backup of various data files related to Gizmo MUD.
 --]]
 
-DATA_PATH   = "C:\\Dev\\mud\\mudlet\\gizmo\\data\\"
-BACKUP_PATH = "C:\\Dev\\mud\\gizmo\\data\\backup\\"
 
 -- A temporary dummy function to help the rest of the file recognize data types etc.
 local function tableDefinitions()
@@ -35,7 +33,7 @@ function loadDataFiles( all )
     local tblEmpty = not _G[tblName] or next( _G[tblName] ) == nil
     if tblEmpty or all then
       _G[tblName] = {}
-      table.load( f '{DATA_PATH}\\{tblName}.lua', _G[tblName] )
+      table.load( f [[{DATA_PATH}/{tblName}.lua]], _G[tblName] )
     end
   end
 end
@@ -43,13 +41,19 @@ end
 loadDataFiles()
 -- Save data for any table modified since the last save; if all is true, save all tables
 -- Reset the mss flag for each table after saving
+-- Save data for any table modified since the last save; if all is true, save all tables
+-- Reset the mss flag for each table after saving
 function saveDataFiles( all )
   for _, fileData in pairs( FILE_STATUS ) do
     local tblName = fileData.tblName
     local tbl = _G[tblName]
     if all or fileData.mss then
-      cout( f 'Saving: {VC}{tblName}{RC}' )
-      table.save( f '{DATA_PATH}\\{tblName}.lua', tbl )
+      if next( tbl ) == nil then
+        cout( f '{EC}Skipped saving empty table{RC}: {SC}{tblName}{RC}.' )
+      else
+        cout( f 'Saved: {VC}{tblName}{RC}' )
+        table.save( f '{DATA_PATH}/{tblName}.lua', tbl )
+      end
       fileData.mss = false
     end
   end
@@ -61,8 +65,8 @@ function backupDataFiles( all )
   for _, fileData in pairs( FILE_STATUS ) do
     local tblName = fileData.tblName
     if all or fileData.msb then
-      local src = f '{DATA_PATH}\\{tblName}.lua'
-      local dest = f '{BACKUP_PATH}\\{tblName}.lua'
+      local src = f '{DATA_PATH}/{tblName}.lua'
+      local dest = f '{BACKUP_PATH}/{tblName}.lua'
       local success, err = backupFile( src, dest )
       if success then
         fileData.msb = false
@@ -97,29 +101,6 @@ end
 -- Wrapper for insertData to add a player container to the KnownPlayers table
 function addKnownPlayer( playerName )
   insertData( "KnownPlayers", playerName, true )
-end
-
-function addRejectedItem( item )
-  table.insert( RejectedItems, item )
-  FILE_STATUS.RejectedItems.mss = true
-  FILE_STATUS.RejectedItems.msb = true
-end
-
--- Insert a new ItemObject into the Items table (or RejectedItems if it exists
-function addItemObject( item )
-  -- If we try to insert when Items doesn't exist, try to load the table first
-  -- Treat short descriptions are unique, but store duplicate data for review later
-  -- Possible future functionality could be a "comparison"
-  local desc = item.shortDescription
-  if Items[desc] then
-    cout( f "\n<orange_red>Rejected{RC}: {SC}{desc}{RC} already in Items" )
-    addRejectedItem( item )
-    return
-  end
-  cout( f "\n<green_yellow>Accepted{RC}: {SC}{desc}{RC} added to Items" )
-  insertData( "Items", desc, item )
-  LastItem = desc
-  --displayItemDataStats()
 end
 
 -- Copy a file from one location to another using the 'copy' command in Windows

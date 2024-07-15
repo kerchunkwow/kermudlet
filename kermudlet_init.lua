@@ -24,7 +24,10 @@ local function setUserName()
 end
 setUserName()
 
-luasql = require( "luasql.sqlite3" )
+package.path = package.path .. ";C:/Dev/mud/mudlet/lib/?.lua"
+
+luasql       = require( "luasql.sqlite3" )
+json         = require( "dkjson" )
 
 -- Seed Lua's shitty useless piece of shit random number generator
 math.randomseed( os.time() )
@@ -50,12 +53,13 @@ speedWalkWeight = nil -- Set by getPath() and other related map functions
 function loadLibs()
   -- Load the standard libraries
   runLuaFile( 'lib/lib_std.lua' )
-  runLuaFile( 'lib/lib_gui.lua' )
+  runLuaFile( 'lib/lib_ux.lua' )
   runLuaFile( 'lib/lib_react.lua' )
   runLuaFile( 'lib/lib_string.lua' )
   runLuaFile( 'lib/lib_db.lua' )
   runLuaFile( 'lib/lib_trigger.lua' )
   runLuaFile( 'lib/lib_data.lua' )
+  runLuaFile( 'lib/dkjson.lua' )
 
   -- Now branch into Gizmo-specific scripts
   runLuaFile( 'gizmo/gizmo_init.lua' )
