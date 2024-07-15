@@ -134,7 +134,7 @@ HOME_PATH          = [[C:/Dev/mud/mudlet]]
 -- Where table.save() and table.load() keep their files
 DATA_PATH          = [[C:/Dev/mud/mudlet/gizmo/data/]]
 
--- Shorthand color tags; use these to condense longer strings when outputting a lot of highlighted data
+-- Shorthand color tags; use to keep formatted strings shorter & prevent wrapping
 SC                 = "<cornflower_blue>" -- String Literals or Text
 NC                 = "<orange>"          -- Numbers
 VC                 = "<dark_violet>"     -- Non-Number Variable Values
