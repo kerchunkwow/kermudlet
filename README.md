@@ -152,8 +152,8 @@ These functions are part of the native Mudlet API but are used frequently enough
 
 ```lua
 
-------------------------------------------------------------------------------------------------------------------------
--- Most basic way to issue commands to the MUD itself, equivalent to user input from the client command-line.
+---------------------------------------------------------------------------------------------------
+-- Basic way to issue commands to the MUD itself, equivalent to user input from the client cmdline.
 function send( command, showOnScreen )
 end
 
@@ -161,33 +161,33 @@ end
 function expandAlias( command, echoBackToBuffer )
 end
 
--- Sends output to the client main window which will be interpreted by the Mudlet client as having come from
--- the MUD itself; this is super useful for testing newly-created triggers or recreating scenarios that are
--- rare.
+-- Sends output to the client main window which will be interpreted by the Mudlet client as having
+-- come from the MUD itself; this is super useful for testing newly-created triggers or recreating
+-- scenarios that are rare.
 function cfeedTriggers( text )
 end
 
--- These functions turn on/off Trigger processing for specific named Triggers; this is useful for functions
--- that only apply within a specific context. When used in conjunction with tempTimer or tempTrigger, certain
--- Triggers or groups of Triggers can be isolated.
+-- These functions turn on/off Trigger processing for specific named Triggers; this is useful for
+-- functions that only apply within a specific context. When used in conjunction with tempTimer or
+-- tempTrigger, certain Triggers or groups of Triggers can be isolated.
 function enableTrigger( name )
 end
 
 function disableTrigger( name )
 end
 
--- Returns the current time on a named stopwatch which was started earlier, for kermudlet the named timer is
--- simply "timer" and is available everywhere in the project to get the current time to the milisecond; this
--- can be used to measure deltas between in-game events or time function executions.
+-- Returns the current time on a named stopwatch started earlier, for kermudlet the timer
+-- name is "timer" and is available everywhere in the project to get the current time to the
+-- ms; this can be used to measure deltas between in-game events or time function executions.
 function getStopWatchTime( timer )
 end
 
--- Used in conjunction, these temporary Trigger/Timer functions are used frequently throughout kermudlet to
--- string together chains of related events or to temporarily enable or disable different functionality
--- throughout the project. These temp functions return integer IDs which must be stored in order to interact
--- with their respect timers and triggers in the future. Often a sequence of if timer/kill timer/start timer
--- will be used to "refresh" a timer in a situation where one may already exist for the same purpose and we
--- only want the result to happen once.
+-- Used in conjunction, these temporary Trigger/Timer functions are used frequently throughout
+-- kermudlet to string together chains of related events or to temporarily enable or disable
+-- different functionality throughout the project. These temp functions return integer IDs which
+-- must be stored in order to interact with their respect timers and triggers in the future. Often
+-- a sequence of if timer/kill timer/start timer will be used to "refresh" a timer in a situation
+-- where one may already exist for the same purpose and we only want the result to happen once.
 function tempTrigger( substring, code, expireAfter )
 end
 
@@ -200,23 +200,25 @@ end
 function killTimer( id )
 end
 
-
---	This Lua table is being used by Mudlet in the context of triggers that use Perl regular expressions.
--- matches[1] holds the entire match, matches[2] holds the first capture group, matches[n] holds the nth-1 capture
--- group. If the Perl trigger indicated 'match all' (same effect as the Perl /g switch) to evaluate all possible
--- matches of the given regex within the current line, matches[n+1] will hold the second entire match, matches[n+2]
--- the first capture group of the second match and matches[n+m] the m-th capture group of the second match.
+-- This Lua table is being used by Mudlet in the context of triggers that use Perl regular
+-- expressions. matches[1] holds the entire match, matches[2] holds the first capture group,
+-- matches[n] holds the nth-1 capture group. If the Perl trigger indicated 'match all' (same
+-- effect as the Perl /g switch) to evaluate all possible matches of the given regex within
+-- the current line, matches[n+1] will hold the second entire match, matches[n+2] the first
+-- capture group of the second match and matches[n+m] the m-th capture group of the second match.
 matches = {}
 
--- This table is being used by Mudlet in the context of multiline triggers that use Perl regular expression.
--- It holds the table matches[n] as described above for each Perl regular expression based condition of the
---  multiline trigger. multimatches[5][4] may hold the 3rd capture group of the 5th regex in the multiline
---  trigger. This way you can examine and process all relevant data within a single script.
+-- This table is being used by Mudlet in the context of multiline triggers that use Perl regular
+-- expression. It holds the table matches[n] as described above for each Perl regular expression
+-- based condition of the multiline trigger. multimatches[5][4] may hold the 3rd capture group of
+-- the 5th regex in the multiline trigger. This way you can examine and process all relevant data
+-- within a single script.
 multimatches = {{}}
 
---- Color definitions used by Geyser, cecho, and many other functions - see showColors(). The profile's color
--- preferences are also accessible under the ansi_ keys.
+-- Color definitions used by Geyser, cecho, and many other functions - see showColors().
+-- The profile's color preferences are also accessible under the ansi_ keys.
 color_table = {}
+
 
 ```
 
