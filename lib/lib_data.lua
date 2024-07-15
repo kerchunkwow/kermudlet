@@ -142,3 +142,21 @@ function appendPotionAffect()
     cecho( aff )
   end
 end
+
+-- A wrapper for Mudlet's table.save() that prevents data loss by checking the outgoing
+-- table against the existing one and only saves tables with at least the same number
+-- of entries.
+function saveSafe( path, tbl )
+  local oldTbl = {}
+  table.load( path, oldTbl )
+  if not oldTbl or next( oldTbl ) == nil then
+    table.save( path, tbl )
+    return
+  end
+  local oldCount, newCount = table.size( oldTbl ), table.size( tbl )
+  if newCount >= oldCount then
+    table.save( path, tbl )
+  else
+    cout( f '{EC}Data loss detected; not saving{RC}.' )
+  end
+end

@@ -73,7 +73,7 @@ function split( s, delim )
 -- @return The trimmed string
 function trim( s )
 
--- Trim leading and trailing whitespace AND condense multiple whitespace characters into single spaces
+-- Trim leading and trailing whitespace & condense internal whitespace
 -- @param s The string to be trimmed and condensed
 -- @return The trimmed and condensed string
 function trimCondense( s )
@@ -115,20 +115,7 @@ function getMaxStringLength( stringList )
 -- @return The regex pattern
 function createLineRegex( rawString )
 
--- Get a string representation of a number with a sign (+ or -)
--- @param num The number to be converted
--- @return The signed string
-function getSignedString( num )
-
--- Concatenate a string with a colored substring, separated by a space; this mainly supports
--- the creation of display strings for MUD items but could be useful elsewhere.
--- @param str The base string
--- @param substring The substring to be appended
--- @param color The color code for the substring
--- @return The concatenated string
-function compositeString( str, substring, color )
-
--- Calculate the length of a string excluding Mudlet color tags and adjusting for special characters
+-- Calculate strlen excluding Mudlet color tags & adjusting for utf8
 -- @param s The input string to be measured
 -- @return The adjusted length of the string
 function cLength( s )

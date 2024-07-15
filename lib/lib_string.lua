@@ -25,7 +25,7 @@ function trim( s )
   return s:match( "^%s*(.-)%s*$" )
 end
 
--- Trim leading and trailing whitespace AND condense multiple whitespace characters into single spaces
+-- Trim leading and trailing whitespace & condense internal whitespace
 -- @param s The string to be trimmed and condensed
 -- @return The trimmed and condensed string
 function trimCondense( s )
