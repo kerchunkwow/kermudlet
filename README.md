@@ -44,7 +44,9 @@ Below is documentation on many key functions available to kermudlet either throu
 - Mudlet's built-in API does not conform to all of these standards; if you see lower_snake_case for example, this is probably native Mudlet or Lua.
 - Avoid in-line comments unless describing the individual properties of a large table or list of related elements; in most cases comments belong on their own line.
 - Try to limit lines to 100 characters and under no circumstances exceed 120.
-- For readability, include whitespace inside parantheses for function definitions and invocations like `function( parameter )` and between operators and operands like `(n * (s + 1) / 2) + m` or `if variable == conditional then`; use verticle whitespace in longer scripts to group related sections of code visually.
+- For readability, include whitespace inside parantheses for function definitions and invocations like
+`function( parameter )` and between operators and operands like `(n * (s + 1) / 2) + m` or
+`if variable == conditional then`; use verticle whitespace in longer scripts to group related sections of code visually.
 - In general, if I send you code you can assume it has been passed through my IDE's auto-formatting rules and therefore adheres to my preferred standards; try to emulate the style and syntax of the code you receive from me in your own.
 - Avoiding using `print()` for console output; use Mudlet's `cecho()` function or kermudlet's `cout()` which wraps f-strings and newlines.
 - Mudlet's Lua implementation supports f-string interpolation; avoid using `string.format()` when concatenating variables and string literals; Mudlet's f-string syntax mirrors Pythons like `cecho( f"This {variable} will be replaced." )`; if I send you code with f-strings, never replace them with your own calls to `string.format()`.

@@ -15,65 +15,70 @@ local function tableDefinitions()
   PlayerContainers = {}
 end
 
-FILE_STATUS = FILE_STATUS or {
-  ["Items"]            = {tblName = "Items", mss = true, msb = true},
-  ["RejectedItems"]    = {tblName = "RejectedItems", mss = true, msb = true},
-  ["StaticItems"]      = {tblName = "StaticItems", mss = true, msb = true},
-  ["LoggedLoot"]       = {tblName = "LoggedLoot", mss = true, msb = true},
-  ["DesirableItems"]   = {tblName = "DesirableItems", mss = true, msb = true},
-  ["PotionAffects"]    = {tblName = "PotionAffects", mss = true, msb = true},
-  ["KnownPlayers"]     = {tblName = "KnownPlayers", mss = true, msb = true},
-  ["PlayerContainers"] = {tblName = "PlayerContainers", mss = true, msb = true},
+DATA_FILES = {
+  "Items",
+  "RejectedItems",
+  "StaticItems",
+  "LoggedLoot",
+  "DesirableItems",
+  "PotionAffects",
+  "KnownPlayers",
+  "PlayerContainers",
 }
 
--- Load data for any file not currently loaded (nil or empty table); if all is true, force a reload of all files
+-- A wrapper for Mudlet's table.save() that prevents data loss by checking the outgoing
+-- table against the existing one and only saves tables with at least the same number
+-- of entries.
+function saveSafe( path, tbl )
+  local oldTbl = {}
+  table.load( path, oldTbl )
+  if not oldTbl or next( oldTbl ) == nil then
+    table.save( path, tbl )
+    return
+  end
+  local oldCount, newCount = table.size( oldTbl ), table.size( tbl )
+  if newCount >= oldCount then
+    table.save( path, tbl )
+  end
+end
+
+-- Attempt to save all data files; skip any which are empty or smaller than the existing
+-- file.
+function saveDataFiles()
+  for _, tblName in ipairs( DATA_FILES ) do
+    local tbl = _G[tblName]
+    if next( tbl ) == nil then
+      cout( f '\nAttempted to save {EC}empty{RC} table: {tblName}.' )
+    else
+      saveSafe( f '{DATA_PATH}/{tblName}.lua', tbl )
+    end
+  end
+end
+
+-- Load data for any file not currently loaded (nil or empty table); if all is true,
+-- force a reload of all files
 function loadDataFiles( all )
-  for key, fileData in pairs( FILE_STATUS ) do
-    local tblName = fileData.tblName
+  for _, tblName in ipairs( DATA_FILES ) do
     local tblEmpty = not _G[tblName] or next( _G[tblName] ) == nil
     if tblEmpty or all then
       _G[tblName] = {}
-      table.load( f [[{DATA_PATH}/{tblName}.lua]], _G[tblName] )
+      table.load( f '{DATA_PATH}/{tblName}.lua', _G[tblName] )
     end
   end
 end
 
 loadDataFiles()
--- Save data for any table modified since the last save; if all is true, save all tables
--- Reset the mss flag for each table after saving
--- Save data for any table modified since the last save; if all is true, save all tables
--- Reset the mss flag for each table after saving
-function saveDataFiles( all )
-  for _, fileData in pairs( FILE_STATUS ) do
-    local tblName = fileData.tblName
-    local tbl = _G[tblName]
-    if all or fileData.mss then
-      if next( tbl ) == nil then
-        cout( f '{EC}Skipped saving empty table{RC}: {SC}{tblName}{RC}.' )
-      else
-        cout( f 'Saved: {VC}{tblName}{RC}' )
-        table.save( f '{DATA_PATH}/{tblName}.lua', tbl )
-      end
-      fileData.mss = false
-    end
-  end
-end
-
 -- Backup data for any table modified since the last backup; if all is true, backup all tables
 -- Reset the msb flag for each table after backing up
-function backupDataFiles( all )
-  for _, fileData in pairs( FILE_STATUS ) do
-    local tblName = fileData.tblName
-    if all or fileData.msb then
-      local src = f '{DATA_PATH}/{tblName}.lua'
-      local dest = f '{BACKUP_PATH}/{tblName}.lua'
-      local success, err = backupFile( src, dest )
-      if success then
-        fileData.msb = false
-        iout( f 'Backup created successfully for {tblName}' )
-      else
-        iout( f 'Error creating backup for {tblName}: {err}' )
-      end
+function backupDataFiles()
+  for _, tblName in ipairs( DATA_FILES ) do
+    local src = f '{DATA_PATH}/{tblName}.lua'
+    local dest = f '{BACKUP_PATH}/{tblName}.lua'
+    local success, err = backupFile( src, dest )
+    if success then
+      iout( f 'Backup created successfully for {tblName}' )
+    else
+      iout( f 'Error creating backup for {tblName}: {err}' )
     end
   end
 end
@@ -82,12 +87,6 @@ end
 function insertData( tblName, key, value )
   cout( f '<green>Inserting{RC}: {SC}{key}{RC} into <yellow_green>{tblName}<reset>' )
   _G[tblName][key] = value
-  if FILE_STATUS[tblName] then
-    FILE_STATUS[tblName].mss = true
-    FILE_STATUS[tblName].msb = true
-  else
-    cout( f '{EC}{tblName}{RC} not found in FILE_STATUS' )
-  end
 end
 
 -- Wrapper for insertData to add a player container to the PotionAffects table
@@ -140,23 +139,5 @@ function appendPotionAffect()
     local aff = PotionAffects[obj]
     aff = f " {vr}[{meo}{aff}{vr}]{RC}"
     cecho( aff )
-  end
-end
-
--- A wrapper for Mudlet's table.save() that prevents data loss by checking the outgoing
--- table against the existing one and only saves tables with at least the same number
--- of entries.
-function saveSafe( path, tbl )
-  local oldTbl = {}
-  table.load( path, oldTbl )
-  if not oldTbl or next( oldTbl ) == nil then
-    table.save( path, tbl )
-    return
-  end
-  local oldCount, newCount = table.size( oldTbl ), table.size( tbl )
-  if newCount >= oldCount then
-    table.save( path, tbl )
-  else
-    cout( f '{EC}Data loss detected; not saving{RC}.' )
   end
 end

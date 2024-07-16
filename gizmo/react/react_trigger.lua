@@ -31,11 +31,12 @@ end
 
 -- Triggered when an incoming chat message is recognized to highlight and route the message
 function triggerRouteChat()
+  local speaker, channel, message = matches[2], matches[3], matches[4]
+  -- Don't filter Nadja's chat; she's a special case
+  if speaker == "Nadja" then return end
   deleteLine()
 
   if SESSION == 1 then
-    local speaker, channel, message = matches[2], matches[3], matches[4]
-
     -- Check if message is nil before proceeding
     if not message then
       print( "Error: 'message' is nil." )

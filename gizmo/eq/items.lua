@@ -22,8 +22,6 @@ FullIDText = FullIDText or ""
 -- through them after each successful identify is completed.
 IDQueue = IDQueue or nil
 
-BusyString = "I'm busy with another item right now. Tell me RET {item} <keyword> to get your item back."
-
 -- Boolean to track whether we're currenting processing an item contribution;
 -- we will need to prevent other players from contributing while we're working
 -- on an item.

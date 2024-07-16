@@ -1,7 +1,7 @@
 function addRejectedItem( item )
   table.insert( RejectedItems, item )
-  FILE_STATUS.RejectedItems.mss = true
-  FILE_STATUS.RejectedItems.msb = true
+  --FILE_STATUS.RejectedItems.mss = true
+  --FILE_STATUS.RejectedItems.msb = true
 end
 
 -- Insert a new ItemObject into the Items table (or RejectedItems if it exists)

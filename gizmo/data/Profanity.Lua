@@ -1,5 +1,4 @@
 ProfanePatterns = {
-  "^%s*[a@]%s*[s%$]%s*[s%$]$",
   "%s*[a@]%s*[s%$]%s*[s%$]%s*[%s-]*h%s*[o0]%s*[%s-]*%s*[l1]%s*[e3]%s*[s%$]?",
   "b%s*[a@]%s*[s%$]%s*[t%+]%s*[a@]%s*r%s*[d%+]",
   "b%s*[e3]%s*[a@]%s*[s%$]%s*[t%+]%s*[i1]%s*[a@]?%s*[l1]%s*[i1](%s*[t%+]%s*y)?",
@@ -11,7 +10,7 @@ ProfanePatterns = {
   "b%s*[i1]%s*[t%+]%s*[c%+]%s*h%s*[i1]%s*ng?",
   "b%s*[l1]%s*[o0]%s*[w%+]%s*[j%+]%s*[o0]%s*[b%+]%s*s?$",
   "c%s*[l1]%s*[i1]%s*[t%+]",
-  "%s*[c|k|c%s*k|q]%s*[o0]%s*[c|k|c%s*k|q]%s*[s%$]?$",
+  "%s*[c|k|c%s*k|q]%s*[o0]%s*[c|k|c%s*k|q]%s*[c|k|c%s*k|q]%s*[s%$]?$",
   "%s*[c|k|c%s*k|q]%s*um%s*[s%$]%s*[h]%s*[o0]%s*[t%+]",
   "%s*[c|k|c%s*k|q]%s*un%s*[i1]%s*[l1]%s*[i1]%s*ngu%s*[s%$]",
   "%s*[c|k|c%s*k|q]%s*un%s*[i1]%s*[l1]%s*[l1]%s*[i1]%s*ngu%s*[s%$]",
