@@ -98,10 +98,7 @@ function endIdentify()
   addItemObject( ItemObject )
   displayItem( itm, 999 )
   if ItemsReceived[itm] and ItemsReceived[itm] == CurrentPlayer then
-    -- Set the contributor attribute of the item before inserting it
-    -- Set a local variable kw to the first word in the list of the ItemObject's keywords
-    local kw = ItemObject.keywords[1]
-    returnItem( itm, kw )
+    returnItem()
   end
   -- Reset the item object table once it has been inserted
   ItemObject = {}
