@@ -115,3 +115,20 @@ def get_text_position(seconds_remaining, bbox, diameter):
         position_y = center_y + 6
 
     return position_x, position_y
+
+def convert_links():
+  # Step 1: Read URLs from the text file
+  with open('C:\Dev\mud\mudlet\pyutils\links.txt', 'r') as file:
+      urls = file.readlines()
+
+  # Step 2: Create an HTML file and write the URLs as clickable links
+  with open('C:\Dev\mud\mudlet\pyutils\links.html', 'w') as file:
+      file.write('<html>\n<head>\n<title>URL List</title>\n</head>\n<body>\n')
+      file.write('<h1>List of URLs</h1>\n<ul>\n')
+      for url in urls:
+          url = url.strip()
+          if url:
+              file.write(f'<li><a href="{url}" target="_blank">{url}</a></li>\n')
+      file.write('</ul>\n</body>\n</html>')
+
+convert_links()

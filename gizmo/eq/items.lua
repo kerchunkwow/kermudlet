@@ -22,14 +22,6 @@ FullIDText = FullIDText or ""
 -- through them after each successful identify is completed.
 IDQueue = IDQueue or nil
 
--- Boolean to track whether we're currenting processing an item contribution;
--- we will need to prevent other players from contributing while we're working
--- on an item.
-ProcessingItem = ProcessingItem or true
-
--- The player responsible for the current/most recent item contribution.
-Contributor = Contributor or nil
-
 function loadItemDataModule()
   local itemScripts = {
     'gizmo/eq/item_const.lua',

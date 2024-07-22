@@ -15,13 +15,14 @@ Mudlet utilizes several external data sources to store game-related data for per
 ### Python Support
 As needed, kermudlet will utilize Python scripts to maintain supporting utilities whenever Python is a more appropriate tool for the job.
 
-## Technical Details
+## Tools & Tech
 - Primary scripts are [Lua 5.1](https://www.lua.org/manual/5.1/)
 - IDE is VSCode with extensions [Lua by sumneko](https://luals.github.io/) and
 [Mudlet Scripts SDK](https://marketplace.visualstudio.com/items?itemName=Delwing.mudlet-scripts-sdk) for interpreting
 built-in Mudlet functions.
 - Lua [sqlite3](http://lua.sqlite.org/index.cgi/doc/tip/doc/lsqlite3.wiki) library is used to interact wtih SQLite
 databases; some database work will be done directly in SQL through [DBeaver](https://dbeaver.io/) 23.2.3
+- [Python 3.10.11](https://docs.python.org/release/3.10.11/) is used for development of supporting Python scripts
 
 ## Guidance and Reference for ChatGPT
 Below is documentation on many key functions available to kermudlet either through the Mudlet client API or from custom-built local libraries. Utilize these functions as needed when implementing new features and expand the list of custom functions with new utilities, helpers, or wrappers as opportunities arise.
@@ -30,11 +31,12 @@ Below is documentation on many key functions available to kermudlet either throu
 
 #### General Guidance for Sending & Receiving Code
 - Avoid unnecessary repetition when sending code. If I send you a function for reference or feedback, do not send it back to me unless you have modified it; once you send a function once, do not re-send it unless you have made changes; if I send a function and ask for help with a specific section such as a for-loop or if-block, limit your response to the script in question.
+- Avoid removing or deleting portions of my code unless doing so is critical to accomplishing a task I have asked you to complete; do not delete code simply because its purpose is not clear to you. If I send you a function and ask you to improve or enhance it, you should assume that it is functional as-is and you should only make changes associated with the specific enhancement requested.
 - Always try to use the most recent version of a function; if you send me a function and I send it back to you with modifications, assume I have made those modifications deliberately and "replace" your knowledge of that function with my version; never revert to a previously unmodified version unless I explicitly ask; put another way, avoid overwriting my changes by replacing them with older code of your own.
 - Unless explicitly asked or when providing partial code like a snippet, never provide functional code outside the scope of a function. kermudlet automatically reloads modified files in real-time and any script outside of a function will immediately execute in the live client environment.
 - Do not provide "example usage" or test cases unless explicitly asked; I will always specify when I want you to provide script to help test an existing function.
 - Do not introduce error-handling unless explicitly requested; Mudlet provides real-time feedback on Lua errors within the Client so any additional error-handling within kermudlet is likely to be redundant and unnecessary.
-- Do not include comments that refer to our interactions within a chat window; if you fix a problem or modify a line for example, do not include a comment like "-- Fixed the problem" or "-- This is different now." All comments should be relevant to the code or functionality they describe and they should make sense to someone who is not aware that they were written during our collaboration.
+- Do not include comments that refer to our interactions within a chat window; if you fix a problem or modify a line for example, do not include a comment like `-- Fixed the problem` or `-- This is different now.` All comments should be relevant to the code or functionality they describe and they should make sense to someone who is not aware that they were written during our collaboration.
 - Mudlet uses [Lua 5.1](https://www.lua.org/manual/5.1/); ensure code that you send does not depend upon functions added to Lua beyond this version.
 
 #### Syntax Guidance for Sending & Receiving Code

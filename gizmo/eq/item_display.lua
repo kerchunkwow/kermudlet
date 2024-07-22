@@ -56,7 +56,8 @@ function displayItem( desc, tier )
         if typ == "boolean" then value = tostring( value ) end
         local ks = f "{SC}{key}{RC}"
         local vs = nil
-        local isNumber = type( value ) == "number" and (value ~= 0 or key == "cloneable" or key == "holdable")
+        local isNumber = type( value ) == "number" and
+        (value ~= 0 or key == "cloneable" or key == "holdable")
         local isString = type( value ) == "string" and value ~= ""
         local isBig = isNumber and (value >= 10000 or value <= -10000)
         if isNumber and isBig then value = expandNumber( value ) end
@@ -69,6 +70,19 @@ function displayItem( desc, tier )
           cout( f "{ks}{op}{vs}" )
         end
       end
+    end
+  end
+end
+
+-- Display differences between two items
+-- @param differences Table containing the differences
+function displayItemDifferences( differences )
+  if #differences == 0 then
+    cecho( f "{GDOK} The items are identical.\n" )
+  else
+    cecho( f "{GDOK} <deep_pink>Differences<reset> between items:" )
+    for _, diff in ipairs( differences ) do
+      cecho( f "{diff}\n" )
     end
   end
 end
@@ -92,9 +106,9 @@ end
 -- Using cout(), display some useful stats about the Items data
 function displayItemDataStats()
   local totalItems     = 0
-  local baseTypeCounts = {}
   local totalWeight    = 0
   local totalValue     = 0
+  local baseTypeCounts = {}
 
   for _, item in pairs( Items ) do
     totalItems = totalItems + 1
@@ -124,6 +138,10 @@ function setItemStatsString()
     end
   else
     ItemObject.statsString = coreStatsString
+  end
+  -- Don't insert items with empty stats strings (this is very rare and usually only occurs with trash items)
+  if #ItemObject.statsString <= 0 or ItemObject.statsString == "" then
+    ItemObject.statsString = nil
   end
 end
 
@@ -179,7 +197,6 @@ function getSpellApplyString()
     -- For consumables with charges, append an x# to the end of the stats string
     applyString = applyString .. f( " x{spellCharges}" )
   end
-  cecho( "Apply string: <deep_pink>" .. applyString )
   return applyString
 end
 
@@ -192,7 +209,7 @@ function getDamageString()
     return nil
   end
   local damageString = nil
-  cecho( "\n\t  [ <dark_olive_green><i>~setting damageString</i><reset> ]" )
+  cecho( "{GDITM}    <dark_olive_green><i>~setting damageString</i><reset>" )
   local n, s = ItemObject.damageDice:match( "(%d+)D(%d+)" )
   if n and s then
     local dam   = ItemObject.dr or 0
@@ -212,7 +229,8 @@ function getDamageString()
     damageString             = f( "{n}D{s}{drStr}{hrStr} ({ItemObject.averageDamage}avg)" )
     return damageString
   else
-    local damageError = f( "{EC}getDamageString{RC}(): Invalid damageDice {ItemObject.damageDice}" )
+    local damageError = f(
+    "{GDITM} {EC}getDamageString{RC}(): Invalid damageDice {ItemObject.damageDice}" )
     cecho( damageError )
     return nil
   end
@@ -225,7 +243,7 @@ function getItemFlagString()
   if not ItemObject.flags or #ItemObject.flags == 0 then
     return nil
   end
-  cecho( "\n\t  [ <dark_olive_green><i>~setting flagString</i><reset> ]" )
+  cecho( f "{GDITM}    <dark_olive_green><i>~setting flagString</i><reset>" )
   local shortFlags, rawFlags = {}, {}
   -- Combine the ItemObject flags and undeadAntis into a single table, acounting
   -- for possible empty tables
@@ -258,7 +276,7 @@ function getItemaffectString()
   if not ItemObject.affects or #ItemObject.affects == 0 then
     return nil
   end
-  cecho( "\n\t  [ <dark_olive_green><i>~setting affectString</i><reset> ]" )
+  cecho( f "{GDITM}    <dark_olive_green><i>~setting affectString</i><reset>" )
   local affectString = ""
 
   -- Iterate over ItemObject.affects using ipairs

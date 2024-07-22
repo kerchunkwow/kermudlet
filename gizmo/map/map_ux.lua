@@ -26,6 +26,20 @@ function showRoomOnClick()
   cecho( "\n" )
 end
 
+function timeSomeMapStuff()
+  local roomCount = 0
+  local startTime = getStopWatchTime( "timer" )
+  local allRooms = getRooms()
+  for id, room in pairs( allRooms ) do
+    roomCount = roomCount + 1
+    displayRoom( id )
+  end
+  local endTime = getStopWatchTime( "timer" )
+  local elapsed = endTime - startTime
+  elapsed = round( elapsed, 0.001 )
+  cout( f "Displayed {NC}{roomCount}{RC} rooms in {NC}{elapsed}{RC}s" )
+end
+
 -- Mapper UI to label mobs in a room that award fame
 -- [TODO] Will not work for rooms with multiple fame mobs (rare)
 function labelMobOnClick()

@@ -66,6 +66,52 @@ function contains( table, value, sequential )
   return false
 end
 
+-- Compare two tables with one layer of "deep" recursion; used to determine if two tables are identical
+-- @param t1 The first table to compare
+-- @param t2 The second table to compare
+-- @param differences if passed, will hold the table delta after execution (optional)
+-- @return Boolean indicating whether the tables are identical
+function deepCompare( t1, t2, differences )
+  -- Table to hold differences if not provided
+  differences = differences or {}
+
+  -- Recursive compare function
+  local function compare( v1, v2, k )
+    -- Compare sub-pairs for tables
+    if type( v1 ) == "table" and type( v2 ) == "table" then
+      for sk, sv1 in pairs( v1 ) do
+        local sv2 = v2[sk]
+        compare( sv1, sv2, k .. "." .. sk )
+      end
+      -- Check for sub-keys in v2 not in v1
+      for sk in pairs( v2 ) do
+        if v1[sk] == nil then
+          table.insert( differences, f "{k}.{sk}: nil, {v2[sk]}" )
+        end
+      end
+    else
+      -- Compare non-tables directly
+      if v1 ~= v2 then
+        table.insert( differences, f "{k}: {v1}, {v2}" )
+      end
+    end
+  end
+
+  -- Compare pairs in t1 to t2
+  for k, v1 in pairs( t1 ) do
+    local v2 = t2[k]
+    compare( v1, v2, k )
+  end
+  -- Check for keys in t2 not in t1
+  for k in pairs( t2 ) do
+    if t1[k] == nil then
+      table.insert( differences, f "{k}: nil, {t2[k]}" )
+    end
+  end
+  -- Return boolean indicating whether the tables are identical
+  return #differences == 0
+end
+
 -- Ensure a value remains within a fixed range
 -- @param value The value to be clamped
 -- @param min The minimum allowable value

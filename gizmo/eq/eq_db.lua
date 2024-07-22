@@ -273,106 +273,6 @@ function exportIDStrings()
   env:close()
 end
 
--- Deprecated to eliminate runtime dependency on the database; if for some reason you want to continue using this
--- method just remove the local qualifier and change the function name (and don't call loadAllItems)
-local function itemQueryAppendDatabase()
-  -- Capture the item name from Mudlet's regex array and a trimmed version for query-matching
-  local itemName        = matches[2]
-  local itemNameTrimmed = trimItemName( itemName )
-  local itemNameLength  = #itemName
-
-  -- Colorize the item and any flags
-  selectString( itemName, 1 )
-  fg( "slate_gray" )
-  selectString( "glowing", 1 )
-  fg( "gold" )
-  selectString( "humming", 1 )
-  fg( "olive_drab" )
-  selectString( "cloned", 1 )
-  fg( "royal_blue" )
-  resetFormat()
-
-  -- Connect to local db
-  local luasql = require "luasql.sqlite3"
-  local env = luasql.sqlite3()
-  local conn, cerr = env:connect( DB_PATH )
-
-  if not conn then
-    iout( "{EC}eq_db.lua{RC} failed database connection in itemQueryAppend()" )
-    return
-  end
-  -- Query for the item's stats, antis, and cloneability values
-  local query = string.format(
-    [[SELECT name, statsString, antisString, clone, affectsString FROM LegacyItem WHERE name = '%s']],
-    itemNameTrimmed:gsub( "'", "''" ) )
-  local cur, qerr = conn:execute( query )
-
-  if not cur then
-    iout( "{EC}eq_db.lua{RC} failed query: {query}" )
-    conn:close()
-    env:close()
-    return
-  end
-  local item = cur:fetch( {}, "a" )
-
-  cur:close()
-  conn:close()
-  env:close()
-
-  if item then
-    -- Some shorthanded color codes
-    local sc      = "<sea_green>"   -- Item stats
-    local ec      = "<ansi_cyan>"   -- +Affects
-    local cc      = "<steel_blue>"  -- Cloneability
-    local spc     = "<ansi_yellow>" -- Proc
-    local ac      = "<firebrick>"   -- Antis
-
-    -- Padding for alignment
-    local padding = string.rep( " ", 46 - itemNameLength )
-    longest_eq    = longest_eq or 0
-    if #itemNameTrimmed > longest_eq then longest_eq = #itemNameTrimmed end
-    -- Build display string from stats & cloneable flag
-    local display_string = nil
-    local specTag        = itemHasSpec( itemNameTrimmed ) and f " {spc}ƒ{R}" or ""
-    local cloneTag       = item.clone == 1 and f " {cc}c{R}" or ""
-    local stats          = item.statsString and f "{sc}{item.statsString}{R}" or ""
-    -- Add a space if strings don't start with a sign (looks nicer, usually weapons)
-    if not string.match( stats, "^[+-]" ) then stats = " " .. stats end
-    -- Display basic string or add additional details based on query mode
-    if itemQueryMode == 0 then
-      display_string = f "{padding}{stats}{cloneTag}{specTag}"
-    elseif itemQueryMode == 1 and (stats ~= "") then
-      -- Add effects and anti-flags when mode == 1
-      local effects, antis = nil, nil
-      effects              = item.affectsString and f " {ec}{item.affectsString}{R}" or ""
-      antis                = item.antisString or ""
-      -- If there's an anti-string and a customize function is defined, use it
-      if #antis >= 1 and customizeAntiString then
-        antis = customizeAntiString( antis )
-        antis = f " {ac}{antis}{R}"
-      end
-      display_string = f "{padding}{stats}{cloneTag}{specTag}{effects}{antis}"
-    end
-    -- Print the final string to the game window (appears after stat'd item)
-    if display_string ~= "" then
-      cecho( display_string )
-    end
-  end
-end
-
--- This function will iterate through the itemList which is a list of keywords, and attempt to
--- 'get' each item from container 1 and put each item into container 2
-local function transferItems( itemList, container1, container2 )
-  for i, item in ipairs( itemList ) do
-    local function transfer()
-      send( "get " .. item .. " " .. container1 )
-      send( "put " .. item .. " " .. container2 )
-    end
-    tempTimer( (i - 1) * 0.25, transfer )
-  end
-  ItemsForTransfer = nil
-end
-
 RawItemData = RawItemData or {}
 function loadLegacyItems()
   local luasql = require "luasql.sqlite3"
@@ -408,15 +308,228 @@ end
 -- be identified by the new item identification bot system; it iterates through the legacy items and
 -- performs math on various item attributes to try and determine reasonable prize scales for different
 -- item types.
-function planBotPrizes()
-  -- For every item in the RawItemData table, print item.name
+function planBotPrizes( itemType, attribute, basePrize, prizeMultiplier )
+  local totalPrizes    = 0
+  local itemCount      = 0
+  local totalAttribute = 0
+
+  -- Function to get the multiplier for a given attribute value
+  local function getMultiplier( value )
+    for _, entry in ipairs( prizeMultiplier ) do
+      if value < entry.threshold then
+        return entry.multiplier
+      end
+    end
+    return 1 -- Default multiplier
+  end
+
   for id, item in pairs( RawItemData ) do
-    if item.damageDice and item.damageDice ~= 0 then
-      local stats = item.statsString
-      -- The stats string contains the substring "#avg"; extract the number portion and convert it to a number
-      local avg = trim( string.match( stats, "(%d+)avg" ) )
-      avg = tonumber( avg )
-      cecho( avg )
+    if item["baseType"] == itemType then
+      cout( f "{SC}{item.name}{RC} ({attribute})" )
+    end
+    if item[attribute] and item[attribute] ~= 0 then
+      cout( f "<orange>{item[attribute]}" )
+      local attrValue = item[attribute]
+      itemCount = itemCount + 1
+      totalAttribute = totalAttribute + attrValue
+      local multiplier = getMultiplier( attrValue )
+      local thisPrize = (basePrize * multiplier) * attrValue
+      -- Get some output to check specific values
+      if thisPrize > 200000 then
+        local prizeString = expandNumber( thisPrize )
+        --cout( f "{SC}{item.name}{RC} (<tomato>{attrValue}<reset>) == <gold>{prizeString}<reset>gp" )
+      end
+      totalPrizes = totalPrizes + thisPrize
     end
   end
+  local averageAttribute = (totalAttribute / itemCount)
+  local averagePrize     = round( totalPrizes / itemCount, 0.1 )
+  averagePrize           = expandNumber( averagePrize )
+  totalPrizes            = expandNumber( totalPrizes )
+  averageAttribute       = round( averageAttribute, 0.1 )
+
+  hrule( 80, "<dark_slate_grey>" )
+  cecho( f "\nTotal Prizes to be Paid: {NC}{totalPrizes}" )
+  cecho( f "\nAverage Prize:           {NC}{averagePrize}" )
+  cecho( f "\nTotal Number of {itemType}s: {NC}{itemCount}" )
+end
+
+function getItemBounty( item )
+  -- An item's "prize key" is based on its item type and represents the most important aspects of an item in that category
+  local prizeKey = 0
+  if item.baseType == "ARMOR" then
+    prizeKey = item.ac + item.armor
+  elseif item.baseType == "WEAPON" then
+    prizeKey = item.averageDamage
+  elseif item.baseType == "TREASURE" then
+    prizeKey = item.value
+  elseif item.baseType == "LIGHT" or item.baseType == "WORN" or item.baseType == "MUSICAL" then
+  end
+end
+
+function findNonKeywords()
+  -- Create a local table named "allNameWords"
+  local allNameWords = {}
+
+  -- Iterate over RawItemData and split each item's name into words
+  for _, item in pairs( RawItemData ) do
+    if item.name and item.name ~= "" then
+      -- lower the item name for case insensitivity
+      local itm = item.name:lower()
+      for word in itm:gmatch( "%S+" ) do
+        if not allNameWords[word] then
+          allNameWords[word] = true
+        end
+      end
+    end
+  end
+  -- Count the size of allNameWords
+  local allNameWordsSize = 0
+  for _ in pairs( allNameWords ) do
+    allNameWordsSize = allNameWordsSize + 1
+  end
+  cecho( "\nSize of allNameWords: " .. allNameWordsSize )
+
+  -- Create a list named nonKeywords
+  local nonKeywords = {}
+
+  -- Check ItemKeywords[word] for every word in allNameWords
+  for word in pairs( allNameWords ) do
+    if not ItemKeywords[word] then
+      cout( word )
+      table.insert( nonKeywords, word )
+    end
+  end
+  -- Display the nonKeywords list
+
+  --display( nonKeywords )
+  cecho( "\nSize of nonKeywords: " .. #nonKeywords )
+end
+
+-- Format and print large bounties
+-- @param bigBounties The list of items with large bounties
+-- @param longestLine The length of the longest report name
+local function displayLargeBounties( bigBounties, longestLine )
+  cecho( "\n\nLarge Bounties:\n" )
+  for _, entry in ipairs( bigBounties ) do
+    local reportName = f "{entry.name} ({entry.baseType})"
+    local padding = string.rep( " ", longestLine - #reportName )
+    reportName = "<dodger_blue>" .. reportName
+    reportName = reportName:gsub( "%(", "<reset>(<dark_slate_grey>" )
+    reportName = reportName:gsub( "%)", "<reset>)" )
+    cecho( f "\n{reportName}{padding} <gold>{expandNumber(entry.bounty)}<reset>" )
+  end
+end
+
+-- Print summary statistics
+-- @param totalBounty The total bounty value
+-- @param averageBounty The average bounty value
+-- @param itemCount The total number of items
+local function displaySummary( totalBounty, averageBounty, itemCount )
+  totalBounty   = expandNumber( totalBounty )
+  averageBounty = round( averageBounty, 1000 )
+  averageBounty = expandNumber( averageBounty )
+  hrule( 80, "<dark_slate_grey>" )
+  cecho( f "\nTotal Payout:   {NC}{totalBounty}" )
+  cecho( f "\nAverage Reward: {NC}{averageBounty}" )
+  cecho( f "\nTotal Items:    {NC}{itemCount}" )
+end
+
+-- Print a detailed summary by item type of the bounties paid out for that particular category
+local function printDetailedBountySummary()
+  local typeSummary = {}
+
+  for id, item in pairs( RawItemData ) do
+    local itemBounty = calculateItemBounty( item )
+    local itemType = item.baseType
+
+    if not typeSummary[itemType] then
+      typeSummary[itemType] = {
+        count = 0,
+        totalBounty = 0,
+        highestBounty = 0,
+        mostValuableItem = {name = "", bounty = 0}
+      }
+    end
+    typeSummary[itemType].count = typeSummary[itemType].count + 1
+    typeSummary[itemType].totalBounty = typeSummary[itemType].totalBounty + itemBounty
+
+    if itemBounty > typeSummary[itemType].mostValuableItem.bounty then
+      typeSummary[itemType].mostValuableItem.name = item.name
+      typeSummary[itemType].mostValuableItem.bounty = itemBounty
+    end
+  end
+  cecho( "\n\nDetailed Bounty Summary:\n" )
+
+  for itemType, summary in pairs( typeSummary ) do
+    local typeName = itemType or "UNKNOWN"
+    local most = expandNumber( summary.mostValuableItem.bounty )
+    local best = summary.mostValuableItem.name
+    local total = expandNumber( summary.totalBounty )
+    hrule( 60, "<dark_slate_grey>" )
+    cout( "Type:           {SC}{typeName}{RC}" )
+    cout( "Total Items:    {NC}{summary.count}{RC}" )
+    cout( "Total Bounty:   {NC}{total}{RC}" )
+    cout( "Best Item:      {SC}{best}{RC} (<gold>{most}{RC})" )
+    --displayItemBountyDetails( best )
+  end
+end
+
+local function displayItemBountyDetails( itemName )
+  local item = nil
+
+  -- Look up the item by name in RawItemData
+  for _, data in pairs( RawItemData ) do
+    if data.name == itemName then
+      item = data
+      break
+    end
+  end
+  if not item then
+    cecho( f( "{BOTERR} Item {itemName} not found.\n" ) )
+    return
+  end
+  cecho( f( "\nBounty Calculation for {dodger_blue}{item.name}{reset}:\n" ) )
+  local totalBounty = 0
+
+  for attribute, baseline in pairs( BOUNTY_VALUES ) do
+    if item[attribute] then
+      local value = item[attribute]
+      local bounty = value * baseline
+      bounty = adjustBounty( bounty, item.baseType, attribute )
+      cecho( f( "{attribute}: {NC}{value} x {baseline} = {bounty}\n" ) )
+      totalBounty = totalBounty + bounty
+    end
+  end
+  cecho( f( "\nTotal Bounty for {dodger_blue}{item.name}{reset}: {NC}{expandNumber(totalBounty)}\n" ) )
+end
+
+-- The goal of this function is to work with the BOUNTY_VALUES table and thresholds above
+-- to determine a "prize structure" for paying out rewards to players who contribute items
+-- to identify; its important to know how much potential gold I will be paying so I don't
+-- accidentally go broke.
+local function calculateItemBounties()
+  local bigBounty = 200000
+  local bigBounties = {}
+  local longestLine = 0
+  local totalBounty = 0
+  local itemCount = 0
+
+  for id, item in pairs( RawItemData ) do
+    local itemBounty = calculateItemBounty( item )
+    totalBounty = totalBounty + itemBounty
+    itemCount = itemCount + 1
+
+    if itemBounty > bigBounty then
+      local reportName = f "{item.name} ({item.baseType})"
+      local ilen = #reportName
+      if ilen > longestLine then
+        longestLine = ilen
+      end
+      table.insert( bigBounties, {name = item.name, baseType = item.baseType, bounty = itemBounty} )
+    end
+  end
+  local averageBounty = totalBounty / itemCount
+  -- displayLargeBounties( bigBounties, longestLine )
+  -- displaySummary( totalBounty, averageBounty, itemCount )
 end

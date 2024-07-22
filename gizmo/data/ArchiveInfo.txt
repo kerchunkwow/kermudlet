@@ -1,0 +1,82 @@
+
+  THE WHAT?
+
+  The Archive is an ongoing experiment to build an interactive knowledgebase
+filled with useful data related to Gizmo's many items, areas, and mobs. By
+pooling this data in a central location, identifying cross-references, and
+developing a suite of search & query methods, I hope this will eventually prove
+a useful and fun way to get answers to many common questions about the game.
+
+  If you have a few seconds to spare, I would greatly appreciate your help -
+especially now as I am working on finding all of the little bugs and edge cases
+that break my loops and circumvent my checks or sneak around my validation. Whatever
+you've got lying around, whether it's taking a second to remove something you're
+wearing to hand it over for a few seconds or some stinky random trash you picked up,
+it will help exercise the system if you give it to Nadja on your way by.
+
+  Hopefully by "crowdsourcing" the data capture, The Archive can grow quickly
+to encompass a robust set of knowledge accessible quickly and easily via in-game
+messages. This should prove helpful to even long-time players, especially when
+starting new characters or changing alignments.
+
+  HOW DO?
+
+  For now, The Archive is with Nadja and the focus is on collecting and sharing
+item data. If you give an item to her, she will attempt to identify it and add
+it to The Archive's database. There are four possible outcomes to this (hopefully
+soon I can reduce this to three):
+
+  1) If the item is new, its stats will be recorded in The Archive; you will be
+     recorded as the contributor along with the date & time of capture. Depending
+     on the item and its stats, you may also be paid a bounty. Right now during BETA
+     these amounts are generally small but should still suffice to encourage you to
+     spare a few seconds from time to time as you pass by. Once all the bugs & edge
+     cases are worked out, I'll probably wipe the data and set higher bounties.
+  2) If the item matches one that's already in The Archive, but has different stats
+     than those on record, it will be recorded as an "alternate version." This is a
+     temporary solution so I can use this data to develop a more robust way of tracking
+     and displaying items that have variable stats (i.e., stat ranges).
+  3) If the item is fully identical to one that is already recorded, you will receive
+     nothing but the shame of being late and boring and unworthy of praise.
+  4) For now, you might break something. I've tried to build the capture functions with
+     a certain amount of error handling recovery capabilities, but it's impossible to
+     predict all of the potential idiosyncrasies in item data and behavior. If you
+     submit an item that helps me uncover a significant issue with the design or
+     identify an opportunity for enhancement, I may also pay a one-time "bug bounty"
+     which you may consider substantial depending on how filthy rich you are already.
+
+  You may also query the existing item data by standing in the same room with Nadja and
+sending say ID <item>. If your query matches more than one item, you will get stats for
+multiple items (although there is an upper limit which I will experiment with).
+
+  BUT WHY THO?
+
+  Mostly for the fun and challenge; working through the ins-and-outs of
+capturing the data and experimenting with different ways of storing, sorting,
+slicing, dicing, and presenting it is a satisfying way to pass some time and
+hopefully effective at staving off the mental decline associated with my advancing
+age. I do hope this will become a tool that people find genuinely useful, even if
+just to save an ALT-TAB or CTRL-F here and there.
+
+  AND THEN?
+
+  The sky's the limit! That is to say, I can do all sorts of pointless nonsense
+bullshit while I wile away my finite hours before the grave. Below are some
+things I definitely plan to build, but please send me a tell if there's other
+things you think would be interesting or useful. I'm always game to admit my
+ideas are bad and completely change plans at the last minute in favor of an idea
+from someone handsomer or more capable than myself.
+
+╔╝ Item queries can accept gender, class, and alignment to filter out unusable items
+
+╔╝ Queries can be accepted and returned over tell; no need to be in the room
+
+╔╝ Item records updated with "droppedBy" field to record the source of the item
+
+╔╝ All player characters should have feet and anything less is a fucking war crime
+
+╔╝ "droppedBy" fields crossed with map & mob data to allow for querying "dirs to" items
+
+╔╝ Item queries by type, worn location, attribute value, etc.
+
+╔╝ Items with variable stats display range of possible values

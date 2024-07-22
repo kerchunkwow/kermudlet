@@ -2,6 +2,7 @@
 A module to manage the loading, saving, and backup of various data files related to Gizmo MUD.
 --]]
 
+DATA_PATH = [[C:/Dev/mud/mudlet/gizmo/data/]]
 
 -- A temporary dummy function to help the rest of the file recognize data types etc.
 local function tableDefinitions()
@@ -13,6 +14,7 @@ local function tableDefinitions()
   PotionAffects    = {}
   KnownPlayers     = {}
   PlayerContainers = {}
+  ItemKeywords     = {}
 end
 
 DATA_FILES = {
@@ -24,6 +26,7 @@ DATA_FILES = {
   "PotionAffects",
   "KnownPlayers",
   "PlayerContainers",
+  "ItemKeywords",
 }
 
 -- A wrapper for Mudlet's table.save() that prevents data loss by checking the outgoing
@@ -85,7 +88,7 @@ end
 
 -- Insert data into one of the custom data tables; set the msb and mss flags for the table in question in FILE_STATUS
 function insertData( tblName, key, value )
-  cout( f '<green>Inserting{RC}: {SC}{key}{RC} into <yellow_green>{tblName}<reset>' )
+  cout( f '<chartreuse>Inserting{RC}: {SC}{key}{RC} into <yellow_green>{tblName}<reset>' )
   _G[tblName][key] = value
 end
 

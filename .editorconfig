@@ -1,7 +1,5 @@
 root = true
 
-# https://github.com/CppCXY/EmmyLuaCodeStyle/blob/master/docs/format_config_EN.md
-
 # [Basics]
 [*]
 indent_style             = space
@@ -11,7 +9,7 @@ end_of_line              = crlf
 charset                  = utf-8
 trim_trailing_whitespace = true
 insert_final_newline     = true
-max_line_length          = 120
+max_line_length          = 100
 
 # [Space]
 space_before_function_open_parenthesis      = false
@@ -46,3 +44,14 @@ line_space_after_do_statement       = fixed(1)
 line_space_after_while_statement    = fixed(1)
 line_space_after_repeat_statement   = fixed(1)
 line_space_after_for_statement      = fixed(1)
+
+# Python specific settings
+[*.py]
+indent_style             = space
+indent_size              = 4
+continuation_indent      = 4
+end_of_line              = lf
+charset                  = utf-8
+trim_trailing_whitespace = true
+insert_final_newline     = true
+max_line_length          = 100

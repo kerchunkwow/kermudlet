@@ -3,10 +3,41 @@ Module to implement the capture of data from item "identification" blocks in the
 integrate with the Item table in gizwrld.db to store, update, and query item data.
 --]]
 
+-- In certain special cases, it's necessary to "bail out" of an ID in progress and identify
+-- the same item again - for example LIQUID CONTAINERs must be emptied and re-identified;
+-- this function should "reset" the identification process to the beginning, but attempt to
+-- resume by identifying the same item again.
+function cancelIdentify( restart )
+  -- Interrupt any timers/triggers in progress that we can
+  if NextIDTimer then
+    killTimer( NextIDTimer )
+    NextIDTimer = nil
+  end
+  if FullIDTrigger then
+    killTrigger( FullIDTrigger )
+    FullIDTrigger = nil
+  end
+  if DropGetTimer then
+    killTimer( DropGetTimer )
+    DropGetTimer = nil
+  end
+  disableTrigger( "ID Capture" )
+  disableTrigger( "Full Item ID" )
+  ItemObject = {}
+  FullIDText = ""
+
+  -- Try to re-do the last identify we were working on
+  if restart then
+    cecho( f "{GDITM} <deep_pink>+++<i>ID Capture Restarting...</i>+++<reset>" )
+    send( f "cast 'identify' {IDKeyword}", true )
+  end
+end
+
 -- Triggered by the "informed" message that precedes item identification, performs the necessary
 -- setup to capture the item's data from the id block and additional commands
+FullIDTrigger = FullIDTrigger or nil
 function startNewIdentify()
-  cecho( "\n    [ <yellow_green>+++<b>ID Capture Enabled</b>+++<reset> ]" )
+  cecho( f "{GDITM} <yellow_green>+++<b>ID Capture Enabled</b>+++<reset>" )
   -- Initialize a new empty ItemObject
   initializeItemObject()
   -- Turn on the trigger groups for capturing item data
@@ -14,7 +45,8 @@ function startNewIdentify()
   enableTrigger( "Full Item ID" )
   -- On the next prompt, we will have the full ID text; close this trigger group
   -- and store the full ID block
-  tempRegexTrigger( "^<", function ()
+  FullIDTrigger = tempRegexTrigger( "^<", function ()
+    FullIDTrigger = nil
     disableTrigger( "Full Item ID" )
     captureItemAttribute( "identifyText", FullIDText )
   end, 1 )
@@ -37,8 +69,10 @@ end
 
 -- Called when all data about an item has been captured and processed to insert the item into the
 -- Items table; can display item data for validation purposes
+NextIDTimer = NextIDTimer or nil
 function endIdentify()
-  cecho( "\n    [ <yellow_green>---<b>ID Capture Disabled</b>---<reset> ]\n" )
+  local itm = ItemObject.shortDescription
+  cecho( f "{GDITM} <yellow_green>---<b>ID Capture Disabled</b>---<reset>" )
   disableTrigger( "ID Capture" )
   -- If an item's worn attribute has not yet been captured, infer it from its baseType or
   -- holdable status.
@@ -62,10 +96,18 @@ function endIdentify()
   ItemObject.affectString = getItemaffectString()
   ItemObject.flagString   = getItemFlagString()
   addItemObject( ItemObject )
-  displayItem( ItemObject.shortDescription, 999 )
+  displayItem( itm, 999 )
+  if ItemsReceived[itm] and ItemsReceived[itm] == CurrentPlayer then
+    -- Set the contributor attribute of the item before inserting it
+    -- Set a local variable kw to the first word in the list of the ItemObject's keywords
+    local kw = ItemObject.keywords[1]
+    returnItem( itm, kw )
+  end
   -- Reset the item object table once it has been inserted
   ItemObject = {}
-  tempTimer( 1, function ()
+  -- After two seconds, see if there are more items to identify
+  NextIDTimer = tempTimer( 2, function ()
+    NextIDTimer = nil
     idNextItem()
   end )
 end
@@ -76,8 +118,17 @@ function appendID( line )
   -- Trim leading and trailing whitespace from the line
   line = trim( line )
 
-  -- Check if the line should be ignored
-  if line == "" or line:find( "^<" ) or line == "You feel informed:" then
+  -- None of these lines should be appended to the ID Block
+  local inscribed = "^The cloak has %d+ runes" -- Indicates an inscribed cloak
+  local rune = "^You're unfamiliar"            -- Inscribed cloaks have 1-3 runes
+  local fade = "^The runes will fade"          -- Runes expire after a time
+  local prompt = "^< %d+%(%d+%)"               -- Prompt line
+  local period = "^%.$"                        -- Period on a line alone
+  local blank = "^%s*$"                        -- Blank or whitespace-only lines
+  local first = "^You feel informed:"          -- First line of an ID
+
+  -- If any of the above patterns match the line, don't append it
+  if line:find( inscribed ) or line:find( rune ) or line:find( fade ) or line:find( prompt ) or line:find( period ) or line:find( blank ) or line:find( first ) then
     return
   end
   -- Start each new line with a newline character except the first
@@ -94,9 +145,9 @@ end
 
 -- Once a blank item is initialized, this function is called repeatedly as data is matched by
 -- Mudlet triggers to capture and store data for the ItemObject (and eventually Items table)
+DropGetTimer = DropGetTimer or nil
 function captureItemAttribute( attribute, value )
-  --cecho( f "\n\t[ <ansi_magenta><i>{attribute} captured</i><reset>: <dark_orange>{value}<reset> ]" )
-  cecho( f " [ <olive_drab><i>+{attribute}</i><reset> ]" )
+  cecho( f " +<olive_drab><i>{attribute}</i><reset>" )
   selectString( value, 1 )
   fg( "dim_grey" )
   resetFormat()
@@ -110,9 +161,21 @@ function captureItemAttribute( attribute, value )
   elseif attributeType == "table" then
     value = trim( value )
     value = split( value, " " )
-    if attribute == "flags" and contains( value, "LIMITED" ) then
-      ItemObject.cloneable = false
+    if attribute == "flags" then
+      -- (For now) reject items that have been cloned (their stats may vary from their un-cloned counterparts)
+      if contains( value, "CLONED" ) then triggerItemModified() end
+      -- LIMITED items cannot be cloned, so flip the flag here
+      if contains( value, "LIMITED" ) then ItemObject.cloneable = false end
     end
+  end
+  -- We want to identify liquid containers when they're empty, so if we receive one we will try to empty
+  -- it; if it had a liquid inside we will cancel the identify and start a new one on the same object
+  if attribute == "baseType" and value == "LIQUID CONTAINER" then
+    cecho( f "{GDITM}    <deep_pink><i>liquid container detected</i><reset> [<orange>Drop: {DropGetTimer}<reset>]" )
+    -- Turn on the trigger that will decide what to do based on the outcome of a pour attempt
+    enableTrigger( "Liquid Poured" )
+    -- Immediately try to empty the container (success will reset the ID so we have to be quick)
+    send( f "pour {IDKeyword} out" )
   end
   -- With keywords, we can queue some commands to capture additional details
   if attribute == "keywords" and not ItemObject.shortDescription then
@@ -121,11 +184,13 @@ function captureItemAttribute( attribute, value )
     if ItemObject.baseType ~= "POTION" then
       cmd = cmd .. f ";;wear {kw};;hold {kw}"
     end
-    tempTimer( 2.3, function ()
+    DropGetTimer = tempTimer( 4, function ()
+      DropGetTimer = nil
       send( cmd, true )
     end )
   elseif attribute == "baseType" and consumable( value ) then
-    -- Consumable items cannot be cloned but are not guaranteed to have the LIMITED flag
+    -- Consumable items cannot be cloned but are not guaranteed to have the LIMITED flag,
+    -- so here we force it to false.
     ItemObject.cloneable = false
   end
   ItemObject[column] = value
@@ -144,16 +209,16 @@ end
 -- NOTE: This can only be called once WORN has been indicated, which is not a captured field - calling this function will
 -- need to be deferred until the WORN type is supplied by the user via captureItemAttribute().
 function setItemArmorClass()
-  cecho( "\n\t  [ <dark_olive_green><i>~setting armorClass</i><reset> ]" )
-  local acMultiplier = (ItemObject.worn == "BODY") and -3 or -1
-  local acApplyValue = ItemObject.acApply or 0
-  local armorValue = ItemObject.armorAffect or 0
+  cecho( f "{GDITM}    <dark_olive_green><i>~setting armorClass</i><reset>" )
+  local acMultiplier    = (ItemObject.worn == "BODY") and -3 or -1
+  local acApplyValue    = ItemObject.acApply or 0
+  local armorValue      = ItemObject.armorAffect or 0
   ItemObject.armorClass = (acApplyValue * acMultiplier) + armorValue
 end
 
+-- Called by an Alias to identify a list of multiple items
 function idItemList( itemString )
   IDQueue = split( itemString, " " )
-  display( IDQueue )
   idNextItem()
 end
 
@@ -165,6 +230,33 @@ function idNextItem()
   else
     IDQueue   = nil
     IDKeyword = nil
+  end
+end
+
+-- Called by the trigger which is enabled when we ID a liquid container; if the pour is successful
+-- the ID will be reset and the item will be identified again.
+function triggerLiquidPoured()
+  disableTrigger( "Liquid Poured" )
+  local pourResult = matches[2]
+  if pourResult == "You" then
+    cecho( f "{GDITM}    <cyan><i>Liquid Evacuated</i><reset>" )
+    cancelIdentify()
+  elseif pourResult == "is empty" then
+    cecho( f "{GDITM}    <dark_olive_green><i>Liquid Empty</i><reset>" )
+  else
+    cecho( f "{GDITM} Unexpected pour result: {EC}{pourResult}{RC}" )
+  end
+end
+
+-- Items that have been CLONED or otherwise modified by spells or crafting abilities should not be
+-- logged in the Items table.
+function triggerItemModified()
+  cancelIdentify( false )
+  -- If we canceled out of an item contributed by another player, give it back to them
+  -- and tell the m why.
+  if CurrentItem then
+    speak( "MODIFIED" )
+    returnItem()
   end
 end
 

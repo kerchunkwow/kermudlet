@@ -36,13 +36,3 @@ CHAT_COLORS = {
   ['p'] = {"light_black"},
   ['q'] = {"reset"},
 }
-
--- Pass a string through a simple profanity filter to see if it should be excluded from output
-function checkProfanity( inputString )
-  for _, pattern in ipairs( ProfanePatterns ) do
-    if string.match( inputString, pattern ) then
-      return true
-    end
-  end
-  return false
-end

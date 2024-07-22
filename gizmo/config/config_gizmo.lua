@@ -3,7 +3,8 @@ local function configByUsername()
   if not USERNAME then
     cecho( "\n" .. [[<orange_red>USERNAME missing<reset>; skipping local setup in config_gizmo.lua]] )
   elseif USERNAME == "12404" then
-    cecho( "\n" .. f [[Configuring gizmo for USERNAME <green_yellow>{USERNAME}<reset> in config_gizmo.lua]] )
+    cecho( "\n" ..
+      f [[Configuring gizmo for USERNAME <green_yellow>{USERNAME}<reset> in config_gizmo.lua]] )
 
     Buffs              = Buffs or {
       ["Achilles"] = false,
@@ -283,7 +284,8 @@ local function configByUsername()
       local function formatReactionState( reaction, isEnabled )
         local typeTag = reaction.type == "trigger" and "<hot_pink>T<reset>" or
             (reaction.type == "key" and "<dark_turquoise>K<reset>" or "<ansi_yellow>A<reset>")
-        local nameState = isEnabled and f "<olive_drab>+{reaction.name}<reset>" or f "<brown>-{reaction.name}<reset>"
+        local nameState = isEnabled and f "<olive_drab>+{reaction.name}<reset>" or
+            f "<brown>-{reaction.name}<reset>"
         return string.format( "%-5s %-5s %-35s", reaction.scope, typeTag, nameState )
       end
 

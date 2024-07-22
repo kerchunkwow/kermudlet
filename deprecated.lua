@@ -1,5 +1,166 @@
 ---@diagnostic disable: undefined-global, assign-type-mismatch, cast-local-type
 
+-- Dialog for the bot to use when responding to commands and interactions;
+-- responses are singular responses of which one is picked at random, while
+-- sequences are multiple lines of dialog spoken in order at SpeechRate
+BOT_DIALOG = {
+  ["SEMICOLON"] = {
+    responses = {
+      "A semicolon, {Speaker}, really? Don't try that again. [`i+Demerit`q]",
+      "Did you just try to semicolon me, {Speaker}? It's not 1996 and I'm not amused. [`i+Demerit`q]",
+      "Please refrain from including semicolons in our dialogs. [`i+Demerit`q]",
+      "Semicolon isn't even my command character, but I'm still offended that you tried it. [`i+Demerit`q]",
+    }
+  },
+  ["PROFANITY"] = {
+    responses = {
+      "I'm not sure that's language you should be using, {Speaker}. [`i+Demerit`q]",
+      "Why, I never. Do you kiss my mother with that mouth? [`i+Demerit`q]",
+      "How rude. I'm not going to repeat that, {Speaker}. [`i+Demerit`q]",
+    }
+  },
+  ["HELP"] = {
+    sequence = {
+      "Thanks for your interest in `fThe Archive`q, {Speaker}.",
+      "We're just getting started, so our services are somewhat limited at the moment.",
+      "For instance, I'll only work with people in the room. Someday soon I'll respond to `dtells`q and `fgossip`q.",
+      "If you ask me to `gID <item>`q, I'll tell you what I know about it.",
+      --"If I'm holding an item of yours and you need it back, try RETURN <keyword>.",
+      "For details on any of our services, use `gHELP <command>`q.",
+    }
+  },
+  ["HELP_ID"] = {
+    responses = {
+      "Once I've added an item to The Archive, I can look up its stats with the ID command.",
+      "Until I improve my filing system, you'll need to provide an exact short description.",
+      "Core stats will appear in `cgreen`q, permanent affects in `eblue`q, and anti-flags in `bred`q.",
+    }
+  },
+  ["BUSY_RECEIVE"] = {
+    responses = {
+      "I'm already working on an item, {Speaker}. Please wait a moment.",
+      "I'm currently processing an item, {Speaker}. Please be patient.",
+    }
+  },
+  ["REQUEST_KEYWORD"] = {
+    responses = {
+      "I guess you'll be wanting me to identify this, eh {Speaker}? Just say the KEYWORD <word>.",
+    }
+  }
+}
+-- Define & initialize a new global table named ItemKeywords
+ItemKeywords = {}
+
+-- Function to catalog keywords from RawItemData
+function catalogKeywords()
+  loadLegacyItems()
+  for _, item in pairs( RawItemData ) do
+    if item.keywords and item.keywords ~= "" then
+      for keyword in item.keywords:gmatch( "%S+" ) do
+        ItemKeywords[keyword] = true
+      end
+    end
+  end
+end
+
+-- This function will iterate through the itemList which is a list of keywords, and attempt to
+-- 'get' each item from container 1 and put each item into container 2
+local function transferItems( itemList, container1, container2 )
+  for i, item in ipairs( itemList ) do
+    local function transfer()
+      send( "get " .. item .. " " .. container1 )
+      send( "put " .. item .. " " .. container2 )
+    end
+    tempTimer( (i - 1) * 0.25, transfer )
+  end
+  ItemsForTransfer = nil
+end
+-- Deprecated to eliminate runtime dependency on the database; if for some reason you want to continue using this
+-- method just remove the local qualifier and change the function name (and don't call loadAllItems)
+local function itemQueryAppendDatabase()
+  -- Capture the item name from Mudlet's regex array and a trimmed version for query-matching
+  local itemName        = matches[2]
+  local itemNameTrimmed = trimItemName( itemName )
+  local itemNameLength  = #itemName
+
+  -- Colorize the item and any flags
+  selectString( itemName, 1 )
+  fg( "slate_gray" )
+  selectString( "glowing", 1 )
+  fg( "gold" )
+  selectString( "humming", 1 )
+  fg( "olive_drab" )
+  selectString( "cloned", 1 )
+  fg( "royal_blue" )
+  resetFormat()
+
+  -- Connect to local db
+  local luasql = require "luasql.sqlite3"
+  local env = luasql.sqlite3()
+  local conn, cerr = env:connect( DB_PATH )
+
+  if not conn then
+    iout( "{EC}eq_db.lua{RC} failed database connection in itemQueryAppend()" )
+    return
+  end
+  -- Query for the item's stats, antis, and cloneability values
+  local query = string.format(
+    [[SELECT name, statsString, antisString, clone, affectsString FROM LegacyItem WHERE name = '%s']],
+    itemNameTrimmed:gsub( "'", "''" ) )
+  local cur, qerr = conn:execute( query )
+
+  if not cur then
+    iout( "{EC}eq_db.lua{RC} failed query: {query}" )
+    conn:close()
+    env:close()
+    return
+  end
+  local item = cur:fetch( {}, "a" )
+
+  cur:close()
+  conn:close()
+  env:close()
+
+  if item then
+    -- Some shorthanded color codes
+    local sc      = "<sea_green>"   -- Item stats
+    local ec      = "<ansi_cyan>"   -- +Affects
+    local cc      = "<steel_blue>"  -- Cloneability
+    local spc     = "<ansi_yellow>" -- Proc
+    local ac      = "<firebrick>"   -- Antis
+
+    -- Padding for alignment
+    local padding = string.rep( " ", 46 - itemNameLength )
+    longest_eq    = longest_eq or 0
+    if #itemNameTrimmed > longest_eq then longest_eq = #itemNameTrimmed end
+    -- Build display string from stats & cloneable flag
+    local display_string = nil
+    local specTag        = itemHasSpec( itemNameTrimmed ) and f " {spc}ƒ{R}" or ""
+    local cloneTag       = item.clone == 1 and f " {cc}c{R}" or ""
+    local stats          = item.statsString and f "{sc}{item.statsString}{R}" or ""
+    -- Add a space if strings don't start with a sign (looks nicer, usually weapons)
+    if not string.match( stats, "^[+-]" ) then stats = " " .. stats end
+    -- Display basic string or add additional details based on query mode
+    if itemQueryMode == 0 then
+      display_string = f "{padding}{stats}{cloneTag}{specTag}"
+    elseif itemQueryMode == 1 and (stats ~= "") then
+      -- Add effects and anti-flags when mode == 1
+      local effects, antis = nil, nil
+      effects              = item.affectsString and f " {ec}{item.affectsString}{R}" or ""
+      antis                = item.antisString or ""
+      -- If there's an anti-string and a customize function is defined, use it
+      if #antis >= 1 and customizeAntiString then
+        antis = customizeAntiString( antis )
+        antis = f " {ac}{antis}{R}"
+      end
+      display_string = f "{padding}{stats}{cloneTag}{specTag}{effects}{antis}"
+    end
+    -- Print the final string to the game window (appears after stat'd item)
+    if display_string ~= "" then
+      cecho( display_string )
+    end
+  end
+end
 -- Print all variables currently in _G (Lua's table for all variables); probably
 -- not very readable but might be helpful
 local function printVariables()
