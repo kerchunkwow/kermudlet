@@ -26,7 +26,8 @@ function checkMiraMana()
 
   local miras = math.floor( mira_mn / 100 )
 
-  cecho( "info", f "\n<deep_sky_blue>Mana<reset> for <dark_orange>{miras}<reset> <sea_green>miracle(s)<reset> remaining!" )
+  cecho( "info",
+    f "\n<deep_sky_blue>Mana<reset> for <dark_orange>{miras}<reset> <sea_green>miracle(s)<reset> remaining!" )
 end
 
 -- Triggered when an incoming chat message is recognized to highlight and route the message
@@ -81,7 +82,9 @@ function triggerRouteChat()
     local padr = fill( 7 - #channel )
 
     local chat_string = "<spring_green>" ..
-        speaker .. padl .. "<reset>  [" .. chat_color .. channel .. "<reset>] " .. padr .. message .. timeStamp .. "\n"
+        speaker ..
+        padl ..
+        "<reset>  [" .. chat_color .. channel .. "<reset>] " .. padr .. message .. timeStamp .. "\n"
 
     cecho( "chat", chat_string )
   end
@@ -90,7 +93,8 @@ end
 -- A room name has been captured; synchronize the map and update the status table
 function triggerCaptureRoom()
   local matchedRoom = trim( matches[2] )
-  if isUnique( matchedRoom ) and matchedRoom ~= CurrentRoomName then setPlayerRoom( UNIQUE_ROOMS[matchedRoom] ) end
+  if isUnique( matchedRoom ) and matchedRoom ~= CurrentRoomName then setPlayerRoom( UNIQUE_ROOMS
+    [matchedRoom] ) end
   if SESSION == 1 then
     pcStatusRoom( 1, matchedRoom )
   else
@@ -99,7 +103,8 @@ function triggerCaptureRoom()
 end
 
 function autoManaTransfer()
-  cle_mn, mu_mn = pcStatus[1]["currentMana"], math.max( pcStatus[2]["currentMana"], pcStatus[3]["currentMana"] )
+  cle_mn, mu_mn = pcStatus[1]["currentMana"],
+      math.max( pcStatus[2]["currentMana"], pcStatus[3]["currentMana"] )
 
   if cle_mn < 250 and mu_mn > 50 then
     aliasManaTransfer()
@@ -223,6 +228,7 @@ function triggerLocateObject()
   selectString( loc, 1 )
   -- Check if it's a room in our map
   local rooms = searchRoom( loc, true, true )
+  ---@diagnostic disable-next-line: param-type-mismatch
   if next( rooms ) ~= nil then
     -- It's a room
     fg( "royal_blue" )

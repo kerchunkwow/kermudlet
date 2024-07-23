@@ -100,6 +100,10 @@ ITEM_SCHEMA          = {
 EXCLUDE_FROM_COMPARE = {
   contributor  = true,
   dateRecorded = true,
+  identifyText = true,
+  -- Value varies in some weird ways (e.g., donated stuff); ignore it for now but
+  -- maybe do something more interesting later
+  value        = true,
 }
 
 -- When paying out rewards for items contributed to The Gixdex library, use these values

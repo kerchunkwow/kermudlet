@@ -55,3 +55,48 @@ function resetTickClock()
   TickTime  = -1
   tickLabel:hide()
 end
+
+-- Global boolean to track whether or not we're currently Idle (AFK)
+Idle = Idle or false
+IdleTimer = IdleTimer or nil
+function toggleIdle()
+  if IdleTimer then killTimer( IdleTimer ) end
+  IdleTimer = nil
+  Idle = not Idle
+  if Idle then
+    cecho( "\n<tomato>Going AFK...<reset>" )
+    -- Get a random integer between 400 and 600
+    local idleTime = math.random( 400, 600 )
+    IdleTimer = tempTimer( idleTime, [[keepAlive()]], false )
+  end
+end
+
+-- This function should keep players online by issuing a random command
+-- a unpredictable intervals, but never longer than 10 minutes apart
+function keepAlive()
+  local onePageSpells = {1, 2, 3, 6, 9, 10, 11, 12, 13, 14}
+  -- Pick a random number from the onePageSpells table
+  local nS = onePageSpells[math.random( 1, #onePageSpells )]
+  nS = tostring( nS )
+  local randomCommands = {
+    "look",
+    "score",
+    "aff",
+    "inv",
+    "weather",
+    "time",
+    f "help {nS}spells",
+    f "help {nS}skills",
+    "help map",
+    "help auction",
+    "examine stocking",
+    "eq",
+    "save",
+  }
+  local idleCommand = randomCommands[math.random( 1, #randomCommands )]
+  send( idleCommand, false )
+  -- Start another timer to keep us online
+  -- Get a random integer between 400 and 600
+  local idleTime = math.random( 400, 600 )
+  IdleTimer = tempTimer( idleTime, [[keepAlive()]], false )
+end

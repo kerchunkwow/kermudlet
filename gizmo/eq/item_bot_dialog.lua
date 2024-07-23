@@ -4,7 +4,7 @@
 -- speech: Multiple lines of dialog which are spoken in sequence at a predefined rate
 
 -- Define a limit to the number of items the bot will report stats on at any one time
-MAX_QUERY  = 10
+MAX_QUERY  = 25
 
 -- How long to wait before beginning to speak and between separate lines of dialog
 SpeechRate = 1

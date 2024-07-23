@@ -74,7 +74,7 @@ BOT_DIALOG                 = {
   },
   MODIFIED = {
     messages = {
-      "Thanks {CP}, but for now I'm not recording items in {DB} that have been cloned or modified by crafting.",
+      "Thanks {CP}, but for now {DB} isn't recording cloned, crafted, or bonded equipment.",
     }
   },
   -- Occasionally ask arriving players to contribute to the database

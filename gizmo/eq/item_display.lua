@@ -57,7 +57,7 @@ function displayItem( desc, tier )
         local ks = f "{SC}{key}{RC}"
         local vs = nil
         local isNumber = type( value ) == "number" and
-        (value ~= 0 or key == "cloneable" or key == "holdable")
+            (value ~= 0 or key == "cloneable" or key == "holdable")
         local isString = type( value ) == "string" and value ~= ""
         local isBig = isNumber and (value >= 10000 or value <= -10000)
         if isNumber and isBig then value = expandNumber( value ) end
@@ -82,7 +82,7 @@ function displayItemDifferences( differences )
   else
     cecho( f "{GDOK} <deep_pink>Differences<reset> between items:" )
     for _, diff in ipairs( differences ) do
-      cecho( f "{diff}\n" )
+      cecho( f "\t<ansi_magenta>{diff}{RC}\n" )
     end
   end
 end
@@ -116,10 +116,10 @@ function displayItemDataStats()
     local baseType = item.baseType or "Unknown"
     baseTypeCounts[baseType] = (baseTypeCounts[baseType] or 0) + 1
   end
-  cout( f "\n<orchid>Known Items:   {NC}{totalItems}{RC}" )
+  cout( f "\n<orchid>Known Items:          {NC}{totalItems}{RC}" )
   for baseType, count in pairs( baseTypeCounts ) do
     local btl = #baseType
-    local pad = 10 - btl
+    local pad = 17 - btl
     cout( f "    <slate_blue>{baseType}{RC}:{string.rep(' ', pad)}{NC}{count}{RC}" )
   end
 end
@@ -230,7 +230,7 @@ function getDamageString()
     return damageString
   else
     local damageError = f(
-    "{GDITM} {EC}getDamageString{RC}(): Invalid damageDice {ItemObject.damageDice}" )
+      "{GDITM} {EC}getDamageString{RC}(): Invalid damageDice {ItemObject.damageDice}" )
     cecho( damageError )
     return nil
   end

@@ -76,7 +76,7 @@ function deepCompareItems( item1, item2, itemDifferences )
   local function filterFields( item )
     local filteredItem = {}
     for k, v in pairs( item ) do
-      if not EXCLUDE_FROM_COMPARE[k] then -- Changed this line to check set membership
+      if not EXCLUDE_FROM_COMPARE[k] then
         filteredItem[k] = v
       end
     end
@@ -357,4 +357,18 @@ function triggerAutoContribute()
     if ACTimer then killTimer( ACTimer ) end
     ACTimer = tempTimer( 2, [[autoContribute()]], false )
   end
+end
+
+-- This function sanitizes a single identifyText string by removing common errant patterns
+function sanitizeIdentifyText( text )
+  local dirtyPatterns = {
+    "< %d+%(%d+%) %d+%(%d+%) %d+%(%d+%) >", -- A prompt (hp, mana, moves)
+    "^%s*$",                                -- An empty line with no data
+    "^%s*%.%s*$"                            -- A line with a single period and arbitrary whitespace
+  }
+
+  for _, pattern in ipairs( dirtyPatterns ) do
+    text = text:gsub( pattern, "" )
+  end
+  return text
 end

@@ -29,7 +29,7 @@ end
 -- @param s The string to be trimmed and condensed
 -- @return The trimmed and condensed string
 function trimCondense( s )
-  if not s then return end
+  if not s then return "" end
   return trim( s ):gsub( "%s+", " " )
 end
 

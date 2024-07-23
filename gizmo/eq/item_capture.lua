@@ -95,6 +95,8 @@ function endIdentify()
   end
   ItemObject.affectString = getItemaffectString()
   ItemObject.flagString   = getItemFlagString()
+  -- Pass the item's id block through the sanitize function to remove any unwanted text
+  ItemObject.identifyText = sanitizeIdentifyText( ItemObject.identifyText )
   addItemObject( ItemObject )
   displayItem( itm, 999 )
   if ItemsReceived[itm] and ItemsReceived[itm] == CurrentPlayer then
