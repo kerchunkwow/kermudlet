@@ -241,6 +241,8 @@ end
 -- @param item The item to calculate the bounty for
 -- @return The calculated bounty for the item
 function calculateItemBounty( item )
+  -- Turn off bounties for now
+  if true then return 0 end
   local itemBounty = 0
   for attribute, baseline in pairs( BOUNTY_VALUES ) do
     if item[attribute] then

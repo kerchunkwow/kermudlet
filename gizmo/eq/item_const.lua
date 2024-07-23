@@ -381,6 +381,11 @@ SPELL_MAP            = {
   ["enchant weapon"]       = "ench weapon",
 }
 
+IGNORED_ITEMS        = {
+  ["a keyring"] = true,
+  ["a beazor"] = true,
+  ["a vanity chit"] = true,
+}
 -- A dummy function to register this file with the auto-reload system
 function touchBoobs()
   cecho( "You absolute perv." )

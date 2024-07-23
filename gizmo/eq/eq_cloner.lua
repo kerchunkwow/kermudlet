@@ -1,3 +1,4 @@
+CloneList = CloneList or {}
 -- Invoked by an in-game alias to initiate the cloning process; combined with the triggers this should
 -- handle the entire process of cloning items from storage.
 function startCloning()
