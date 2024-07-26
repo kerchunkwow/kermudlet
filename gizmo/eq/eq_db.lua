@@ -21,7 +21,8 @@ function loadAllItems()
     iout( "{EC}eq_db.lua{RC} failed database connection in loadAllItems()" )
     return
   end
-  local cur, err = conn:execute( "SELECT name, keywords, statsString, antisString, clone, affectsString FROM LegacyItem" )
+  local cur, err = conn:execute(
+    "SELECT name, keywords, statsString, antisString, clone, affectsString FROM LegacyItem" )
   if not cur then
     iout( "{EC}eq_db.lua{RC} failed query in loadAllItems(): {err}" )
     conn:close()
@@ -120,11 +121,11 @@ end
 
 -- Triggered by items seen in game (e.g., worn by players), this function pulls stats from the global
 -- itemData table and appends them to the item's name in the game window
-local TransferTime = 0
-local TransferRate = 0.5
+-- local TransferTime = 0
+-- local TransferRate = 0.5
 --ItemsForTransfer = ItemsForTransfer or {}        -- Ensure it's initialized properly
 function itemQueryAppend( itemName )
-  ItemsForTransfer      = ItemsForTransfer or {} -- Ensure it's initialized properly
+  --ItemsForTransfer      = ItemsForTransfer or {} -- Ensure it's initialized properly
   itemName              = itemName or matches[2]
   local itemNameTrimmed = trimItemName( itemName )
   local itemNameLength  = #itemName
@@ -198,6 +199,83 @@ function itemQueryAppend( itemName )
   return false
 end
 
+function itemQueryAppend( itemName )
+  itemName              = itemName or matches[2]
+  local itemNameTrimmed = trimItemName( itemName )
+  local itemNameLength  = #itemName
+
+  abbreviateWorn()
+
+  -- Colorize the item and any flags
+  if selectString( itemName, 1 ) > 0 then fg( "slate_gray" ) end
+  if selectString( "glowing", 1 ) > 0 then creplace( "<goldenrod>g<reset>" ) end
+  if selectString( "humming", 1 ) > 0 then creplace( "<medium_sea_green>h<reset>" ) end
+  if selectString( "cloned", 1 ) > 0 then creplace( "<royal_blue>c<reset>" ) end
+  if selectString( "blue", 1 ) > 0 then creplace( "<medium_slate_blue>m<reset>" ) end
+  resetFormat()
+  local item = Items[itemNameTrimmed]
+  -- Proceed if the item was found
+  if item then
+    local kw       = item.keywords[1]
+    kw             = f " (<dark_slate_blue><i>{kw}</i><reset>)"
+    -- table.insert( ItemsForTransfer, kw )
+
+    -- Some shorthanded color codes
+    local sc       = "<sea_green>"   -- Item stats
+    local ec       = "<ansi_cyan>"   -- +Affects
+    local cc       = "<steel_blue>"  -- Cloneability
+    local spc      = "<ansi_yellow>" -- Proc
+    local ac       = "<firebrick>"   -- Antis
+
+    -- Padding for alignment
+    local padding  = string.rep( " ", 46 - itemNameLength )
+
+    local antis    = ""
+
+    -- Build display string from stats & cloneable flag
+    --local specTag  = item.hasSpec and f " {spc}ƒ{R}" or ""
+    local cloneTag = item.cloneable and f " {cc}{CLONE_TAG}{RC}" or ""
+    local stats    = item.statsString and f "{sc}{item.statsString}{R}" or ""
+    -- Add a space if strings don't start with a sign (looks nicer, usually weapons)
+    if not string.match( stats, "^[+-]" ) then stats = " " .. stats end
+    -- Display basic string or add additional details based on query mode
+    local display_string
+    if itemQueryMode == 0 then
+      display_string = f "{padding}{stats}{cloneTag}{specTag}"
+    elseif itemQueryMode == 1 and (stats ~= "") then
+      -- Add effects and anti-flags when mode == 1
+      local effects = item.affectsString and f " {ec}{item.affectsString}{R}" or ""
+      antis         = item.antisString or ""
+      -- If there's an anti-string and a customize function is defined, use it
+      if #antis >= 1 and customizeAntiString then
+        antis = customizeAntiString( antis )
+        if #antis > 0 then
+          antis = f " {ac}{antis}{R}"
+        end
+      end
+      --display_string = f "{padding}{stats}{cloneTag}{specTag}{effects}{antis}{kw}"
+      display_string = f "{padding}{stats}{cloneTag}{effects}{antis}"
+      display_string = highlightTags( display_string )
+    end
+    -- Print the final string to the game window (appears after stat'd item)
+    cecho( display_string )
+    return true
+  end
+  return false
+end
+
+function abbreviateWorn()
+  if true then return end
+  -- Items are either "worn" or "used"
+  if selectString( "worn on ", 1 ) > 0 or
+      selectString( "used as", 1 ) > 0 or
+      selectString( "worn about ", 1 ) > 0 or
+      selectString( "worn around ", 1 ) > 0 or
+      selectString( "worn as ", 1 ) > 0 then
+    replace( "" )
+  end
+end
+
 -- Inefficient method for determining if an item has a special proc (reconnect to the db and look at ID text)
 function itemHasSpec( item_name )
   -- Connect to the database
@@ -210,7 +288,8 @@ function itemHasSpec( item_name )
     return false
   end
   -- Prepare and execute the query
-  local query = string.format( [[SELECT identifyText FROM Item WHERE name = '%s']], item_name:gsub( "'", "''" ) )
+  local query = string.format( [[SELECT identifyText FROM Item WHERE name = '%s']],
+    item_name:gsub( "'", "''" ) )
   local cur, qerr = conn:execute( query )
 
   if not cur then

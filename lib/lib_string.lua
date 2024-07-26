@@ -115,7 +115,7 @@ end
 function fill( number, char, color )
   char = char or "."
   color = color or "<black>"
-  return f "{color}" .. string.rep( char, number ) .. "<reset>"
+  return f "{color}" .. string.rep( char, number ) .. RC
 end
 
 -- Get the length of the longest string in a list
@@ -161,9 +161,9 @@ function compositeString( str, substring, color )
   if not substring or substring == "" then
     return str
   elseif not str or str == "" then
-    return color .. substring .. "<reset>"
+    return color .. substring .. RC
   else
-    return str .. " " .. color .. substring .. "<reset>"
+    return str .. " " .. color .. substring .. RC
   end
 end
 

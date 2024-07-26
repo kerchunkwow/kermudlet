@@ -12,18 +12,6 @@ function displayItem( desc, tier )
     cout( f "\n{EC}displayItem{RC}: no such Item {SC}{desc}{RC}" )
     return
   end
-  -- A local function to sort the keys in the ITEM_SCHEMA by order for structured output
-  local function getOrderedKeys( schema )
-    local keys = {}
-    for key in pairs( schema ) do
-      table.insert( keys, key )
-    end
-    table.sort( keys, function ( a, b )
-      return schema[a].order < schema[b].order
-    end )
-    return keys
-  end
-
   -- Compose a "title card" for the item including its core stats, flags, and affects
   local sstr = compositeString( "", item.shortDescription, "<green_yellow>" )
   sstr       = compositeString( sstr, item.statsString, "<dark_slate_grey>" )
@@ -41,6 +29,18 @@ function displayItem( desc, tier )
   hrule( slen, dg )
   cout( f "{dg}| {sstr}{dg} |" )
   hrule( slen, dg )
+
+  -- A local function to sort the keys in the ITEM_SCHEMA by order for structured output
+  local function getOrderedKeys( schema )
+    local keys = {}
+    for key in pairs( schema ) do
+      table.insert( keys, key )
+    end
+    table.sort( keys, function ( a, b )
+      return schema[a].order < schema[b].order
+    end )
+    return keys
+  end
 
   if tier == -1 then return end
   local op = "<indian_red> = <reset>"
@@ -243,7 +243,6 @@ function getItemFlagString()
   if not ItemObject.flags or #ItemObject.flags == 0 then
     return nil
   end
-  cecho( f "{GDITM}    <dark_olive_green><i>~setting flagString</i><reset>" )
   local shortFlags, rawFlags = {}, {}
   -- Combine the ItemObject flags and undeadAntis into a single table, acounting
   -- for possible empty tables
@@ -267,6 +266,21 @@ function getItemFlagString()
     flagString = flagString .. CLONE_TAG
   end
   return flagString
+end
+
+function validateFlagStrings()
+  -- For each item in the Items table, assign ItemObject to the item, then call getItemFlagString()
+  -- to derive the flagString for that item; compare the derived string to the stored string in the item
+  -- and report on any differences
+  for desc, item in pairs( Items ) do
+    ItemObject = item
+    local storedFlagString = item.flagString
+    local derivedFlagString = getItemFlagString()
+    if storedFlagString ~= derivedFlagString then
+      cout( f "\n{EC}FlagString mismatch for {SC}{desc}{RC}" )
+      cout( f "    {SC}{storedFlagString}{RC} vs {EC}{derivedFlagString}{RC}" )
+    end
+  end
 end
 
 -- Retrieve a shorthand version of the item's Affects, borrowing nicknames from the PERMANENT_AFFECTS table;
@@ -302,10 +316,147 @@ function highlightTags( s )
   -- If SPEC_TAG or CLONE_TAG are found in the string, highlight them using the above
   -- colors; otherwise, return the string unchanged
   if s:find( SPEC_TAG ) then
-    s = s:gsub( SPEC_TAG, spec_color .. SPEC_TAG .. "<reset>" )
+    s = s:gsub( SPEC_TAG, spec_color .. SPEC_TAG .. RC )
   end
   if s:find( CLONE_TAG ) then
-    s = s:gsub( CLONE_TAG, clone_color .. CLONE_TAG .. "<reset>" )
+    s = s:gsub( CLONE_TAG, clone_color .. CLONE_TAG .. RC )
   end
   return s
+end
+
+-- To abbreviate lines displaying player equipment, this table maps strings describing
+-- equipment locations on player bodies with a shorthand version
+WORN_MAP = {
+  ["<used as light>"]     = "│ light│",
+  ["<worn on finger>"]    = "│finger│",
+  ["<worn around neck>"]  = "│  neck│",
+  ["<worn on body>"]      = "│  body│",
+  ["<worn on head>"]      = "│  head│",
+  ["<worn on legs>"]      = "│  legs│",
+  ["<worn on feet>"]      = "│  feet│",
+  ["<worn on hands>"]     = "│ hands│",
+  ["<worn on arms>"]      = "│  arms│",
+  ["<worn as shield>"]    = "│shield│",
+  ["<worn about body>"]   = "│ cloak│",
+  ["<worn about waist>"]  = "│  belt│",
+  ["<worn around wrist>"] = "│ wrist│",
+  ["<wielded>"]           = "│ wield│",
+  ["<held>"]              = "│  held│",
+}
+
+function triggerItemQuery()
+  local loc = matches.worn
+  local wc = "<dark_slate_blue>"
+  if selectString( loc, 1 ) > 0 then creplace( wc .. WORN_MAP[loc] .. RC ) end
+  local itm = matches.item
+  if selectString( itm, 1 ) > 0 then
+    itemShort, itemMods = splitItemLine( matches.item )
+    if itemMods then
+      itemMods = abbreviateModifiers( itemMods )
+    end
+    local ic = Items[itemShort] and "<slate_grey>" or "<tomato>"
+    creplace( "    " .. ic .. itemShort .. (itemMods or "") .. RC )
+  end
+end
+
+-- Split an item "line" as from inventory or equipment lists into components:
+-- the item's short description followed by modifier flags like (glowing)
+function splitItemLine( str )
+  -- Split the input parameter into two substrings: before and after the first open paren;
+  -- the open paren should be part of the second substring, e.g.,
+  -- a golden ring(glowing)(humming) -> "a golden ring", "(glowing)(humming)"
+  local short, mods = str:match( "^(.-)%s*(%b())" )
+  if not short then
+    short = str
+  else
+    mods = str:sub( #short + 1 )
+  end
+  return trim( short ), mods
+end
+
+-- Triggered by a line containing equipment in use by a player or mob, this function
+-- abbreviates the item display and attempts to append stats if they're known.
+-- Trigger pattern:
+-- ^(?<lbl><.*?(?<loc>\w+)>)\s+(?<itm>\w.*?)(?<mod>\(.*\))?$
+-- Standard column/padding for aligning item stats in the equipment/inventory
+STAT_COL = 48
+function triggerEquippedItem()
+  -- Some local colorization options
+  local lc              = "<cadet_blue>" -- Worn
+  -- Highlight known and unknown items
+  local kn, uk          = "<light_slate_grey>", "<pale_salmon>"
+  -- Basic item stats
+  local sc              = "<cadet_blue>"
+  -- Affects/Perms
+  local ac              = "<deep_sky_blue>"
+  local vr              = "<light_slate_grey>|<reset>"
+  -- Antis/flags
+  local fc              = "<salmon>"
+  -- Get worn location, item name (short), and any modifier flags
+  local loc, desc, mods = matches.loc, matches.itm, abbreviateModifiers( matches.mod )
+
+  -- Prepend space to the worn location to give them right-alignment
+  loc                   = string.rep( " ", 8 - utf8.len( loc ) ) .. loc
+  -- Style the worn display with verical rules, colorization, and a margin
+  loc                   = vr .. lc .. loc .. RC .. vr .. "  "
+
+  -- If itm (string) maps to an entry in the Items table, we have stats for this item
+  local item            = Items[desc]
+  local ic              = item and kn or uk
+  loc                   = loc .. ic .. desc
+  local stats           = item.statsString and sc .. item.statsString or ""
+  local aff             = item.affectString and ac .. " " .. item.affectString or ""
+  local flags           = item.flagString and fc .. " " .. item.flagString or ""
+
+  -- Mods come colorized from abbreviateModifiers()
+  -- Append mods only if it's non-nil and has length greater than 0
+  local nl              = loc
+  nl                    = nl .. (mods and #mods > 0 and " " .. mods or "")
+  local pad             = fill( STAT_COL - cLength( nl ) )
+  nl                    = nl .. pad .. stats .. aff .. flags .. RC
+
+  creplaceLine( nl )
+end
+
+-- Divides an item name between it's short description and modifying flags & tags
+MODIFIER_MAP = {
+  ["(glowing)"]   = "<gold>g<reset>",
+  ["(humming)"]   = "<olive_drab>h<reset>",
+  ["(invisible)"] = "<blue_violet>i<reset>",
+  ["(clone)"]     = "<royal_blue>c<reset>",
+  ["(lined)"]     = "<dark_salmon>l<reset>",
+  ["(blue)"]      = "<light_sky_blue>m<reset>",
+}
+
+-- Abbreviate item modifiers like (glowing) and (humming) according to their
+-- mappings in the MODIFIER_MAP table
+function abbreviateModifiers( str )
+  local mods = ""
+  for mod, abbr in pairs( MODIFIER_MAP ) do
+    if str:find( mod ) then
+      --mods = mods .. (#mods > 0 and " " or "") .. abbr
+      mods = mods .. abbr
+    end
+  end
+  local abbrMods = #mods > 0 and f "({mods})" or ""
+  return abbrMods
+end
+
+-- Find all ANTI-FLAGS in the Items table for reference
+function displayAllAntis()
+  -- For each item in Items, iterate over item.flags;
+  -- for each item in item.flags, if the item contains the substring "ANTI" then
+  -- append it to a result table.
+  -- Display the results once the table is fully populated
+  local antiFlags = {}
+  local uniqueFlags = {}
+  for desc, item in pairs( Items ) do
+    for _, flag in ipairs( item.flags ) do
+      if flag:find( "ANTI" ) and not uniqueFlags[flag] then
+        uniqueFlags[flag] = true
+        table.insert( antiFlags, flag )
+      end
+    end
+  end
+  display( antiFlags )
 end

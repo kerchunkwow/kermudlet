@@ -147,7 +147,7 @@ DC                 = "<ansi_yellow>"     -- Derived or Calculated Values
 FC                 = "<maroon>"          -- Magical Flags & Affects like 'Sanctuary'
 MC                 = "<coral>"           -- Mob & mob-related activities (enemies)
 SYC                = "<ansi_magenta>"    -- System Messages (Client Status, etc.)
-RC                 = "<reset>"           -- Reset Color (do not use </reset> or </color> syntax)
+RC                 = RC           -- Reset Color (do not use </reset> or </color> syntax)
 
 ```
 

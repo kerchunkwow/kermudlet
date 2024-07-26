@@ -90,7 +90,7 @@ local function poundDefine()
   lastKey           = -1
 
   -- When outputting data related to map generation, use these colors to highlight specific fields wich cecho()
-  -- e.g., cecho( MAPGEN_COLORS["areaName"] .. area["areaName"] .. "<reset>" )
+  -- e.g., cecho( MAPGEN_COLORS["areaName"] .. area["areaName"] .. RC )
   MAP_COLOR         = {
     -- Area, Room, Exit Data
     ["area"]      = "<maroon>",
@@ -147,7 +147,7 @@ local function poundDefine()
   KEYC                = TXT_COLOR['key']
   DOORC               = TXT_COLOR['doorExit']
   EXC                 = TXT_COLOR['basicExit']
-  R                   = "<reset>"
+  R                   = RC
 
   -- IDs assigned to specific Room color configurations by defineCustomColors();
   -- remember them as global constants so we can style rooms in response to MUD output

@@ -93,8 +93,10 @@ end
 -- A room name has been captured; synchronize the map and update the status table
 function triggerCaptureRoom()
   local matchedRoom = trim( matches[2] )
-  if isUnique( matchedRoom ) and matchedRoom ~= CurrentRoomName then setPlayerRoom( UNIQUE_ROOMS
-    [matchedRoom] ) end
+  if isUnique( matchedRoom ) and matchedRoom ~= CurrentRoomName then
+    setPlayerRoom( UNIQUE_ROOMS
+      [matchedRoom] )
+  end
   if SESSION == 1 then
     pcStatusRoom( 1, matchedRoom )
   else
@@ -186,9 +188,11 @@ end
 -- Temporarily enable the triggers needed to append item stat strings to output from the game
 function triggerEnableItemQuery()
   triggerHighlightLine( [[system]] )
+  enableTrigger( "Abbreviate Worn" )
+  onNextPrompt( [[disableTrigger( "Abbreviate Worn" )]] )
   tempEnableTrigger( [[EQ Stats]], 5 )
   tempEnableTrigger( [[Missing EQ]], 5 )
-  tempEnableTrigger( [[Potion Affects]], 5 )
+  --tempEnableTrigger( [[Potion Affects]], 5 )
 end
 
 function triggerValidateMove()

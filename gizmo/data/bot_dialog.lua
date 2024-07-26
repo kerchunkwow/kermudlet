@@ -211,7 +211,7 @@ function assembleArchiveInfo()
     ["│▓▒░│"] = "<ansi_light_black>│▓▒░│<reset>",
     ["bounty"] = "<gold>bounty<reset>",
     ["bounties"] = "<gold>bounties<reset>",
-    ["%d"] = function ( d ) return "<gold>" .. d .. "<reset>" end
+    ["%d"] = function ( d ) return "<gold>" .. d .. RC end
   }
 
   local function readInfoFile( filePath )

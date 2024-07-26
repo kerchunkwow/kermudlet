@@ -70,7 +70,8 @@ function loadAllMobs()
       mobEntry.goldPerHealth = mob.gold / mhp
     end
     -- Calculate average damage
-    mobEntry.meleeDamage = averageDice( mobEntry.damageDice, mobEntry.damageSides, mobEntry.damageModifier )
+    mobEntry.meleeDamage = averageDice( mobEntry.damageDice, mobEntry.damageSides,
+      mobEntry.damageModifier )
 
     -- Load special attacks corresponding to this mob
     local saSql = string.format( "SELECT * FROM SpecialAttacks WHERE rNumber = %d", mobEntry.rNumber )
@@ -78,7 +79,8 @@ function loadAllMobs()
     if saCursor then
       local sa = saCursor:fetch( {}, "a" )
       while sa do
-        local savd = sa.chance * averageDice( sa.damageDice, sa.damageSides, sa.damageModifier ) / 100
+        local savd = sa.chance * averageDice( sa.damageDice, sa.damageSides, sa.damageModifier ) /
+        100
         mobEntry.specDamage = mobEntry.specDamage + savd
         table.insert( mobEntry.specialAttacks, {
           chance         = tonumber( sa.chance ),
@@ -660,7 +662,8 @@ end
 -- the mob in game; the tag will identify flags and affects of the mob that are not typically visible but
 -- help the player understand the mob's behavior and abilities.
 local function createMobTag( flags, affects )
-  local AC, FC, DC, SAC, SPC, STC = "<tomato>", "<orange_red>", "<dodger_blue>", "<gold>", "<deep_pink>", "<slate_grey>"
+  local AC, FC, DC, SAC, SPC, STC = "<tomato>", "<orange_red>", "<dodger_blue>", "<gold>",
+      "<deep_pink>", "<slate_grey>"
   local flagAttributes = {AGGRESSIVE = AC, FURY = FC, SANCTUARY = SAC, SPEC = SPC}
   local affectAttributes = {FURY = FC, DUAL = DC, SANCTUARY = SAC, STATUE = STC}
 
@@ -680,14 +683,14 @@ local function createMobTag( flags, affects )
   for _, flag in ipairs( flagList ) do
     local color = flagAttributes[flag]
     if color then
-      tag = tag .. color .. flag:sub( 1, 1 ) .. "<reset>"
+      tag = tag .. color .. flag:sub( 1, 1 ) .. RC
     end
   end
   -- Iterate through affect attributes and add them to the tag string
   for _, affect in ipairs( affectList ) do
     local color = affectAttributes[affect]
     if color then
-      tag = tag .. color .. affect:sub( 1, 1 ) .. "<reset>"
+      tag = tag .. color .. affect:sub( 1, 1 ) .. RC
     end
   end
   -- Wrap the tag string in square brackets (and add a leading space)

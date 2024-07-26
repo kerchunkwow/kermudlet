@@ -168,7 +168,8 @@ function guaranteeCommand( cmd, successPattern, failPattern, abortPattern, frequ
   -- If we're already processing a command; queue this one until the current one succeeds or aborts,
   -- otherwise set ProcessingCommand so subsequent commands are queued
   if ProcessingCommand then
-    table.insert( CommandQueue, {cmd, successPattern, failPattern, abortPattern, frequency, successDelay} )
+    table.insert( CommandQueue,
+      {cmd, successPattern, failPattern, abortPattern, frequency, successDelay} )
     return
   else
     ProcessingCommand = true
@@ -317,4 +318,12 @@ function throttle( flag, delay )
       ThrottleFlags[flag] = nil
     end )
   end
+end
+
+-- Enable the trigger until the pattern is seen, then disable it again
+function enableUntilPattern( trigger, pattern )
+  enableTrigger( trigger )
+  tempRegexTrigger( pattern, function ()
+    disableTrigger( trigger )
+  end, 1 )
 end

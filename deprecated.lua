@@ -172,9 +172,9 @@ local function printVariables()
     vName                          = tostring( k )
     vVal                           = tostring( v )
 
-    nameStr                        = "<sea_green>" .. vName .. "<reset>"
-    typeStr                        = "<ansi_magenta>" .. vType .. "<reset>"
-    valStr                         = "<cyan>" .. vVal .. "<reset>"
+    nameStr                        = "<sea_green>" .. vName .. RC
+    typeStr                        = "<ansi_magenta>" .. vType .. RC
+    valStr                         = "<cyan>" .. vVal .. RC
 
     if vType == "number" or vType == "boolean" then
       cecho( f "\n{nameStr} ({typeStr}) == {valStr}\n-----" )
@@ -263,8 +263,10 @@ end
 
 local function swapGear()
   -- Define the swappable gear sets; the last two items must be 'wield' and 'hold'
-  local dpsGear = {"onyx", "onyx", "cape", "cape", "platemail", "masoch", "flaming", "flaming", "cudgel", "scalpel"}
-  local tankGear = {"one", "one", "skin", "skin", "vest", "kings", "fanra", "fanra", "cutlass", "bangle"}
+  local dpsGear = {"onyx", "onyx", "cape", "cape", "platemail", "masoch", "flaming", "flaming",
+    "cudgel", "scalpel"}
+  local tankGear = {"one", "one", "skin", "skin", "vest", "kings", "fanra", "fanra", "cutlass",
+    "bangle"}
   local held, toHold = "", ""
 
   -- These need to be global temporarily so subsequent swap functions can access them
@@ -372,7 +374,7 @@ local function displayMobByKeyword( keywords )
   local NC = "<dark_orange>"
   local SC = "<royal_blue>"
   local DC = "<gold>"
-  local RC = "<reset>"
+  local RC = RC
 
   -- Split the keywords string into a table of individual keywords
   local keywordsTable = split( keywords, ' ' )
@@ -397,15 +399,18 @@ local function displayMobByKeyword( keywords )
     cecho( string.format( "\n  %s%s%s (%s%s%s)", SC, shrt, RC, SC, kws, RC ) )
     local hp, xp = mob.health, mob.xp
     local xpph = round( (xp / hp), 0.05 )
-    cecho( string.format( "\n  HP: %s%s%s  XP: %s%s%s  (%s%s%s xp/hp)", NC, expandNumber( hp ), RC, NC,
+    cecho( string.format( "\n  HP: %s%s%s  XP: %s%s%s  (%s%s%s xp/hp)", NC, expandNumber( hp ), RC,
+      NC,
       expandNumber( xp ),
       RC, DC, xpph, RC ) )
     local gp = mob.gold
     local gpph = round( (gp / hp), 0.05 )
-    cecho( string.format( "\n  Gold: %s%s%s  (%s%s%s gp/hp)", NC, expandNumber( gp ), RC, DC, gpph, RC ) )
+    cecho( string.format( "\n  Gold: %s%s%s  (%s%s%s gp/hp)", NC, expandNumber( gp ), RC, DC, gpph,
+      RC ) )
     local dn, ds, dm, hr = mob.damageDice, mob.damageSides, mob.damageModifier, mob.hitroll
     local da = averageDice( dn, ds, dm )
-    cecho( string.format( "\n  Damage: %s%sd%s+%s+%s%s (%s%s%s avg)", NC, dn, ds, dm, hr, RC, DC, da, RC ) )
+    cecho( string.format( "\n  Damage: %s%sd%s+%s+%s%s (%s%s%s avg)", NC, dn, ds, dm, hr, RC, DC, da,
+      RC ) )
     local flg, aff = mob.flags, mob.affects
     cecho( string.format( "\n  Flags: <maroon>%s%s", flg, RC ) )
     cecho( string.format( "\n  Affects: <maroon>%s%s", aff, RC ) )
@@ -471,7 +476,7 @@ local function getMobArea( rn )
 end
 
 local function calculateMobDamage( rn )
-  local DC, SC, R = "<maroon>", "<medium_violet_red>", "<reset>"
+  local DC, SC, R = "<maroon>", "<medium_violet_red>", RC
   local dbpath = "C:/Dev/mud/gizmo/data/gizwrld.db"
   -- SQL statement to select the mob by rnumber
   local mobSql = string.format( "SELECT * FROM Mob WHERE rnumber = %d", rn )
@@ -560,7 +565,8 @@ local function insertSpecialAttacks()
           rNumber, chance, damageDice, damageSides, damageModifier, hitroll, target, type, description
         ) VALUES (
           %d, %d, %d, %d, %d, %d, %d, %d, '%s'
-        )]], rNumber, chance, damageDice, damageSides, damageModifier, hitroll, target, type, description )
+        )]], rNumber, chance, damageDice, damageSides, damageModifier, hitroll, target, type,
+        description )
 
       local cursor, conn, env = getCursor( sql )
       if cursor then
@@ -701,19 +707,22 @@ local function loadMobsIntoDatabase()
       )
       local saRes, saSerr = conn:execute( specialAttackInsertCmd )
       if not saRes then
-        print( string.format( "Failed to insert special attack for mob rnumber %d: %s", rnumber, saSerr ) )
+        print( string.format( "Failed to insert special attack for mob rnumber %d: %s", rnumber,
+          saSerr ) )
         -- Not incrementing skippedCount here as the mob insert is the critical part
       end
     end
   end
-  print( string.format( "Data loading complete. Inserted: %d, Skipped: %d", insertedCount, skippedCount ) )
+  print( string.format( "Data loading complete. Inserted: %d, Skipped: %d", insertedCount,
+    skippedCount ) )
   conn:close()
   env:close()
 end
 
 -- The last 'where' command returned 'Couldn't find that entity'; log the error
 local function badKeyword()
-  local errorString = f( "{currentMobKeyword} ({currentMobIndex-1}) returned no entities from 'where'" )
+  local errorString = f(
+  "{currentMobKeyword} ({currentMobIndex-1}) returned no entities from 'where'" )
   cecho( "info", f "\n<orange_red>{errorString}<reset>" )
 end
 
@@ -727,9 +736,11 @@ CHANCE DAMAGE HITROLL TARGET TYPE STRINGS
 100   25D12+100    0       0   236
 --]]
 local function parseSpecialAttack()
-  local chance, diceNum, diceSides, diceModifier = tonumber( matches[2] ), tonumber( matches[3] ), tonumber( matches[4] ),
+  local chance, diceNum, diceSides, diceModifier = tonumber( matches[2] ), tonumber( matches[3] ),
+      tonumber( matches[4] ),
       tonumber( matches[5] )
-  local hitRoll, target, type = tonumber( matches[6] ), tonumber( matches[7] ), tonumber( matches[8] )
+  local hitRoll, target, type = tonumber( matches[6] ), tonumber( matches[7] ),
+      tonumber( matches[8] )
   local strings = matches[9] and trim( matches[9] ) or ""
 
   -- Constructing the special attack table
@@ -809,7 +820,8 @@ local function statCapturedMobs()
   local statOffset = 0    -- Start with no offset and increase for each mob
   for uniqueKey, mob in pairs( mobsToStat ) do
     if not mob.stated then
-      tempTimer( statOffset, f [[send( 'stat c ]] .. mob.index .. [[.]] .. mob.keyword .. [[', false )]] )
+      tempTimer( statOffset,
+        f [[send( 'stat c ]] .. mob.index .. [[.]] .. mob.keyword .. [[', false )]] )
       mob.stated = true -- Update this in mobsToStat
       statOffset = statOffset + statRate
     end
@@ -1064,7 +1076,8 @@ local function triggerParseScore()
   exl              = tonumber( exl )
   gld              = tonumber( gld )
 
-  raiseGlobalEvent( "event_pcStatus_score", SESSION, dam, maxHP, hit, mnm, arm, mvm, mac, aln, exp, exh, exl, gld )
+  raiseGlobalEvent( "event_pcStatus_score", SESSION, dam, maxHP, hit, mnm, arm, mvm, mac, aln, exp,
+    exh, exl, gld )
 end
 
 
@@ -1278,7 +1291,7 @@ local function ec( s, c )
   }
   local sc = colors[c] or "ivory"
   if c ~= 'func' then
-    return "<" .. sc .. ">" .. s .. "<reset>"
+    return "<" .. sc .. ">" .. s .. RC
   else
     return "<" .. sc .. ">" .. s .. "<reset>()"
   end
@@ -1558,7 +1571,8 @@ local function getAreaDirs()
   for _, roomID in ipairs( areaFirstRooms ) do
     local pathString = getFullDirs( 1121, roomID ) -- Assuming 1121 is your starting room (e.g., Market Square)
     if pathString then
-      cecho( f( "\nPath from <dark_orange>1121<reset> to room <dark_orange>{roomID}<reset>:\n\t<olive_drab>{pathString}" ) )
+      cecho( f(
+      "\nPath from <dark_orange>1121<reset> to room <dark_orange>{roomID}<reset>:\n\t<olive_drab>{pathString}" ) )
     else
       cecho( f( "\nNo path found from <dark_orange>1121<reset> to room <dark_orange>{roomID}<reset>" ) )
     end
@@ -2207,7 +2221,8 @@ local function setMinimumRoomNumber( areaID, newMinimum )
     return
   end
   -- Fetch the current minimum room number for the area
-  local cursor, err = conn:execute( f( "SELECT areaMinRoomRNumber FROM Area WHERE areaRNumber = {areaID}" ) )
+  local cursor, err = conn:execute( f(
+  "SELECT areaMinRoomRNumber FROM Area WHERE areaRNumber = {areaID}" ) )
   if not cursor then
     gizErr( f( "Error fetching data for {ac}{areaID}<reset>: {err}" ) )
     return
@@ -2222,7 +2237,8 @@ local function setMinimumRoomNumber( areaID, newMinimum )
     cecho( f "\nFirst room for {ac}{areaID}<reset> already {nc}{newMinimum}<reset>" )
   else
     -- Update the minimum room number
-    local update_stmt = f( "UPDATE Area SET areaMinRoomRNumber = {newMinimum} WHERE areaRNumber = {areaID}" )
+    local update_stmt = f(
+    "UPDATE Area SET areaMinRoomRNumber = {newMinimum} WHERE areaRNumber = {areaID}" )
     local res, upd_err = conn:execute( update_stmt )
     if not res then
       gizErr( f( "Error updating data for {ac}{areaID}<reset>: {upd_err}" ) )
@@ -2682,7 +2698,8 @@ local function initializeReactions()
   local function formatReactionState( reaction, isEnabled )
     local typeTag = reaction.type == "trigger" and "<hot_pink>T<reset>" or
         (reaction.type == "key" and "<dark_turquoise>K<reset>" or "<ansi_yellow>A<reset>")
-    local nameState = isEnabled and f "<olive_drab>+{reaction.name}<reset>" or f "<brown>-{reaction.name}<reset>"
+    local nameState = isEnabled and f "<olive_drab>+{reaction.name}<reset>" or
+    f "<brown>-{reaction.name}<reset>"
     return string.format( "%-5s %-5s %-35s", reaction.scope, typeTag, nameState )
   end
 
