@@ -294,3 +294,33 @@ function repeatCode( code, times, rate )
     time = time + rate
   end
 end
+
+-- The goal of this function is to compensate for items that share keywords and to ensure
+-- that the "correct" item is removed from a given container.
+function aliasUnstore( item, container )
+  local itemData = Items[item]
+  local kw       = itemData.keywords[1]
+end
+
+function aliasLocateObject()
+  -- If two groups are captured, we supplied a starting index
+  if matches[3] then
+    local ind = string.gsub( matches[2], "%.$", "" )
+    LocateIndex = tonumber( ind )
+    LocateTarget = trim( matches[3] )
+  else
+    LocateTarget = trim( matches[2] )
+    LocateIndex = 1
+  end
+  enableTrigger( [[Locate Triggers]] )
+  if LocateIndex and LocateIndex > 1 then
+    send( f [[cast 'locate object' {LocateIndex}.{LocateTarget}]] )
+  else
+    send( f [[cast 'locate object' {LocateTarget}]] )
+  end
+  if LocateTimer then killTimer( LocateTimer ) end
+  LocateTimer = tempTimer( 5, function ()
+    LocateIndex = 0
+    disableTrigger( [[Locate Triggers]] )
+  end )
+end

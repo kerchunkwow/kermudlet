@@ -100,14 +100,14 @@ function equipMinion( minion )
       "xot",
       "xot",
       "reptilian",
-      "idiocy",
+      "idiocy", -- cloned
       "oaken",
-      "planes", -- boots
+      "planes",
       "agony",
-      "working",
-      "lies",
-      "spider",
-      "spiked",
+      "chaos",
+      "lies", -- cloned
+      "night",
+      "burnt",
       "freezing",
       "freezing",
       "legend",
@@ -115,7 +115,7 @@ function equipMinion( minion )
     }
   elseif minion == 'troll' then
     lightCmd   = 'hold hand'
-    holdCmd    = 'hold tooth'
+    holdCmd    = 'hold hook'
     wieldCmd   = 'wield mace'
     minionGear = {
       "goblet",
@@ -125,18 +125,18 @@ function equipMinion( minion )
       "claw",
       "claw",
       "rune",
-      "idiocy",
+      "idiocy", -- cloned
       "oaken",
-      "stone",
+      "stone",  -- cloned
       "agony",
       "serpentine",
-      "lies",
-      "spider",
+      "lies", -- cloned
+      "night",
       "order",
       "freezing",
       "freezing",
       "mace",
-      "tooth",
+      "hook",
     }
     send( f [[get 12 red {container}]] )
     send( f [[give 12 red troll]] )
@@ -159,8 +159,8 @@ function equipMinion( minion )
       "zyca",
       "planes",
       "bloody",
-      "hell",
-      "lies", -- Ygaddrozil keyword can be a pain
+      "chaos",
+      "lies", -- cloned
       "flowing",
       "burnt",
       "plane",
@@ -168,13 +168,13 @@ function equipMinion( minion )
       "sickle",
       "drop",
     }
-    tempTrigger( [[shade minion wields]], function ()
-      guaranteeOrder( minion, [[hold drop]], MINION_HOLD )
-    end, 1 )
+    -- tempTrigger( [[shade minion wields]], function ()
+    --   guaranteeOrder( minion, [[hold drop]], MINION_HOLD )
+    -- end, 1 )
   end
   -- Give all of the items to the minion
   for i, item in ipairs( minionGear ) do
-    send( f 'get {item} {container}', true )
+    send( f 'get {item} cradle', true )
     send( f 'give {item} {minion}', true )
   end
   tempTimer( 7, function ()
@@ -203,13 +203,17 @@ function sacMinion( minion )
 end
 
 -- Execute the actual sacrifice
-function doSac( minion )
+function doSac()
+  local minion = matches[2]
+  cecho( f "minion: {minion}" )
+  tempEnableTrigger( "Store Minion EQ", 5 )
+  send( 'get cradle stocking', false )
   send( f 'sacrifice {minion}', false )
   send( 'get all corpse', false )
-  expandAlias( 'store' )
-  send( 'get all corpse', false )
-  killTrigger( sacTrigger )
-  sacTrigger = nil
+  --tempEnableTrigger( "Minion Sacrificed", 3 )
+  tempTimer( 5, function ()
+    send( "put cradle stocking" )
+  end )
 end
 
 function triggerTargetArrived()
@@ -385,8 +389,10 @@ function triggerEmergency()
   -- Return to undead Nexus with the Death Walk spell
   tempTimer( 5, function () guaranteeCast( 'death walk' ) end )
   -- Bring minions home one at a time ensuring they recall successfully with the guaranteeCommand function
-  tempTimer( 8, function () guaranteeCommand( TROLL_RECALL, TROLL_PATTERN, ORDER_FAIL, ORDER_ABORT ) end )
-  tempTimer( 10, function () guaranteeCommand( SHADE_RECALL, SHADE_PATTERN, ORDER_FAIL, ORDER_ABORT ) end )
+  tempTimer( 8,
+    function () guaranteeCommand( TROLL_RECALL, TROLL_PATTERN, ORDER_FAIL, ORDER_ABORT ) end )
+  tempTimer( 10,
+    function () guaranteeCommand( SHADE_RECALL, SHADE_PATTERN, ORDER_FAIL, ORDER_ABORT ) end )
   -- If we were AutoPathing, let's go ahead and call this a "win" and sacrifice the minions to recover gear/xp
   if AutoPathing then
     tempTimer( 30, function () expandAlias( 'sacmin' ) end )
@@ -434,37 +440,67 @@ function triggerMinionSummoned( minion )
   -- The shade minion must be turned "evil" by killing a large number of innocent enemies
   -- after summoning; delay for 6 seconds to allow for the summon song lag to expire, then
   -- group the shade and use an area ability to kill the mobs.
+  tempTimer( 6, [[send( 'get cradle stocking' )]] )
   if minion == "shade minion" then
-    tempTimer( 6, [[send( 'get waterwalking stocking' )]] )
-    tempTimer( 6, [[send( 'get gate stocking' )]] )
-    tempTimer( 6.25, [[send( 'give waterwalking shade' )]] )
-    tempTimer( 6.25, [[send( 'give gate shade' )]] )
+    tempTimer( 6.1, [[send( 'get waterwalking cradle' )]] )
+    tempTimer( 6.2, [[send( 'get gate cradle' )]] )
+    tempTimer( 6.3, [[send( 'give waterwalking shade' )]] )
+    tempTimer( 6.4, [[send( 'give gate shade' )]] )
     tempTimer( 6.5, [[send( 'group shade' )]] )
-    tempTimer( 6.75, [[expandAlias( 'mm' )]] )
+    tempTimer( 6.6, [[expandAlias( 'mm' )]] )
     -- Allow another delay for the area damage song to take affect, then proceed.
     tempTimer( 13, [[expandAlias( 'equip shade' )]] )
     -- This trigger waits until the shade is done "wearing" then ungroups it and sets its default
     -- behavior mode.
-    MinionEquipTrigger = tempTrigger( [[A shade minion grabs a drop]], function ()
+    MinionEquipTrigger = tempTrigger( [[A shade minion gives you a golden]], function ()
+      send( "put goblet cradle" )
+      send( "put cradle stocking" )
       send( 'group shade' )
       expandAlias( 'circle' )
     end, 1 )
   elseif minion == "troll minion" then
-    tempTimer( 6, [[send( 'get waterwalking stocking' )]] )
-    tempTimer( 6, [[send( 'get gate stocking' )]] )
-    tempTimer( 6.25, [[send( 'give waterwalking troll' )]] )
-    tempTimer( 6.25, [[send( 'give gate troll' )]] )
+    tempTimer( 6.1, [[send( 'get waterwalking cradle' )]] )
+    tempTimer( 6.2, [[send( 'get gate cradle' )]] )
+    tempTimer( 6.3, [[send( 'give waterwalking troll' )]] )
+    tempTimer( 6.4, [[send( 'give gate troll' )]] )
     tempTimer( 6.5, [[expandAlias( 'equip troll' )]] )
     MinionEquipTrigger = tempTrigger( [[A troll minion gives you a golden]], function ()
+      send( "put goblet cradle" )
+      send( "put cradle stocking" )
       expandAlias( 'def' )
     end, 1 )
   elseif minion == "blood nymph" then
-    tempTimer( 6, [[send( 'get waterwalking stocking' )]] )
-    tempTimer( 6, [[send( 'get gate stocking' )]] )
-    tempTimer( 6.25, [[send( 'give waterwalking nymph' )]] )
-    tempTimer( 6.25, [[send( 'give gate nymph' )]] )
+    tempTimer( 6.1, [[send( 'get waterwalking cradle' )]] )
+    tempTimer( 6.2, [[send( 'get gate cradle' )]] )
+    tempTimer( 6.3, [[send( 'give waterwalking nymph' )]] )
+    tempTimer( 6.4, [[send( 'give gate nymph' )]] )
     tempTimer( 6.5, [[send( 'group nymph' )]] )
-    tempTimer( 6.75, [[send( 'order nymph restore energy' )]] )
+    tempTimer( 6.6, [[send( 'order nymph restore energy' )]] )
+    tempTimer( 6.7, [[send( 'put cradle stocking' )]] )
+  end
+end
+
+-- Triggered when a minion is sacrificed to store their items in the appropriate container
+function triggerStoreMinionEq()
+  local desc = matches.desc
+  local num  = matches.num and matches.num .. " " or ""
+  local item = Items[desc]
+  if item then
+    local kw = item.keywords[1]
+    send( "put " .. num .. kw .. " cradle" )
+  end
+end
+
+function fakeLoot()
+  local fakeLoot = {
+    "A troll minion stops following you.",
+    "You get 2 a Freezing Bracelet from The corpse of a troll minion.",
+    "You get 2 the Huge Claw of Ygaddrozil from The corpse of a troll minion.",
+    "You get 2 a Black Onyx Ring from The corpse of a troll minion.",
+  }
+  -- Invoke cfeedTriggers( str ) for every string in the fakeLoot table
+  for i, str in ipairs( fakeLoot ) do
+    cfeedTriggers( str )
   end
 end
 
@@ -478,7 +514,7 @@ local function aliasThrow()
   expandAlias( 'rehold', true )
 end
 
-function banshee1()
+local function banshee1()
   send( 'w', true )
   send( 'w', true )
   send( 'n', true )
@@ -504,7 +540,7 @@ function banshee1()
   send( 'use mechanism', true )
 end
 
-function banshee2()
+local function banshee2()
   send( 'u', true )
   send( 'n', true )
   send( 'e', true )
@@ -522,7 +558,7 @@ function banshee2()
   expandAlias( 'targ rat', false )
 end
 
-function banshee3()
+local function banshee3()
   send( 's', true )
   send( 's', true )
   send( 'w', true )
@@ -551,7 +587,7 @@ function banshee3()
   send( 'drop awl', true )
 end
 
-function banshee4()
+local function banshee4()
   send( 'n', true )
   send( 'w', true )
   send( 'w', true )
@@ -583,7 +619,7 @@ function banshee4()
   send( 'drop ladder', true )
 end
 
-function banshee5()
+local function banshee5()
   send( 'n', true )
   send( 'u', true )
   send( 'n', true )
@@ -618,7 +654,7 @@ function banshee5()
   send( 'get tongs', true )
 end
 
-function banshee6()
+local function banshee6()
   send( 's', true )
   send( 's', true )
   send( 'e', true )
@@ -639,7 +675,7 @@ function banshee6()
   send( 'drop tongs', true )
 end
 
-function banshee7()
+local function banshee7()
   send( 'n', true )
   send( 'e', true )
   send( 'e', true )
@@ -657,7 +693,7 @@ function banshee7()
   send( 'drop dagger', true )
 end
 
-function banshee8()
+local function banshee8()
   send( 'drop morningstar', true )
   send( 'drop mandible', true )
   send( 'drop gem', true )
@@ -704,7 +740,7 @@ function banshee8()
   send( 'drop gem', true )
 end
 
-function banshee9()
+local function banshee9()
   send( 's', true )
   send( 'w', true )
   send( 'w', true )
@@ -743,7 +779,7 @@ function banshee9()
   send( 'put violin stocking', true )
 end
 
-function banshee10()
+local function banshee10()
   send( 'n', true )
   send( 'e', true )
   send( 'u', true )
@@ -752,7 +788,7 @@ function banshee10()
   send( 'search mud', true )
 end
 
-function banshee11()
+local function banshee11()
   send( 's', true )
   send( 'w', true )
   send( 'd', true )
@@ -773,7 +809,7 @@ function banshee11()
   send( 'put guitar stocking', true )
 end
 
-function banshee12()
+local function banshee12()
   send( 's', true )
   send( 'w', true )
   send( 'w', true )
@@ -784,7 +820,7 @@ function banshee12()
   send( 'say Time to give instruments!', true )
 end
 
-function banshee13()
+local function banshee13()
   send( 'get violin stocking', true )
   send( 'give violin statue', true )
   send( 'get flute stocking', true )
@@ -797,4 +833,8 @@ function banshee13()
   send( 'give chimes statue', true )
   send( 'get lyre stocking', true )
   send( 'give lyre statue', true )
+end
+
+function fixKnife()
+  Items["a small knife"].longDescription = "A small knife is lying on the ground."
 end

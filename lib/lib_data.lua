@@ -10,7 +10,7 @@ local function tableDefinitions()
   RejectedItems    = {}
   StaticItems      = {}
   LoggedLoot       = {}
-  DesirableItems   = {}
+  CommonKeywords   = {}
   PotionAffects    = {}
   KnownPlayers     = {}
   PlayerContainers = {}
@@ -22,7 +22,7 @@ DATA_FILES = {
   "RejectedItems",
   "StaticItems",
   "LoggedLoot",
-  "DesirableItems",
+  "CommonKeywords",
   "PotionAffects",
   "KnownPlayers",
   "PlayerContainers",

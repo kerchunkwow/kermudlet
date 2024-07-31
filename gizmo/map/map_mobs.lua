@@ -1,5 +1,5 @@
 -- For now we're only using mobs in the Main session
-if SESSION == 1 and not mobData then
+if not mobData then
   -- Global "master table" to hold all mob data
   mobData = {}
   -- Global table to hold fame data (maps mob shorts to fame values)
@@ -80,7 +80,7 @@ function loadAllMobs()
       local sa = saCursor:fetch( {}, "a" )
       while sa do
         local savd = sa.chance * averageDice( sa.damageDice, sa.damageSides, sa.damageModifier ) /
-        100
+            100
         mobEntry.specDamage = mobEntry.specDamage + savd
         table.insert( mobEntry.specialAttacks, {
           chance         = tonumber( sa.chance ),

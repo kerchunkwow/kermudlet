@@ -40,20 +40,25 @@ BOT_DIALOG                 = {
   NEW = {
     messages = {
       "Your contribution to {DB} is duly noted and much appreciated, {CP}.",
-      "{DB} grows daily thanks to folks like you, {CP}. We are in your debt. I mean not anymore 'cause I just paid you but you get it.",
-      "Another new entry in {DB}! Adventurers like you do the hard work, {CP}. I just write stuff down (then take credit later when you're not around).",
+      "Your continued efforts to build {DB} will be remembered, {CP}.",
+      "{DB} depends on folks like you, {CP}. We're' in your debt. I mean not anymore 'cause I just paid you, but you get it.",
+      "Another entry in {DB}! Adventurers like {CP} do the hard part. I just write stuff down (then take credit later).",
       "Thanks, {CP}. At this rate {DB} is going to need a second volume soon! {DB} 2: Electric Boogaloo.",
       "This is the first {CI} I've ever seen, and {DB} will remember {CP} as the one who found it.",
       "I'd heard rumors of {CI}, but never thought I would lay eyes on it.",
-      "{DB} is eternal, as is our gratitude for your hard work tracking down {CI}, {CP}.",
-      "The cityguards will want to know where you got {CI}. We should get our stories straight.",
+      "{DB} is eternal, as shall be our gratitude to {CP} for tracking down {CI}.",
+      "The cityguards will want to know where you got {CI}. Let's get our stories straight.",
       "You seem like the cast-first-ask-questions-later type, {CP}, so I'm not surprised you got your hands on {CI}.",
-      "I can't believe I'm holding {CI}. I mean, I'm not now but I was just a second ago. Thanks, {CP}.",
+      "I can't believe I'm holding {CI}. I mean, I'm not now but I was just a second ago. Thank you, {CP}.",
       "Wow {CP}, I honestly didn't think I'd ever see {CI} in person. You're an absolute legend!",
-      "I'm just going to jot down 'salvaged from shipwreck', {CP}. That should discourage too many follow-up questions.",
       "Honestly I thought I had seen it all, then {CP} shows up on my doorstep with {CI}.",
       "Surely that's not really {CI}, {CP}? Nah, it definitely is and I'm sorry I called you Shirley.",
       "{DB} wouldn't exist without dedicated and certifiably insane adventurers like you, {CP}.",
+      "I'm just going to jot down 'salvaged from shipwreck', {CP}. That should discourage too many follow-up questions.",
+      "Is that a little blood I see on {CI}? Let me just wipe that off (along with any pesky fingerprints).",
+      "I used to read about {CI} in storybooks as a child. I had a pretty boring childhood, though.",
+      "{DB} swells with knowledge of these strange lands thanks to strange lads like {CP}.",
+      "Is that really {CI}? Well, that's the second time I shit my pants today! No follow-up questions.",
     }
   },
   -- Inform the player their recent contribution was an alternate version of an existing item
@@ -97,6 +102,15 @@ BOT_DIALOG                 = {
   QUERY_LIMIT = {
     messages = {
       "{DB} has a lot of items like that. Here are the first {MAX_QUERY} I found.",
+    }
+  },
+  FETCH_QUEST = {
+    messages = {
+      "I would love to get my hands on `g{item}`q from {mobString}.",
+      "See if you can bring me `g{item}`q from {mobString}.",
+      "I would be most grateful if you could retrieve `g{item}`q from {mobString}.",
+      "I'm desperately in need of `g{item}`q from {mobString}.",
+      "I've really been lookin' for `g{item}`q from {mobString}.",
     }
   },
   SEMICOLON = {

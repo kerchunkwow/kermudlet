@@ -327,3 +327,11 @@ function enableUntilPattern( trigger, pattern )
     disableTrigger( trigger )
   end, 1 )
 end
+
+-- Like enableUntilPattern but the opposite
+function disableUntilPattern( trigger, pattern )
+  disableTrigger( trigger )
+  tempRegexTrigger( pattern, function ()
+    enableTrigger( trigger )
+  end, 1 )
+end

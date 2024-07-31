@@ -265,7 +265,35 @@ function getItemFlagString()
     end
     flagString = flagString .. CLONE_TAG
   end
+  -- Ugly/brute force to make sure we don't get empty flagStrings ([TODO])
+  if flagString == "" then flagString = nil end
   return flagString
+end
+
+-- This function updates the flagString for all items in the Items table; useful when changes
+-- are made to the display value in the ITEM_FLAGS table
+-- This function also applies styling to the strings so they can be displayed directly with
+-- cout() or cecho()
+function setFlagStrings()
+  -- Color for anti-flags
+  local ac = "<firebrick>"
+  -- Color for spec/proc flag
+  local sc = "<gold>"
+  -- Color for cloneable flag
+  local cc = "<roya_blue>"
+  for desc, item in pairs( Items ) do
+    -- Because getFlagString normally is used as part of the item creation sequence, we need
+    -- to piggyback on this global to make it work for existing items
+    ItemObject = item
+    local flags = getItemFlagString()
+    local antiPattern = "(!.+!%a+)"
+
+    if flags:find( antiPattern ) then
+      print( flags )
+      flags = flags:gsub( antiPattern, "<red>%1<reset>" )
+      print( flags )
+    end
+  end
 end
 
 function validateFlagStrings()
@@ -378,42 +406,71 @@ end
 -- abbreviates the item display and attempts to append stats if they're known.
 -- Trigger pattern:
 -- ^(?<lbl><.*?(?<loc>\w+)>)\s+(?<itm>\w.*?)(?<mod>\(.*\))?$
--- Standard column/padding for aligning item stats in the equipment/inventory
-STAT_COL = 48
+
+EquippedItems = EquippedItems or {}
+
 function triggerEquippedItem()
-  -- Some local colorization options
-  local lc              = "<cadet_blue>" -- Worn
-  -- Highlight known and unknown items
-  local kn, uk          = "<light_slate_grey>", "<pale_salmon>"
-  -- Basic item stats
-  local sc              = "<cadet_blue>"
-  -- Affects/Perms
-  local ac              = "<deep_sky_blue>"
-  local vr              = "<light_slate_grey>|<reset>"
-  -- Antis/flags
-  local fc              = "<salmon>"
+  -- Standard column/padding for aligning item stats in the equipment/inventory
+  -- [TODO] This should be calculated from the Items database & derived from the longest name
+  local statColumn      = 48
   -- Get worn location, item name (short), and any modifier flags
-  local loc, desc, mods = matches.loc, matches.itm, abbreviateModifiers( matches.mod )
+  -- local loc, desc, mods = matches.loc, matches.itm, abbreviateModifiers( matches.mod )
+  -- [TODO] For now, we're ignoring mods like (glowing) and (humming); decide how to handle
+  local loc, desc, mods = trim( matches.loc ), trim( matches.itm ), trim( matches.mod )
 
-  -- Prepend space to the worn location to give them right-alignment
-  loc                   = string.rep( " ", 8 - utf8.len( loc ) ) .. loc
-  -- Style the worn display with verical rules, colorization, and a margin
-  loc                   = vr .. lc .. loc .. RC .. vr .. "  "
+  -- If matched from inventory instead of equipment, location will be nil but item will have
+  -- a carried count
+  local num             = matches.num or ""
+  if num then
+    num = "<light_slate_grey>[<dark_slate_gray>" .. tostring( num ) .. "<light_slate_grey>]<reset> "
+  end
+  -- Highlight known and unknown items
+  -- [TODO] Create a global "color scheme" table for items & stat displays
+  local kn, uk = "<slate_gray>", "<indian_red>"
+  -- Basic item stats
+  local sc     = "<ansi_light_black>"
+  -- Affects/Perms
+  local ac     = "<dark_turquoise>"
+  local vr     = "<light_slate_grey>|<reset>"
+  -- Antis/flags
+  local fc     = "<indian_red>"
 
-  -- If itm (string) maps to an entry in the Items table, we have stats for this item
-  local item            = Items[desc]
-  local ic              = item and kn or uk
-  loc                   = loc .. ic .. desc
-  local stats           = item.statsString and sc .. item.statsString or ""
-  local aff             = item.affectString and ac .. " " .. item.affectString or ""
-  local flags           = item.flagString and fc .. " " .. item.flagString or ""
-
+  if loc then
+    -- Prepend space to the worn location to give them right-alignment
+    -- Some local colorization options
+    local lc = desc and "<dark_slate_gray>" or "<indian_red>"
+    loc      = string.rep( " ", 8 - utf8.len( loc ) ) .. loc
+    -- Style the worn display with verical rules, colorization, and a margin
+    loc      = vr .. lc .. loc .. RC .. vr .. "  "
+  else
+    loc = num
+  end
+  -- If desc maps to an entry in the Items table, we have stats for this item
+  local stats, aff, flags = "", "", ""
+  if desc then
+    local item = Items[desc]
+    local ic   = item and kn or uk
+    -- If "desc" is in the IGNORED_ITEMS table, set its color to kn
+    if IGNORED_ITEMS[desc] then
+      ic = kn
+    end
+    -- If mods contains cloned, swap the item color to indicate a clone
+    if mods and mods:find( "cloned" ) then
+      ic = "<royal_blue>"
+    end
+    loc = loc .. ic .. desc
+    if item then
+      stats = item.statsString and sc .. item.statsString or ""
+      aff   = item.affectString and ac .. " " .. item.affectString or ""
+      flags = getFilteredFlagString( item.flags, item.cloneable )
+    end
+  end
   -- Mods come colorized from abbreviateModifiers()
   -- Append mods only if it's non-nil and has length greater than 0
-  local nl              = loc
-  nl                    = nl .. (mods and #mods > 0 and " " .. mods or "")
-  local pad             = fill( STAT_COL - cLength( nl ) )
-  nl                    = nl .. pad .. stats .. aff .. flags .. RC
+  local nl  = loc
+  --nl                    = nl .. (mods and #mods > 0 and " " .. mods or "")
+  local pad = fill( statColumn - cLength( nl ) )
+  nl        = nl .. pad .. stats .. aff .. flags .. RC
 
   creplaceLine( nl )
 end
@@ -427,6 +484,35 @@ MODIFIER_MAP = {
   ["(lined)"]     = "<dark_salmon>l<reset>",
   ["(blue)"]      = "<light_sky_blue>m<reset>",
 }
+
+-- The flagString attribute of items in the Items table represent all flags that item posesses;
+-- this function instead creates a filtered string based on the display settings in the ITEM_FLAGS table
+function getFilteredFlagString( flags, cloneable )
+  -- Generate a flag string filtered based on the display values in the ITEM_FLAGS table
+  local result = ""
+  for _, flag in ipairs( flags ) do
+    local flagData = ITEM_FLAGS[flag]
+    if not flagData then
+      cout( f "\n{EC}getFilteredFlagString{RC}(): Unknown flag {SC}{flag}{RC}" )
+    elseif flagData.display and #flagData.nick > 0 then
+      result = result .. flagData.nick .. " "
+    end
+  end
+  local flagStyle = {
+    ["(!%a+[^ ]*)"] = "<indian_red>%1<reset>",
+    ["ƒ"] = "<gold>ƒ<reset>",
+  }
+  -- For each pattern in the flagStyle table found in result, replace it with the associated style
+  for pattern, style in pairs( flagStyle ) do
+    result = result:gsub( pattern, style )
+  end
+  -- If cloneable is true, append clone tag  to the end of result; prepend with a space if result is non-empty
+  if cloneable then
+    result = result .. (result ~= "" and " " or "") .. "<royal_blue>†<reset>"
+  end
+  -- If the result has at least one character, prepend a space to it
+  return #result > 0 and " " .. trimCondense( result ) or result
+end
 
 -- Abbreviate item modifiers like (glowing) and (humming) according to their
 -- mappings in the MODIFIER_MAP table
@@ -443,7 +529,7 @@ function abbreviateModifiers( str )
 end
 
 -- Find all ANTI-FLAGS in the Items table for reference
-function displayAllAntis()
+local function displayAllAntis()
   -- For each item in Items, iterate over item.flags;
   -- for each item in item.flags, if the item contains the substring "ANTI" then
   -- append it to a result table.

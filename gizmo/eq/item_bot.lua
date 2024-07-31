@@ -10,11 +10,11 @@ GizdexVersion = "0.2"
 function toggleGizdexing()
   Gizdexing = not Gizdexing
   if Gizdexing then
-    cecho( "Gizdexing <yellow_green>ON<reset>" )
-    enableTrigger( "Gizdex" )
+    cecho( "ID Bot <yellow_green>ON<reset>" )
+    enableTrigger( "ID Bot" )
   else
-    cecho( "Gizdexing <orange_red>OFF<reset>" )
-    disableTrigger( "Gizdex" )
+    cecho( "ID Bot <orange_red>OFF<reset>" )
+    disableTrigger( "ID Bot" )
   end
 end
 
@@ -42,4 +42,92 @@ function chatAd()
   local ad = ads[math.random( #ads )]
   -- Send the chosen ad
   send( "goss " .. ad )
+end
+
+-- The purpose of this global & function are to iterate through the table of CommonKeywords to
+-- locate items within the game; the secondary benefit of this will be populating the table of
+-- unidentified items that are currently loaded.
+-- Each time this function is called, it should locate the "next" keyword in the list by calling:
+-- expandAlias( f"loc {keyword}" )
+-- Once all keywords have been located, the function should return to the start of the list
+-- A global counter to keep track of the position in the CommonKeywords list
+CommonKeywordsCounter = CommonKeywordsCounter or 1
+function locateCommonItems()
+  -- Get the current keyword using the counter
+  local keyword = CommonKeywords[CommonKeywordsCounter]
+
+  -- Expand the alias to locate the current keyword
+  expandAlias( f "loc {keyword}" )
+
+  -- Increment the counter to the next keyword
+  CommonKeywordsCounter = CommonKeywordsCounter + 1
+
+  -- If the counter exceeds the length of the CommonKeywords list, reset it to 1
+  if CommonKeywordsCounter > #CommonKeywords then
+    CommonKeywordsCounter = 1
+  end
+end
+
+-- This global table keeps track of all items currently loaded that have not been identified; the table
+-- maps the names of items to a list of the mobs currently carrying the item, for instance:
+-- LoadedItems["a sword"] = {"a guard", "a soldier"}
+LoadedItems = LoadedItems or {}
+
+-- Add an item to the LoadedItems table if this specific item, mob pair does not already exist
+function addLoad( item, mob )
+  -- Initialize the list if the item is not already present
+  if not LoadedItems[item] then
+    LoadedItems[item] = {}
+  end
+  -- Check if the mob is already in the list for the item
+  for _, existingMob in ipairs( LoadedItems[item] ) do
+    if existingMob == mob then
+      return
+    end
+  end
+  -- Add the mob to the list for the item
+  table.insert( LoadedItems[item], mob )
+end
+
+-- Remove an item (and all associated mobs) from the LoadedItems table
+function remLoad( item )
+  LoadedItems[item] = nil
+end
+
+-- Construct a "request" message for an item in the LoadedItems table; a specific item can be
+-- queried or if the parameter is nil then a random item should be selected from the table.
+function requestLoad( item )
+  if not item then
+    -- Local function to select a random item from the LoadedItems table
+    local function getRandomLoadedItem()
+      local itemList = {}
+      for k in pairs( LoadedItems ) do
+        table.insert( itemList, k )
+      end
+      if #itemList == 0 then
+        return nil
+      end
+      return itemList[math.random( #itemList )]
+    end
+    item = getRandomLoadedItem()
+    if not item then
+      cecho( "<red>No loaded items found.\n" )
+      return
+    end
+  end
+  local mobList = LoadedItems[item]
+  local mobString = ""
+  -- Create a "mob string" using the mobList from this item, when more than one mob is present each
+  -- should be separated by an "and" in the string for example:
+  -- "a guard and a soldier"
+  for i, mob in ipairs( mobList ) do
+    if i == 1 then
+      mobString = "`b" .. mob .. "`q"
+    else
+      mobString = mobString .. " or `b" .. mob .. "`q"
+    end
+  end
+  local requestString = f "Please fetch `g{item}`q from {mobString}."
+  --send( f "say {requestString}" )
+  speak( "FETCH_QUEST" )
 end

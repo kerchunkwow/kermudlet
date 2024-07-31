@@ -14,6 +14,9 @@ IDTrigger         = IDTrigger or nil
 ReturnTrigger     = ReturnTrigger or nil
 ReturnedTrigger   = ReturnedTrigger or nil
 
+-- Pattern for attempts to identify an item that fail (time to try next keyword)
+MISS_ID           = "(?:You are not carrying anything like that\\.$|What should the spell be cast upon\\?$)"
+
 -- Triggered by the in-game message resulting from another player giving the bot an item;
 -- this "kicks off" the process of identifying and returning the item to the player.
 -- Pattern: ^(\w+) gives you (.+)\.$
@@ -122,7 +125,7 @@ function attemptNextId()
   -- Set up a trigger to attempt the next keyword if this one isn't valid; wait a couple seconds
   -- to avoid spamming casts.
   if IDTrigger then killTrigger( IDTrigger ) end
-  IDTrigger = tempRegexTrigger( "You are not carrying anything like that\\.$", function ()
+  IDTrigger = tempRegexTrigger( MISS_ID, function ()
     tempTimer( 2, [[attemptNextId()]] )
   end, 1 )
 end
@@ -242,19 +245,31 @@ end
 -- @return The calculated bounty for the item
 function calculateItemBounty( item )
   -- Turn off bounties for now
-  if true then return 0 end
+  --if true then return 0 end
   local itemBounty = 0
   for attribute, baseline in pairs( BOUNTY_VALUES ) do
     if item[attribute] then
       local value = item[attribute]
       value = tonumber( value )
       local bounty = value * baseline
+      cecho( f "\n\t<yellow_green>+Bounty<reset>: {SC}{attribute}{RC} = {NC}{value}{RC} * {NC}{baseline}{RC} = +{NC}{bounty}{RC}" )
       itemBounty = itemBounty + adjustBounty( bounty, item.baseType, attribute )
     end
+  end
+  -- If the item has a spell list (item["spellList"] table exists and is not empty), multiply the bounty
+  -- by the number of spells in the list
+  if item["spellList"] and #item["spellList"] > 0 then
+    itemBounty = itemBounty * #item["spellList"]
   end
   -- Apply minimum and maximum bounty thresholds
   if itemBounty > MAX_BOUNTY then itemBounty = MAX_BOUNTY end
   if itemBounty < MIN_BOUNTY then itemBounty = MIN_BOUNTY end
+  -- If the vendor value of the item (item["value"]) is greater than the calculated bounty AND less
+  -- than 100000, use the vendor value as the bounty
+  if item["value"] and item["value"] > itemBounty and item["value"] < 100000 then
+    itemBounty = item["value"]
+  end
+  cecho( f "\n\t<maroon>*Adjusted Bounty<reset>: {NC}{itemBounty}{RC}" )
   return itemBounty
 end
 
@@ -267,7 +282,16 @@ function adjustBounty( bounty, type, attribute )
   -- Only treasure items should get credit for their value attribute
   if attribute == "value" and type ~= "TREASURE" then bounty = 0 end
   -- Weapons should not get credit for their dr attribute as it is already factored into averageDamage
-  if attribute == "dr" and type == "WEAPON" then bounty = 0 end
+  if attribute == "dr" and (type == "WEAPON" or type == "MISSILE") then bounty = 0 end
+  -- "Missile" type items tend to have very high average damage so we need to reduce the bounty
+  if attribute == "averageDamage" and type == "MISSILE" then bounty = bounty * 0.1 end
+  -- Pay 5x bounty for items with greater than 20 average damage
+  if attribute == "averageDamage" and type ~= "MISSILE" then
+    if bounty > BOUNTY_VALUES["averageDamage"] * 20 then
+      bounty = bounty * 5
+    end
+  end
+  if type == "TRASH" or type == "FOOD" or type == "NOTE" or type == "KEY" then bounty = 5 end
   -- Some items have negative attribute values, but bounties should always be positive
   if bounty < 0 then bounty = 0 end
   return bounty

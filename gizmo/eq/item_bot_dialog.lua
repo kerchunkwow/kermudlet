@@ -7,7 +7,7 @@
 MAX_QUERY  = 25
 
 -- How long to wait before beginning to speak and between separate lines of dialog
-SpeechRate = 1
+SpeechRate = 0.5
 
 -- Prevent overlapping speeches
 Speaking   = false
@@ -84,12 +84,12 @@ function triggerBotChat()
   end
 
   -- If args contain a semicolon, ignore it and add the Speaker to a table
-  if containsSemicolon( args ) then
+  if args and containsSemicolon( args ) then
     speak( "SEMICOLON" )
     return
   end
   -- Check for profanity in the input and respond accordingly
-  if checkProfanity( string.lower( args ) ) then
+  if args and checkProfanity( string.lower( args ) ) then
     speak( "PROFANITY" )
     return
   end
@@ -126,20 +126,26 @@ function speakItemStats( itemName )
     speak( "UNKNOWN_ITEM" )
     return
   end
-  local itm     = itemName
+  local itm   = itemName
   -- For each section of an item's ID message that exists, interpolate the global format string into a portion
   -- of the response msg.
-  local stats   = item.statsString and f( STS ) or ""
+  local stats = item.statsString and f( STS ) or ""
+  echo( f "\nStats:{stats}" )
   local affects = item.affectString and f( AFF ) or ""
-  local flags   = item.flagString and f( FLG ) or ""
-  local msg     = f( IDS )
+  echo( f "\nAffects:{affects}" )
+  local flags = item.flagString and f( FLG ) or ""
+  echo( f "\nFlags:{flags}" )
+  local msg = f( IDS )
 
   -- CLONE_TAG & SPEC_TAG are non-ASCII; replace them with printable versions for game chat
-  msg           = string.gsub( msg, CLONE_TAG, CLONE_TAG_A )
-  msg           = string.gsub( msg, SPEC_TAG, SPEC_TAG_A )
+  msg       = string.gsub( msg, CLONE_TAG, CLONE_TAG_A )
+  msg       = string.gsub( msg, SPEC_TAG, SPEC_TAG_A )
 
   cecho( f( "{GDOK} ID Query: {SC}{itemName}{RC}" ) )
 
+  echo( msg .. "\n" )
+  msg = trimCondense( msg )
+  echo( msg .. "\n" )
   msg = f( "say {msg}" )
   send( msg )
 end
@@ -212,5 +218,5 @@ end
 
 BOT_COMMANDS = {
   ["ID"] = {argsRequired = true, func = respondItemInquiry},
-  --["HELP"] = {argsRequired = false, func = respondHelp},
+  ["FETCH"] = {argsRequired = false, func = requestLoad},
 }

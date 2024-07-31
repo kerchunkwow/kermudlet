@@ -206,29 +206,42 @@ function triggerHighlightCritical()
   creplaceLine( critMsg )
 end
 
+-- Triggered by lines returned from the 'locate object' spell; this function filters out items
+-- carried by players and highlights others based on whether or not they have been identified in
+-- the Items database.
+-- Loaded items tracks items that are present in the game on a mob or in a room that have
+-- not been ID'd; this can be used to assign "quests" to fetch items for the database.
+
 function triggerLocateObject()
-  local obj = trim( matches[2] )
-  local loc = trim( matches[3] )
-  -- Ignore items already owned by players
+  -- The name (short description) of the located item
+  local item  = trim( matches.item )
+  -- The "position" the item is in (equipped, carried, on ground)
+  local pos   = trim( matches.pos )
+  -- The location of the item (name of mob or room)
+  local loc   = trim( matches.loc )
+
+  LocateIndex = (LocateIndex or 0) + 1
+  cecho( f "\t({NC}{LocateIndex}{RC})" )
+
   if PlayerContainers[loc] or KnownPlayers[loc] then
+    -- Ignore items already owned by players
+    deleteLine()
+    return
+  elseif Items[item] then
+    -- For now, ignore items we have already identified
     deleteLine()
     selectString( line, 1 )
     fg( "dim_grey" )
     resetFormat()
     return
   end
-  selectString( obj, 1 )
-  -- Sought after item
-  if DesirableItems[obj] then
-    fg( "gold" )
-    playSoundFile( {name = "whisper.wav"} )
-    -- In our database
-  elseif itemData[obj] then
-    fg( "dark_slate_grey" )
-    -- Unrecorded item
-  else
-    fg( "orchid" )
+  -- Add/update unidentified items in the items table; for now, only include items equipped or
+  -- carried (items on the ground are often in inaccessilbe rooms)
+  if pos == "equipped by" or pos == "carried by" then
+    addLoad( item, loc )
   end
+  selectString( item, 1 )
+  fg( "maroon" )
   selectString( loc, 1 )
   -- Check if it's a room in our map
   local rooms = searchRoom( loc, true, true )
@@ -238,9 +251,45 @@ function triggerLocateObject()
     fg( "royal_blue" )
   else
     -- Unmapped room (or mob)
-    fg( "salmon" )
+    fg( "indian_red" )
   end
   resetFormat()
+end
+
+-- Using the LoadedItems table, request a random item from the list to find & return
+-- to The Archive.
+function requestItem()
+  -- Convert LoadedItems table to a list of keys (item names)
+  local itemList = {}
+  for item, _ in pairs( LoadedItems ) do
+    table.insert( itemList, item )
+  end
+  -- If there are no items in the list, return
+  if #itemList == 0 then
+    cecho( "<red>No items in LoadedItems to request.\n" )
+    return
+  end
+  -- Randomly select an item from the itemList
+  local randomIndex = math.random( #itemList )
+  local item = itemList[randomIndex]
+  local location = LoadedItems[item]
+
+  -- Issue the request
+  send( f "say Please fetch me {item} from {location}." )
+end
+
+-- Triggered by "You are very confused" indicating there are more items by the same name
+-- to locate; this function uses the item index to cast another locate command starting
+-- at the last index.
+function triggerContinueLocate()
+  creplaceLine( f "<dim_grey>More {SC}{LocateTarget}<dim_grey>(s) to find...{RC}" )
+  local nextIndex = LocateIndex + 1
+  send( f [[cast 'locate object' {nextIndex}.{LocateTarget}]], true )
+  if LocateTimer then killTimer( LocateTimer ) end
+  LocateTimer = tempTimer( 8, function ()
+    LocateIndex = 0
+    disableTrigger( [[Locate Triggers]] )
+  end )
 end
 
 -- Triggered when a mob is incapacitated in combat; a slight variant on "death" but still needs

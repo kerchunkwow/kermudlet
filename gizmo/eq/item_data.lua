@@ -46,7 +46,10 @@ function addItemObject( newItem )
     -- Update the global item count
     ArchivedItems = table.size( Items )
     --cout( f "{GDITM} <ansi_red>REMINDER<reset>: Item addition temporarily disabled" )
-
+    -- If the newly added item's desc is in the LoadedItems table, remove it
+    if LoadedItems[desc] then
+      LoadedItems[desc] = nil
+    end
     -- Finally, store the name of the most recent item
     LastItem = desc
     -- If we're auto-saving, write the data file every time a new item is added
@@ -168,7 +171,7 @@ end
 
 -- To start a new round of QA testing and enhancements to the bot, fully reset and write the Items table
 -- reporting on who contributed to this round of testing most effectively.
-function resetItemData()
+local function resetItemData()
   local contributors = {}
   local count = 0
   for desc, item in pairs( Items ) do
