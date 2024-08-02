@@ -46,9 +46,9 @@ function addItemObject( newItem )
     -- Update the global item count
     ArchivedItems = table.size( Items )
     --cout( f "{GDITM} <ansi_red>REMINDER<reset>: Item addition temporarily disabled" )
-    -- If the newly added item's desc is in the LoadedItems table, remove it
-    if LoadedItems[desc] then
-      LoadedItems[desc] = nil
+    -- If the newly added item's desc is in the UnknownItems table, remove it
+    if UnknownItems[desc] then
+      UnknownItems[desc] = nil
     end
     -- Finally, store the name of the most recent item
     LastItem = desc
@@ -167,30 +167,6 @@ function getMatchingItemNames( str )
     end
   end
   return matches
-end
-
--- To start a new round of QA testing and enhancements to the bot, fully reset and write the Items table
--- reporting on who contributed to this round of testing most effectively.
-local function resetItemData()
-  local contributors = {}
-  local count = 0
-  for desc, item in pairs( Items ) do
-    count = count + 1
-    if item.contributor and item.contributor ~= "Nadja" and item.contributor ~= "Kaylee" then
-      if not contributors[item.contributor] then
-        contributors[item.contributor] = 1
-      else
-        contributors[item.contributor] = contributors[item.contributor] + 1
-      end
-    end
-    deleteItem( desc )
-  end
-  for name, num in pairs( contributors ) do
-    cecho( f "{GDITM} {VC}{name}{RC} contributed {num} items" )
-  end
-  cecho( f "{GDITM} {EC}{count}{RC} items deleted" )
-  -- Force a write of the new empty items table with a direct table.save()
-  table.save( f '{DATA_PATH}/Items.lua', Items )
 end
 
 -- Advertise The Archive by occasionally contributing an item to The Archive when a player
@@ -374,4 +350,28 @@ function sanitizeIdentifyText( text )
     text = text:gsub( pattern, "" )
   end
   return text
+end
+
+-- To start a new round of QA testing and enhancements to the bot, fully reset and write the Items table
+-- reporting on who contributed to this round of testing most effectively.
+local function resetItemData()
+  local contributors = {}
+  local count = 0
+  for desc, item in pairs( Items ) do
+    count = count + 1
+    if item.contributor and item.contributor ~= "Nadja" and item.contributor ~= "Kaylee" then
+      if not contributors[item.contributor] then
+        contributors[item.contributor] = 1
+      else
+        contributors[item.contributor] = contributors[item.contributor] + 1
+      end
+    end
+    deleteItem( desc )
+  end
+  for name, num in pairs( contributors ) do
+    cecho( f "{GDITM} {VC}{name}{RC} contributed {num} items" )
+  end
+  cecho( f "{GDITM} {EC}{count}{RC} items deleted" )
+  -- Force a write of the new empty items table with a direct table.save()
+  table.save( f '{DATA_PATH}/Items.lua', Items )
 end

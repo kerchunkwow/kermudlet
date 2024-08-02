@@ -67,9 +67,11 @@ end
 -- Print a horizontal divider to the main console of length n in color c; use
 -- Gizmo standard format of dashes flanked by plus signs.
 function hrule( n, c )
-  -- Add <> characters here so they don't have to be included in function calls
+  -- Default to black if no color is provided
   if not c then c = "<black>" end
-  local fi = fill( n, '-', c )
+  -- If color (c) is provided but is not surrounded with <>, add them
+  if not string.match( c, "<" ) then c = f "<{c}>" end
+  local fi = fill( n - 2, '-', c )
   local line = f "\n{c}+{fi}{c}+<reset>"
   cecho( line )
 end
@@ -86,6 +88,35 @@ function completeDelete()
   if justAPrompt or #line <= 0 then
     deleteLine()
   end
+end
+
+-- Function to output a framed/formatted table
+function displayFramedTable( title, table, frameColor )
+  -- Color to use for the frame; default to dark slate blue
+  local fc = frameColor or "<dark_slate_blue>"
+  -- Vertical rule (sidebar) for the table
+  local vr = f "{fc}|{RC}"
+  -- Local to hold the length of the longest key & value
+  local longKey = 0
+  title = f( "{vr} {title} {vr}" )
+  -- Use cLength to get the length of the title w/o Mudlet color tags
+  local width = cLength( title )
+  -- Print the title with horizontal rules above and below
+  hrule( width, fc )
+  cecho( "\n" .. title )
+  hrule( width, fc )
+  for k, v in pairs( table ) do
+    longKey = math.max( longKey, cLength( k ) )
+  end
+  for k, v in pairs( table ) do
+    -- Align the values to the longest key
+    local pad1 = fill( longKey - cLength( k ) )
+    local tableLine = f "{vr} {SC}{k}{RC}{pad1} {NC}{v}{RC}"
+    -- Align the right vertical rule with the width of the table
+    local pad2 = fill( (width - cLength( tableLine )) - 1 )
+    cecho( f "\n{tableLine}{pad2}{vr}" )
+  end
+  hrule( width, fc )
 end
 
 function displayColors()

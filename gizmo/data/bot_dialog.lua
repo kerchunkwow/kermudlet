@@ -59,6 +59,7 @@ BOT_DIALOG                 = {
       "I used to read about {CI} in storybooks as a child. I had a pretty boring childhood, though.",
       "{DB} swells with knowledge of these strange lands thanks to strange lads like {CP}.",
       "Is that really {CI}? Well, that's the second time I shit my pants today! No follow-up questions.",
+      "I'll be a monkey's cousin! I thought they stopped making {CI}.",
     }
   },
   -- Inform the player their recent contribution was an alternate version of an existing item
@@ -111,6 +112,13 @@ BOT_DIALOG                 = {
       "I would be most grateful if you could retrieve `g{item}`q from {mobString}.",
       "I'm desperately in need of `g{item}`q from {mobString}.",
       "I've really been lookin' for `g{item}`q from {mobString}.",
+      "My college roommate used to have `g{item}`q. He said he got it from {mobString}.",
+      "I used to have a whole box full of `g{item}`q. {mobString} took it in the divorce.",
+      "I tried to offer {mobString} a fair price for `g{item}`q, but they weren't budging.",
+      "I won an Ebay auction for `g{item}`q from {mobString}, but when I opened the box it was just glitter and sawdust.",
+      "They don't make `g{item}`q like they used to. I think {mobString} has an original.",
+      "I lost my `g{item}`q in a bet with {mobString}. I really did think dogs laid eggs.",
+      "I lost my `g{item}`q in a bet with {mobString}. I could have sworn gerbils were extinct.",
     }
   },
   SEMICOLON = {

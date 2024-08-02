@@ -239,7 +239,7 @@ function triggerLiquidPoured()
   local pourResult = matches[2]
   if pourResult == "You" then
     cecho( f "{GDITM}    <cyan><i>Liquid Evacuated</i><reset>" )
-    cancelIdentify()
+    cancelIdentify( true )
   elseif pourResult == "is empty" then
     cecho( f "{GDITM}    <dark_olive_green><i>Liquid Empty</i><reset>" )
   else

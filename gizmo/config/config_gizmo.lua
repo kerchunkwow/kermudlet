@@ -205,7 +205,7 @@ local function configByUsername()
       ["Protection from evil"] = true,
     }
 
-    -- Select which ANTI-FLAGS to include in stat output from eq/eq_db.lua
+    -- Select which ANTI-FLAGS to include in stat output for item stat/flag display
     -- Keep this updated w/ who you're trying to equip so you don't get confused about 'missing' flags
     function customizeAntiString( antis )
       local includedFlags = {

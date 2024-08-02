@@ -28,7 +28,7 @@ function loadItemDataModule()
     'gizmo/eq/item_data.lua',
     'gizmo/eq/item_capture.lua',
     'gizmo/eq/item_display.lua',
-    'gizmo/eq/eq_db.lua',
+    --'gizmo/eq/eq_db.lua',
     'gizmo/eq/item_bot.lua',
   }
   -- Run the various sub-scripts for the Items module

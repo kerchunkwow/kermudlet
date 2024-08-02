@@ -252,7 +252,7 @@ function calculateItemBounty( item )
       local value = item[attribute]
       value = tonumber( value )
       local bounty = value * baseline
-      cecho( f "\n\t<yellow_green>+Bounty<reset>: {SC}{attribute}{RC} = {NC}{value}{RC} * {NC}{baseline}{RC} = +{NC}{bounty}{RC}" )
+      --cecho( f "\n\t<yellow_green>+Bounty<reset>: {SC}{attribute}{RC} = {NC}{value}{RC} * {NC}{baseline}{RC} = +{NC}{bounty}{RC}" )
       itemBounty = itemBounty + adjustBounty( bounty, item.baseType, attribute )
     end
   end
@@ -269,7 +269,7 @@ function calculateItemBounty( item )
   if item["value"] and item["value"] > itemBounty and item["value"] < 100000 then
     itemBounty = item["value"]
   end
-  cecho( f "\n\t<maroon>*Adjusted Bounty<reset>: {NC}{itemBounty}{RC}" )
+  --cecho( f "\n\t<maroon>*Adjusted Bounty<reset>: {NC}{itemBounty}{RC}" )
   return itemBounty
 end
 
@@ -295,4 +295,17 @@ function adjustBounty( bounty, type, attribute )
   -- Some items have negative attribute values, but bounties should always be positive
   if bounty < 0 then bounty = 0 end
   return bounty
+end
+
+-- Just for fun function to estimate the total lifetime amount of all bounties paid for identified items
+function estimateTotalBounty()
+  -- For each item in Items, calculateItemBounty(item); sum the results and display with cecho()
+  local totalBounty = 0
+  for _, item in pairs( Items ) do
+    totalBounty = totalBounty + calculateItemBounty( item )
+  end
+  totalBounty = expandNumber( totalBounty )
+  --cecho( f "\n<maroon>Total Bounty Paid{RC}: <gold>{totalBounty}{RC}" )
+  local msg = f "`fThe Archive`f has recorded `k{ArchivedItems}`f total items and paid `k{totalBounty}`f gold to the intrepid adventurers who discovered them."
+  send( f [[goss {msg}]] )
 end

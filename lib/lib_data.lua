@@ -7,11 +7,11 @@ DATA_PATH = [[C:/Dev/mud/mudlet/gizmo/data/]]
 -- A temporary dummy function to help the rest of the file recognize data types etc.
 local function tableDefinitions()
   Items            = {}
+  ItemLoads        = {}
   RejectedItems    = {}
   StaticItems      = {}
   LoggedLoot       = {}
   CommonKeywords   = {}
-  PotionAffects    = {}
   KnownPlayers     = {}
   PlayerContainers = {}
   ItemKeywords     = {}
@@ -19,11 +19,12 @@ end
 
 DATA_FILES = {
   "Items",
+  "ItemLoads",
+  "AlternateItems",
   "RejectedItems",
   "StaticItems",
   "LoggedLoot",
   "CommonKeywords",
-  "PotionAffects",
   "KnownPlayers",
   "PlayerContainers",
   "ItemKeywords",
@@ -92,14 +93,6 @@ function insertData( tblName, key, value )
   _G[tblName][key] = value
 end
 
--- Wrapper for insertData to add a player container to the PotionAffects table
-function addPotionAffect( potionName, affectString )
-  local pot, aff = matches[2], matches[3]
-  if pot and aff then
-    insertData( "PotionAffects", pot, aff )
-  end
-end
-
 -- Wrapper for insertData to add a player container to the KnownPlayers table
 function addKnownPlayer( playerName )
   insertData( "KnownPlayers", playerName, true )
@@ -131,16 +124,5 @@ end
 function printCustomDataTable( tbl )
   for k, v in pairs( tbl ) do
     cecho( f "\n<royal_blue>{k}<reset> = <violet>{v}<reset>" )
-  end
-end
-
--- When a potion is seen in-game, append its affect data to the end of the line
-function appendPotionAffect()
-  local obj = trim( matches[2] )
-  local vr, meo = "<violet_red>", "<medium_orchid>"
-  if PotionAffects[obj] then
-    local aff = PotionAffects[obj]
-    aff = f " {vr}[{meo}{aff}{vr}]{RC}"
-    cecho( aff )
   end
 end

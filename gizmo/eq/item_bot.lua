@@ -68,40 +68,56 @@ function locateCommonItems()
   end
 end
 
--- This global table keeps track of all items currently loaded that have not been identified; the table
+-- This global table keeps track of all unknown/unidentified items currently loaded; the table
 -- maps the names of items to a list of the mobs currently carrying the item, for instance:
--- LoadedItems["a sword"] = {"a guard", "a soldier"}
-LoadedItems = LoadedItems or {}
+-- UnknownItems["a sword"] = {"a guard", "a soldier"}
+UnknownItems = UnknownItems or {}
 
--- Add an item to the LoadedItems table if this specific item, mob pair does not already exist
+-- Add an item to the UnknownItems table if this specific item, mob pair does not already exist
 function addLoad( item, mob )
-  -- Initialize the list if the item is not already present
-  if not LoadedItems[item] then
-    LoadedItems[item] = {}
-  end
-  -- Check if the mob is already in the list for the item
-  for _, existingMob in ipairs( LoadedItems[item] ) do
-    if existingMob == mob then
-      return
+  -- For items not yet in the Items table, add them to the UnknownItems table for fetch quests
+  if not Items[item] then
+    -- Initialize the list if the item is not already present
+    if not UnknownItems[item] then
+      UnknownItems[item] = {}
     end
+    -- Check if the mob is already in the list for the item
+    for _, existingMob in ipairs( UnknownItems[item] ) do
+      if existingMob == mob then
+        return
+      end
+    end
+    -- Add the mob to the list for the item
+    table.insert( UnknownItems[item], mob )
+  else
+    -- For known items, do the same but use ItemLoads table for later cross-reference with mob data
+    -- and tracking of load locations of known items
+    if not ItemLoads[item] then
+      ItemLoads[item] = {}
+    end
+    for _, existingMob in ipairs( ItemLoads[item] ) do
+      if existingMob == mob then
+        return
+      end
+    end
+    table.insert( ItemLoads[item], mob )
+    table.save( f "{DATA_PATH}/ItemLoads.lua", ItemLoads )
   end
-  -- Add the mob to the list for the item
-  table.insert( LoadedItems[item], mob )
 end
 
--- Remove an item (and all associated mobs) from the LoadedItems table
+-- Remove an item (and all associated mobs) from the UnknownItems table
 function remLoad( item )
-  LoadedItems[item] = nil
+  UnknownItems[item] = nil
 end
 
--- Construct a "request" message for an item in the LoadedItems table; a specific item can be
+-- Construct a "request" message for an item in the UnknownItems table; a specific item can be
 -- queried or if the parameter is nil then a random item should be selected from the table.
 function requestLoad( item )
   if not item then
-    -- Local function to select a random item from the LoadedItems table
+    -- Local function to select a random item from the UnknownItems table
     local function getRandomLoadedItem()
       local itemList = {}
-      for k in pairs( LoadedItems ) do
+      for k in pairs( UnknownItems ) do
         table.insert( itemList, k )
       end
       if #itemList == 0 then
@@ -115,19 +131,236 @@ function requestLoad( item )
       return
     end
   end
-  local mobList = LoadedItems[item]
+  --local mobList = UnknownItems[item]
+  local mobString = getItemMobList( item )
+  -- Create a "mob string" using the mobList from this item, when more than one mob is present each
+  -- should be separated by an "and" in the string for example:
+  -- "a guard and a soldier"
+  -- for i, mob in ipairs( mobList ) do
+  --   if i == 1 then
+  --     mobString = "`b" .. mob .. "`q"
+  --   else
+  --     mobString = mobString .. " or `b" .. mob .. "`q"
+  --   end
+  -- end
+  --local requestString = f "Please fetch `g{item}`q from {mobString}."
+  --send( f "say {requestString}" )
+  speak( "FETCH_QUEST" )
+end
+
+function getItemMobList( item )
+  local mobList = UnknownItems[item] or ItemLoads[item]
+
+  if not mobList then
+    print( "Error: Item not found in either table." )
+    return nil
+  end
+  if UnknownItems[item] and ItemLoads[item] then
+    print( "Error: Item found in both tables." )
+    return nil
+  end
   local mobString = ""
   -- Create a "mob string" using the mobList from this item, when more than one mob is present each
   -- should be separated by an "and" in the string for example:
   -- "a guard and a soldier"
   for i, mob in ipairs( mobList ) do
     if i == 1 then
-      mobString = "`b" .. mob .. "`q"
+      mobString = "`f" .. mob .. "`q"
     else
-      mobString = mobString .. " or `b" .. mob .. "`q"
+      mobString = mobString .. " or `f" .. mob .. "`q"
     end
   end
-  local requestString = f "Please fetch `g{item}`q from {mobString}."
-  --send( f "say {requestString}" )
-  speak( "FETCH_QUEST" )
+  return mobString
+end
+
+-- Verify items are in their proper location in the donation room by validating a list of items against
+-- a checklist consisting of either worn locations or item base types
+function auditDonations( itemList, checkList )
+  -- Validate each item in the itemList to ensure:
+  -- It has been identified (Items[item] exists)
+  -- It has a matching worn value (Items[item].worn in checkList) OR
+  -- It has a matching base type (Items[item].baseType in checkList)
+  for _, item in ipairs( itemList ) do
+    local itemData = Items[item]
+    local worn = itemData and itemData.worn or nil
+    local type = itemData and itemData.baseType or nil
+    local valid = table.contains( checkList, worn ) or table.contains( checkList, type )
+    if not valid then
+      cecho( f "\n{SC}{item}{RC} ({worn}, {type})" )
+      --cecho( f "\n{EC}Misplaced Item{RC}: {SC}{item}{RC} ({worn}, {type})" )
+    end
+  end
+end
+
+function auditDonationContents()
+  local armorChecklist = {
+    "WRISTS",
+    "WAIST",
+    "ABOUT",
+    "SHIELD",
+    "ARMS",
+    "HANDS",
+    "FEET",
+    "LEGS",
+    "HEAD",
+    "BODY",
+    "NECK",
+    "FINGERS",
+    "LIGHT",
+  }
+  local miscChecklist = {
+    "LIGHT",
+    "HOLD",
+    "SCROLL",
+    "KEY",
+    "POTION",
+    "CONTAINER",
+    "WAND",
+    "LIQUID CONTAINER",
+    "OTHER",
+    "TREASURE",
+  }
+  local itemList = {
+    ["a strange elixir"]                  = 1,
+    ["a quick note"]                      = 1,
+    ["a Winter Wolf Pelt"]                = 1,
+    ["a scroll of armament"]              = 19,
+    ["a bright magenta potion"]           = 6,
+    ["a firey-red potion"]                = 3,
+    ["an adamantite scale"]               = 1,
+    ["an ebony key"]                      = 7,
+    ["a dark black cape"]                 = 1,
+    ["a key ring"]                        = 3,
+    ["the trust flag"]                    = 3,
+    ["Large copper key"]                  = 7,
+    ["a small key"]                       = 6,
+    ["an iron keystone"]                  = 2,
+    ["a diamond keystone"]                = 4,
+    ["a vibrant white potion"]            = 24,
+    ["the meteorite key"]                 = 3,
+    ["a Blue Wristband"]                  = 1,
+    ["a buffalo horn"]                    = 1,
+    ["a scroll of purification"]          = 15,
+    ["a Blue Potion"]                     = 1,
+    ["a beaver's potion"]                 = 1,
+    ["an Ancient Parchment"]              = 1,
+    ["a Huge Piece of Amber"]             = 2,
+    ["a Sack of Amber Drops"]             = 1,
+    ["an iron sceptre"]                   = 1,
+    ["a pair of Cantu boots"]             = 1,
+    ["a leafy necklace"]                  = 1,
+    ["a vial of tree sap"]                = 1,
+    ["a gold key"]                        = 1,
+    ["a vial of Holy water"]              = 3,
+    ["a Rosicrucian Strongbox"]           = 1,
+    ["the Trumpet of Ashmedai"]           = 1,
+    ["an Exorcist's Broken Crucifix"]     = 1,
+    ["an old staff"]                      = 1,
+    ["the rainbow staff"]                 = 1,
+    ["a crystal staff"]                   = 1,
+    ["a Diabolic Tome"]                   = 1,
+    ["a small wyvern scale"]              = 2,
+    ["a bright golden key"]               = 1,
+    ["a scroll of healing"]               = 4,
+    ["a Small Cask of Vodka"]             = 1,
+    ["a milky orange potion"]             = 2,
+    ["a fish oil potion"]                 = 2,
+    ["a frosty blue potion"]              = 2,
+    ["a carved ivory fetish"]             = 2,
+    ["a pair of dice"]                    = 5,
+    ["a Pair of Snowshoes"]               = 1,
+    ["a Brass Lantern"]                   = 1,
+    ["a small stone"]                     = 3,
+    ["an engraved ebony seal"]            = 1,
+    ["an engraved ivory seal"]            = 1,
+    ["a sandstone keystone"]              = 1,
+    ["Red staff"]                         = 1,
+    ["a silver whistle"]                  = 1,
+    ["a granite keystone"]                = 3,
+    ["a copper keystone"]                 = 1,
+    ["an Ancient Key"]                    = 1,
+    ["a golden branch"]                   = 1,
+    ["Scepter with a dragon's claw"]      = 1,
+    ["a Roc claw"]                        = 1,
+    ["an Ozymar's ring"]                  = 1,
+    ["a Simurgh Feather"]                 = 3,
+    ["a green potion"]                    = 1,
+    ["a pitch black potion"]              = 1,
+    ["a lantern"]                         = 1,
+    ["a torch"]                           = 1,
+    ["a bag"]                             = 1,
+    ["a box"]                             = 1,
+    ["a Sea Chest"]                       = 1,
+    ["an ugly skull of Draco"]            = 1,
+    ["a teak staff"]                      = 1,
+    ["a golden apple"]                    = 1,
+    ["a Fishy Potion"]                    = 1,
+    ["Some Sea Essence"]                  = 1,
+    ["a potion of honey"]                 = 1,
+    ["a white potion"]                    = 1,
+    ["a glowing gland"]                   = 2,
+    ["a Cup of Espresso"]                 = 1,
+    ["a Cup of Herbal Tea"]               = 1,
+    ["a fine wine glass"]                 = 1,
+    ["a brown bottle"]                    = 1,
+    ["a Grolsh bottle"]                   = 1,
+    ["a pink and green stone"]            = 1,
+    ["an iridescent stone"]               = 1,
+    ["a folded envelope"]                 = 1,
+    ["a vial of Holy Water"]              = 2,
+    ["a fetish of Mituras"]               = 1,
+    ["a Crawdad Bible"]                   = 1,
+    ["the Path of Grace"]                 = 2,
+    ["a vibrant purple stone"]            = 1,
+    ["a scarlet and blue stone"]          = 1,
+    ["a pearly white stone"]              = 1,
+    ["a pale green stone"]                = 1,
+    ["a pale blue stone"]                 = 1,
+    ["a clear stone"]                     = 1,
+    ["a lavender and green stone"]        = 1,
+    ["a incandescent blue stone"]         = 1,
+    ["a dull grey stone"]                 = 1,
+    ["a pink stone"]                      = 1,
+    ["a golden harp"]                     = 1,
+    ["a dusty rose stone"]                = 1,
+    ["a silver flute"]                    = 1,
+    ["a mandolin"]                        = 1,
+    ["a deep red stone"]                  = 1,
+    ["a flowered scroll"]                 = 1,
+    ["an herbal potion"]                  = 2,
+    ["the mark of the betrayer"]          = 3,
+    ["a swirling blue potion"]            = 1,
+    ["potion of harming"]                 = 3,
+    ["the Ancient Vessel of Aquarius"]    = 1,
+    ["Bottle of dirty water"]             = 1,
+    ["a scroll of recall"]                = 1,
+    ["a Mithril flute"]                   = 1,
+    ["a cup"]                             = 1,
+    ["a mine key"]                        = 2,
+    ["an old pewter key"]                 = 2,
+    ["a papyrus note"]                    = 1,
+    ["a scroll of identify"]              = 1,
+    ["a small green bag"]                 = 1,
+    ["a pixie wand"]                      = 1,
+    ["a ruby wand"]                       = 1,
+    ["a blood red vial"]                  = 1,
+    ["an opal potion"]                    = 1,
+    ["a black Dragon scale"]              = 1,
+    ["a Glowing Amethyst"]                = 1,
+    ["a small moonstone"]                 = 1,
+    ["a javelin"]                         = 4,
+    ["red gem"]                           = 1,
+    ["a stolen Shantak relic"]            = 1,
+    ["an heirloom of the Dromaer family"] = 1,
+  }
+  for item, count in pairs( itemList ) do
+    local itemData = Items[item]
+    local type = itemData.baseType
+    if type == "POTION" then
+      local kw = itemData.keywords[1]
+      local n = count > 1 and tostring( count ) .. " " or ""
+      send( f "get {n}{kw} parcel" )
+      send( f "put {n}{kw} strongbox" )
+    end
+  end
 end

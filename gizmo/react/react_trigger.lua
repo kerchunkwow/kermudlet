@@ -223,59 +223,38 @@ function triggerLocateObject()
   LocateIndex = (LocateIndex or 0) + 1
   cecho( f "\t({NC}{LocateIndex}{RC})" )
 
-  if PlayerContainers[loc] or KnownPlayers[loc] then
-    -- Ignore items already owned by players
+  if PlayerContainers[loc] or KnownPlayers[loc] or UnknownItems[item] then
+    -- Ignore items already owned by players, or that have already been entered into the
+    -- "unknown items" table
     deleteLine()
     return
   elseif Items[item] then
-    -- For now, ignore items we have already identified
-    deleteLine()
+    -- Dim items that are already identified
+    --deleteLine()
     selectString( line, 1 )
     fg( "dim_grey" )
     resetFormat()
-    return
+    --return
+  else
+    selectString( item, 1 )
+    fg( "maroon" )
+    selectString( loc, 1 )
+    -- Check if it's a room in our map
+    local rooms = searchRoom( loc, true, true )
+    ---@diagnostic disable-next-line: param-type-mismatch
+    if next( rooms ) ~= nil then
+      -- It's a room
+      fg( "royal_blue" )
+    else
+      -- Unmapped room (or mob)
+      fg( "indian_red" )
+    end
+    resetFormat()
   end
-  -- Add/update unidentified items in the items table; for now, only include items equipped or
-  -- carried (items on the ground are often in inaccessilbe rooms)
+  -- Add/update the item in either UnknownItems or ItemLoads tables
   if pos == "equipped by" or pos == "carried by" then
     addLoad( item, loc )
   end
-  selectString( item, 1 )
-  fg( "maroon" )
-  selectString( loc, 1 )
-  -- Check if it's a room in our map
-  local rooms = searchRoom( loc, true, true )
-  ---@diagnostic disable-next-line: param-type-mismatch
-  if next( rooms ) ~= nil then
-    -- It's a room
-    fg( "royal_blue" )
-  else
-    -- Unmapped room (or mob)
-    fg( "indian_red" )
-  end
-  resetFormat()
-end
-
--- Using the LoadedItems table, request a random item from the list to find & return
--- to The Archive.
-function requestItem()
-  -- Convert LoadedItems table to a list of keys (item names)
-  local itemList = {}
-  for item, _ in pairs( LoadedItems ) do
-    table.insert( itemList, item )
-  end
-  -- If there are no items in the list, return
-  if #itemList == 0 then
-    cecho( "<red>No items in LoadedItems to request.\n" )
-    return
-  end
-  -- Randomly select an item from the itemList
-  local randomIndex = math.random( #itemList )
-  local item = itemList[randomIndex]
-  local location = LoadedItems[item]
-
-  -- Issue the request
-  send( f "say Please fetch me {item} from {location}." )
 end
 
 -- Triggered by "You are very confused" indicating there are more items by the same name

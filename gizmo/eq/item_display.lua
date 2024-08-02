@@ -116,12 +116,10 @@ function displayItemDataStats()
     local baseType = item.baseType or "Unknown"
     baseTypeCounts[baseType] = (baseTypeCounts[baseType] or 0) + 1
   end
-  cout( f "\n<orchid>Known Items:          {NC}{totalItems}{RC}" )
-  for baseType, count in pairs( baseTypeCounts ) do
-    local btl = #baseType
-    local pad = 17 - btl
-    cout( f "    <slate_blue>{baseType}{RC}:{string.rep(' ', pad)}{NC}{count}{RC}" )
-  end
+  baseTypeCounts["TOTAL"] = totalItems
+  local title = f "    <orchid>Archived Items{RC}    "
+  displayFramedTable( title, baseTypeCounts )
+  countContributors()
 end
 
 -- Assemble a combined & condensed shorthand string showing all of the vital stats of an object based
@@ -460,9 +458,14 @@ function triggerEquippedItem()
     end
     loc = loc .. ic .. desc
     if item then
-      stats = item.statsString and sc .. item.statsString or ""
-      aff   = item.affectString and ac .. " " .. item.affectString or ""
-      flags = getFilteredFlagString( item.flags, item.cloneable )
+      -- Simplify stats output for keys
+      if item.baseType == "KEY" then
+        stats = "<olive_drab>key<reset>"
+      else
+        stats = item.statsString and sc .. item.statsString or ""
+        aff   = item.affectString and ac .. " " .. item.affectString or ""
+        flags = getFilteredFlagString( item.flags, item.cloneable )
+      end
     end
   end
   -- Mods come colorized from abbreviateModifiers()

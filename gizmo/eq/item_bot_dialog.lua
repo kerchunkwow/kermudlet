@@ -82,8 +82,7 @@ function triggerBotChat()
   local function containsSemicolon( input )
     return input:find( ";" ) ~= nil
   end
-
-  -- If args contain a semicolon, ignore it and add the Speaker to a table
+  -- If args contain a semicolon, ignore it
   if args and containsSemicolon( args ) then
     speak( "SEMICOLON" )
     return
@@ -135,11 +134,16 @@ function speakItemStats( itemName )
   echo( f "\nAffects:{affects}" )
   local flags = item.flagString and f( FLG ) or ""
   echo( f "\nFlags:{flags}" )
-  local msg = f( IDS )
+  local msg  = f( IDS )
 
+  -- If we know where the item loads, get a list of the mob names who drop it
+  local mobs = getItemMobList( itemName )
+  if mobs and #mobs > 0 then
+    msg = msg .. f " [{mobs}]"
+  end
   -- CLONE_TAG & SPEC_TAG are non-ASCII; replace them with printable versions for game chat
-  msg       = string.gsub( msg, CLONE_TAG, CLONE_TAG_A )
-  msg       = string.gsub( msg, SPEC_TAG, SPEC_TAG_A )
+  msg = string.gsub( msg, CLONE_TAG, CLONE_TAG_A )
+  msg = string.gsub( msg, SPEC_TAG, SPEC_TAG_A )
 
   cecho( f( "{GDOK} ID Query: {SC}{itemName}{RC}" ) )
 
@@ -200,20 +204,27 @@ end
 
 -- This function examines the Items table and credits all of the contributors with addings items to the db
 function countContributors()
-  local contributors = {}
+  -- Table to hold the contributors & counts
+  local contributors  = {}
+  -- Count of total contributions for verification purposes
+  local contributions = 0
+  -- Keep track of the longest contributor name for formatting purposes
+  local long          = 0
   -- For each item in the Items table, add the contributor to the contributors table
   -- Player names key to contribution counts; start with 1 and increment for each new item
   for _, item in pairs( Items ) do
-    if item.contributor then
-      if not contributors[item.contributor] then
-        contributors[item.contributor] = 1
-      else
-        contributors[item.contributor] = contributors[item.contributor] + 1
-      end
+    if not item.contributor then
+      item.contributor = "Kaylee"
+    end
+    long = math.max( long, #item.contributor )
+    contributions = contributions + 1
+    if not contributors[item.contributor] then
+      contributors[item.contributor] = 1
+    else
+      contributors[item.contributor] = contributors[item.contributor] + 1
     end
   end
-  display( contributors )
-  local thanks
+  displayFramedTable( f "     <orchid>Contributors{RC}     ", contributors )
 end
 
 BOT_COMMANDS = {
