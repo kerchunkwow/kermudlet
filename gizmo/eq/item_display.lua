@@ -12,6 +12,8 @@ function displayItem( desc, tier )
     cout( f "\n{EC}displayItem{RC}: no such Item {SC}{desc}{RC}" )
     return
   end
+  local dg   = "<dim_grey>"
+  local vr   = f "{dg}|{RC}"
   -- Compose a "title card" for the item including its core stats, flags, and affects
   local sstr = compositeString( "", item.shortDescription, "<green_yellow>" )
   sstr       = compositeString( sstr, item.statsString, "<dark_slate_grey>" )
@@ -23,11 +25,10 @@ function displayItem( desc, tier )
   sstr       = compositeString( sstr, item.affectString, "<ansi_cyan>" )
   sstr       = compositeString( sstr, item.flagString, "<firebrick>" )
   -- Add flare to the special tags if present
-  sstr       = highlightTags( sstr )
-  local slen = cLength( sstr ) + 2
-  local dg   = "<dim_grey>"
+  sstr       = vr .. " " .. highlightTags( sstr ) .. " " .. vr
+  local slen = cLength( sstr )
   hrule( slen, dg )
-  cout( f "{dg}| {sstr}{dg} |" )
+  cout( f "{sstr}" )
   hrule( slen, dg )
 
   -- A local function to sort the keys in the ITEM_SCHEMA by order for structured output
@@ -427,6 +428,8 @@ function triggerEquippedItem()
   local kn, uk = "<slate_gray>", "<indian_red>"
   -- Basic item stats
   local sc     = "<ansi_light_black>"
+  -- Consumable stats
+  local cc     = "<plum>"
   -- Affects/Perms
   local ac     = "<dark_turquoise>"
   local vr     = "<light_slate_grey>|<reset>"
@@ -462,7 +465,11 @@ function triggerEquippedItem()
       if item.baseType == "KEY" then
         stats = "<olive_drab>key<reset>"
       else
-        stats = item.statsString and sc .. item.statsString or ""
+        -- Highlight stats, affects & flags according to type
+        local isConsumable = consumable( item.baseType )
+        if item.statsString then
+          stats = isConsumable and cc .. item.statsString or sc .. item.statsString
+        end
         aff   = item.affectString and ac .. " " .. item.affectString or ""
         flags = getFilteredFlagString( item.flags, item.cloneable )
       end
@@ -529,23 +536,4 @@ function abbreviateModifiers( str )
   end
   local abbrMods = #mods > 0 and f "({mods})" or ""
   return abbrMods
-end
-
--- Find all ANTI-FLAGS in the Items table for reference
-local function displayAllAntis()
-  -- For each item in Items, iterate over item.flags;
-  -- for each item in item.flags, if the item contains the substring "ANTI" then
-  -- append it to a result table.
-  -- Display the results once the table is fully populated
-  local antiFlags = {}
-  local uniqueFlags = {}
-  for desc, item in pairs( Items ) do
-    for _, flag in ipairs( item.flags ) do
-      if flag:find( "ANTI" ) and not uniqueFlags[flag] then
-        uniqueFlags[flag] = true
-        table.insert( antiFlags, flag )
-      end
-    end
-  end
-  display( antiFlags )
 end

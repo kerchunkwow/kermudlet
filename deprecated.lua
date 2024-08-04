@@ -1,4 +1,220 @@
 ---@diagnostic disable: undefined-global, assign-type-mismatch, cast-local-type
+
+-- A temporary function for analyzing item data and identifying the best items in a particular category
+function findDesiredItems()
+  local lowCounts = {}
+  for loc, _ in pairs( WORN ) do
+    lowCounts[loc] = 0
+  end
+  local desiredItems = {}
+  for pc, properties in pairs( PLAYER_COMBINATIONS ) do
+    local pal = properties.align
+    local pse = properties.sex
+    local pcl = properties.class
+    local player = pal .. " " .. pse .. " " .. pcl
+    desiredItems[player] = {}
+    for loc, _ in pairs( WORN ) do
+      desiredItems[player][loc] = {}
+    end
+  end
+  -- Count how many desirable items are found for each player combination
+  for pc, properties in pairs( PLAYER_COMBINATIONS ) do
+    local pal = properties.align
+    local pse = properties.sex
+    local pcl = properties.class
+    local player = pal .. " " .. pse .. " " .. pcl
+    for desc, item in pairs( Items ) do
+      local worn = item.worn
+      if desired( item ) and usable( item, pal, pse, pcl ) then
+        -- Add the desc of this item to the desiredItems table at the worn location
+        table.insert( desiredItems[player][worn], desc )
+      end
+    end
+  end
+  -- Display the results of the desired items hunt
+  local highestPlayer = nil -- Player combination with the most desired items
+  local lowestPlayer  = nil -- Player combination with the fewest desired items
+  local totalItems    = 0   -- Total number of desired items across all player combinations
+  local playerCounts  = {}  -- Table to store the number of desired items for each player combination
+
+  for player, locs in pairs( desiredItems ) do
+    -- Keep track of how many desirable items each player combination has
+    local playerCount = 0
+    hrule( 60, "dark_slate_blue" )
+    local playerString = player:upper()
+    playerString = f "<yellow_green>{player}{RC}"
+    cecho( f "\n{playerString}\n" )
+    for loc, items in pairs( locs ) do
+      local count = #items
+      playerCount = playerCount + count
+      -- Define a local "cc" as "<light_slate_grey>" if count is > 3, otherwise "<deep_pink>";
+      -- Useful to highlight low numbers of desired items.
+      local cc = count > 1 and "<light_slate_grey>" or "<deep_pink>"
+      -- Pad the output to align the counts
+      local pad = fill( 8 - #loc )
+      if count <= 1 then
+        lowCounts[loc] = lowCounts[loc] + 1
+        cecho( f "{NC}{loc}{RC}: {cc}{count}{RC} " )
+      end
+    end
+    -- Update highestPlayer and lowestPlayer
+    if not highestPlayer or playerCount > playerCounts[highestPlayer] then
+      highestPlayer = player
+    end
+    if not lowestPlayer or playerCount < playerCounts[lowestPlayer] then
+      lowestPlayer = player
+    end
+    -- Store the player count
+    playerCounts[player] = playerCount
+    -- Update the total number of items
+    totalItems = totalItems + playerCount
+  end
+  -- Calculate the average number of items
+  local averagePlayer = totalItems / table.size( PLAYER_COMBINATIONS )
+
+  -- Display aggregate values
+  hrule( 60, "dark_slate_blue" )
+  cecho( f "\n<gold>Desired Items Summary<reset>\n" )
+  cecho( f "<light_slate_grey>Most {RC}: {highestPlayer} with {NC}{playerCounts[highestPlayer]}{RC}\n" )
+  cecho( f "<light_slate_grey>Least{RC}: {lowestPlayer} with {NC}{playerCounts[lowestPlayer]}{RC}\n" )
+  averagePlayer = round( averagePlayer, 0.1 )
+  cecho( f "<light_slate_grey>Avg  {RC}: {NC}{averagePlayer}{RC}\n" )
+  display( lowCounts )
+end
+
+local function testMapping()
+  -- For each item in testItems, generate a random align, sex, class combo with getRandomProperties()
+  -- then invoke usable( item, align, sex, class )
+  for desc, data in pairs( Items ) do
+    local align, sex, class = getRandomProperties()
+    if not usable( desc, align, sex, class ) then
+      displayItem( desc )
+      cecho( f "\n\t{EC}Unusable{RC} by <gold>{align}{RC}, <maroon>{sex}{RC}, {VC}{class}{RC}" )
+    end
+  end
+end
+
+-- To start a new round of QA testing and enhancements to the bot, fully reset and write the Items table
+-- reporting on who contributed to this round of testing most effectively.
+local function resetItemData()
+  local contributors = {}
+  local count = 0
+  for desc, item in pairs( Items ) do
+    count = count + 1
+    if item.contributor and item.contributor ~= "Nadja" and item.contributor ~= "Kaylee" then
+      if not contributors[item.contributor] then
+        contributors[item.contributor] = 1
+      else
+        contributors[item.contributor] = contributors[item.contributor] + 1
+      end
+    end
+    deleteItem( desc )
+  end
+  for name, num in pairs( contributors ) do
+    cecho( f "{GDITM} {VC}{name}{RC} contributed {num} items" )
+  end
+  cecho( f "{GDITM} {EC}{count}{RC} items deleted" )
+  -- Force a write of the new empty items table with a direct table.save()
+  table.save( f '{DATA_PATH}/Items.lua', Items )
+end
+-- Advertise The Archive by occasionally contributing an item to The Archive when a player
+-- arrives in the room.
+
+-- When we last attempted an auto-contribution; don't do too many too often
+LastAC  = LastAC or 0
+ACDelay = 600
+function autoContribute()
+  -- If the queue of items doesn't exist, try to load it from disk
+  if not ACItems then
+    ACItems = {}
+    iout( "Loading ACItems" )
+    table.load( f '{DATA_PATH}/ACItems.lua', ACItems )
+  end
+  local now       = getStopWatchTime( "timer" )
+  local noItems   = not ACItems or #ACItems == 0
+  local tooRecent = (now - LastAC) < ACDelay
+  if noItems or tooRecent or not ACTarget then
+    -- If we have no more items too process, or not enough time has passed,
+    -- or our intended audience has left the room, skip this round.
+    iout(
+      "{EC}Skipped{RC} AC: i = {VC}{noItems}{RC}, r = {VC}{tooRecent}{RC}, t = {VC}{ACTarget}{RC}" )
+    return
+  end
+  -- Update the last contribution time
+  LastAC        = now
+  -- "Pop" the nex item keyword off the queue
+  local nBefore = #ACItems
+  local kw      = table.remove( ACItems, 1 )
+  -- Write/overwrite the data file to reflect the removal
+  table.save( f '{DATA_PATH}/ACItems.lua', ACItems )
+  local nAfter  = #ACItems
+  -- Display some status debug output to track the behavior of the queue
+  local nStatus = f "ACItems reduced from {NC}{nBefore}{RC} -> {nAfter}{RC}"
+  local status  = f "Showing {SC}{kw}{RC} to <medium_sea_green>{ACTarget}{RC}"
+  iout( nStatus )
+  iout( status )
+  send( f "get {kw} stocking" )
+  send( f "give {kw} Nadja" )
+  -- Reset the timer/audience variables
+  ACTimer  = nil
+  ACTarget = nil
+end
+
+-- Timer to control the auto-contribution on a short delay
+ACTimer  = ACTimer or nil
+-- The player "audience" for the auto-contribution so we can try to cancel
+-- the timer if the player leaves before we proceed.
+ACTarget = ACTarget or nil
+function triggerAutoContribute()
+  local arrival = trim( matches[2] )
+  -- Make sure it's a known player (so we don't try to impress mobs)
+  if KnownPlayers[arrival] then
+    selectString( arrival, 1 )
+    fg( "medium_sea_green" )
+    resetFormat()
+    ACTarget = arrival
+    -- Use a refreshing timer on a delay so multiple arrivals only trigger one
+    -- item.
+    if ACTimer then killTimer( ACTimer ) end
+    ACTimer = tempTimer( 2, [[autoContribute()]], false )
+  end
+end
+
+local function displayAllAntis()
+  -- For each item in Items, iterate over item.flags;
+  -- for each item in item.flags, if the item contains the substring "ANTI" then
+  -- append it to a result table.
+  -- Display the results once the table is fully populated
+  local antiFlags = {}
+  local uniqueFlags = {}
+  for desc, item in pairs( Items ) do
+    for _, flag in ipairs( item.flags ) do
+      if flag:find( "ANTI" ) and not uniqueFlags[flag] then
+        uniqueFlags[flag] = true
+        table.insert( antiFlags, flag )
+      end
+    end
+  end
+  display( antiFlags )
+end
+
+-- A one-time cleanup function to "pad" the levels of all potions with level less than 10
+-- to align them with higher level potions.
+local function padPotionLevels()
+  -- For each item in Items where baseType == POTION and spellLevel < 10, print the item name
+  -- and set the spellLevel to a padded version of itself
+  for desc, item in pairs( Items ) do
+    local isConsumable = consumable( item.baseType )
+    if isConsumable and item.spellLevel < 10 then
+      cout( f "\nPadding stat display for {SC}{desc}{RC}..." )
+      local oldString = "L" .. tostring( item.spellLevel )
+      local newString = "L0" .. tostring( item.spellLevel )
+      local newStatsString = item.statsString:gsub( oldString, newString )
+      item.statsString = newStatsString
+    end
+  end
+end
+
 function abbreviateWorn()
   if true then return end
   -- Items are either "worn" or "used"

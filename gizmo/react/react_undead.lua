@@ -138,7 +138,7 @@ function equipMinion( minion )
       "mace",
       "hook",
     }
-    send( f [[get 12 red {container}]] )
+    send( f [[get 12 red stocking]] )
     send( f [[give 12 red troll]] )
   elseif minion == 'shade' then
     tempTrigger( [[Your shade will now attempt]], function ()
@@ -165,12 +165,9 @@ function equipMinion( minion )
       "burnt",
       "plane",
       "plane",
-      "sickle",
+      "sickle", -- cloned
       "drop",
     }
-    -- tempTrigger( [[shade minion wields]], function ()
-    --   guaranteeOrder( minion, [[hold drop]], MINION_HOLD )
-    -- end, 1 )
   end
   -- Give all of the items to the minion
   for i, item in ipairs( minionGear ) do
@@ -487,7 +484,11 @@ function triggerStoreMinionEq()
   local item = Items[desc]
   if item then
     local kw = item.keywords[1]
-    send( "put " .. num .. kw .. " cradle" )
+    if desc ~= "a bottle of red potion" then
+      send( "put " .. num .. kw .. " cradle" )
+    else
+      send( "put " .. num .. kw .. " stocking" )
+    end
   end
 end
 

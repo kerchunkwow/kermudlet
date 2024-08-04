@@ -261,6 +261,7 @@ function calculateItemBounty( item )
   if item["spellList"] and #item["spellList"] > 0 then
     itemBounty = itemBounty * #item["spellList"]
   end
+  if item.baseType == "KEY" then itemBounty = 25000 end
   -- Apply minimum and maximum bounty thresholds
   if itemBounty > MAX_BOUNTY then itemBounty = MAX_BOUNTY end
   if itemBounty < MIN_BOUNTY then itemBounty = MIN_BOUNTY end
@@ -270,6 +271,9 @@ function calculateItemBounty( item )
     itemBounty = item["value"]
   end
   --cecho( f "\n\t<maroon>*Adjusted Bounty<reset>: {NC}{itemBounty}{RC}" )
+  -- Add a bonus amount to itemBounty between 10 and 25% of itemBounty
+  local bonus = math.random( 10, 25 ) / 100
+  itemBounty = itemBounty + (itemBounty * bonus)
   return itemBounty
 end
 

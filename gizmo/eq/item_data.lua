@@ -169,175 +169,6 @@ function getMatchingItemNames( str )
   return matches
 end
 
--- Advertise The Archive by occasionally contributing an item to The Archive when a player
--- arrives in the room.
-
--- One-time initialization of the table of items for the auto-contribute feature
-function createACFile()
-  ACItems = {
-    "tooth",
-    "sickle",
-    "snake",
-    "flowing",
-    "ettin",
-    "masoch",
-    "golden",
-    "dangling",
-    "names",
-    "dragonrider",
-    "covered",
-    "cannibal",
-    "heroism",
-    "skull",
-    "necklace",
-    "blackened",
-    "adamantite",
-    "medallion",
-    "gloves",
-    "righteousness",
-    "feather",
-    "insect",
-    "earth",
-    "handcuffs",
-    "sleeves",
-    "chaos",
-    "might",
-    "adventurers",
-    "rope",
-    "accordian",
-    "blackgloves",
-    "pearl",
-    "tuning",
-    "dirty",
-    "platinum",
-    "small",
-    "darkness",
-    "sobs",
-    "signet",
-    "slender",
-    "vest",
-    "fiend",
-    "diamonds",
-    "eye",
-    "crawdad",
-    "wrist",
-    "human",
-    "pointy",
-    "skin",
-    "heavy",
-    "threggi",
-    "sala",
-    "thigh",
-    "dragons",
-    "transparent",
-    "gurundi",
-    "bangle",
-    "protection",
-    "aman",
-    "legs",
-    "alabaster",
-    "jeweled",
-    "lord",
-    "buckler",
-    "crystal",
-    "sky",
-    "lich",
-    "wind",
-    "dragon",
-    "lich",
-    "shovel",
-    "jeweled",
-    "headmaster",
-    "emer",
-    "ygaddrozil",
-    "flesh",
-    "bloody",
-    "manifestation",
-    "drop",
-    "scalpel",
-    "spiral",
-    "sleeves",
-    "order",
-    "pair",
-    "tmask",
-    "helmet",
-    "blkbrac",
-    "scale",
-    "crystal",
-    "onyx",
-    "globe",
-    "bom",
-    "idiocy",
-    "kings",
-    "loftwick",
-    "sorrow",
-    "working",
-    "lies",
-    "stone",
-  }
-  table.save( f '{DATA_PATH}/ACItems.lua', ACItems )
-end
-
--- When we last attempted an auto-contribution; don't do too many too often
-LastAC  = LastAC or 0
-ACDelay = 600
-function autoContribute()
-  -- If the queue of items doesn't exist, try to load it from disk
-  if not ACItems then
-    ACItems = {}
-    iout( "Loading ACItems" )
-    table.load( f '{DATA_PATH}/ACItems.lua', ACItems )
-  end
-  local now       = getStopWatchTime( "timer" )
-  local noItems   = not ACItems or #ACItems == 0
-  local tooRecent = (now - LastAC) < ACDelay
-  if noItems or tooRecent or not ACTarget then
-    -- If we have no more items too process, or not enough time has passed,
-    -- or our intended audience has left the room, skip this round.
-    iout(
-      "{EC}Skipped{RC} AC: i = {VC}{noItems}{RC}, r = {VC}{tooRecent}{RC}, t = {VC}{ACTarget}{RC}" )
-    return
-  end
-  -- Update the last contribution time
-  LastAC        = now
-  -- "Pop" the nex item keyword off the queue
-  local nBefore = #ACItems
-  local kw      = table.remove( ACItems, 1 )
-  -- Write/overwrite the data file to reflect the removal
-  table.save( f '{DATA_PATH}/ACItems.lua', ACItems )
-  local nAfter  = #ACItems
-  -- Display some status debug output to track the behavior of the queue
-  local nStatus = f "ACItems reduced from {NC}{nBefore}{RC} -> {nAfter}{RC}"
-  local status  = f "Showing {SC}{kw}{RC} to <medium_sea_green>{ACTarget}{RC}"
-  iout( nStatus )
-  iout( status )
-  send( f "get {kw} stocking" )
-  send( f "give {kw} Nadja" )
-  -- Reset the timer/audience variables
-  ACTimer  = nil
-  ACTarget = nil
-end
-
--- Timer to control the auto-contribution on a short delay
-ACTimer  = ACTimer or nil
--- The player "audience" for the auto-contribution so we can try to cancel
--- the timer if the player leaves before we proceed.
-ACTarget = ACTarget or nil
-function triggerAutoContribute()
-  local arrival = trim( matches[2] )
-  -- Make sure it's a known player (so we don't try to impress mobs)
-  if KnownPlayers[arrival] then
-    selectString( arrival, 1 )
-    fg( "medium_sea_green" )
-    resetFormat()
-    ACTarget = arrival
-    -- Use a refreshing timer on a delay so multiple arrivals only trigger one
-    -- item.
-    if ACTimer then killTimer( ACTimer ) end
-    ACTimer = tempTimer( 2, [[autoContribute()]], false )
-  end
-end
-
 -- This function sanitizes a single identifyText string by removing common errant patterns
 function sanitizeIdentifyText( text )
   local dirtyPatterns = {
@@ -352,26 +183,255 @@ function sanitizeIdentifyText( text )
   return text
 end
 
--- To start a new round of QA testing and enhancements to the bot, fully reset and write the Items table
--- reporting on who contributed to this round of testing most effectively.
-local function resetItemData()
-  local contributors = {}
-  local count = 0
-  for desc, item in pairs( Items ) do
-    count = count + 1
-    if item.contributor and item.contributor ~= "Nadja" and item.contributor ~= "Kaylee" then
-      if not contributors[item.contributor] then
-        contributors[item.contributor] = 1
-      else
-        contributors[item.contributor] = contributors[item.contributor] + 1
+-- A function to help testing mapping & usability functions by creating a "random" player as a
+-- combination of alignment, sex, and class
+function getRandomProperties()
+  local align, sex, class = nil, nil, nil
+  local function randomProperty( map )
+    local keys = {}
+    for k, _ in pairs( map ) do
+      table.insert( keys, k )
+    end
+    return keys[math.random( #keys )]
+  end
+  align = randomProperty( ALIGNMENT )
+  sex   = randomProperty( SEX )
+  class = randomProperty( CLASS )
+  -- 20% of the time, switch align to "any"
+  if math.random( 1, 5 ) == 1 then align = "any" end
+  -- 20% of the time, switch sex to "any"
+  if math.random( 1, 5 ) == 1 then sex = "any" end
+  return align, sex, class
+end
+
+-- This function attempts to parse an input string and then map the components to player properties
+function mapPlayerProperties( propertyString )
+  -- Lower the input string and remove any extra internal & surrounding whitespace
+  propertyString = propertyString:lower()
+  propertyString = trimCondense( propertyString )
+  -- Split the properties on space to convert to a table of strings
+  propertyString = split( propertyString, " " )
+  -- Confirm there are between 1 and 4 properties in the table (align, sex, class, worn)
+  if #propertyString < 1 or #propertyString > 4 then
+    cecho( "{EC}Invalid property count{RC} in mapPlayerProperties()" )
+    return nil
+  end
+  -- Map an input string p to a property in the given map; return the property or nil if
+  -- no match is found
+  local function mapProperty( p, map )
+    p = p:lower()
+    for property, strings in pairs( map ) do
+      for _, s in ipairs( strings ) do
+        s = s:lower()
+        if p:find( "^" .. s ) or s:find( "^" .. p ) then
+          -- Use cecho to report which property was matched
+          --cecho( f "\n\t{SC}{p}{RC} -> {NC}{property}{RC}" )
+          return property
+        end
       end
     end
-    deleteItem( desc )
+    return nil
   end
-  for name, num in pairs( contributors ) do
-    cecho( f "{GDITM} {VC}{name}{RC} contributed {num} items" )
+
+  -- Local variables to hold the mapped player properties
+  local align, sex, class, worn = nil, nil, nil, nil
+
+  -- For each property in the properties table, attempt mapProperty( p, map ) on the ALIGNMENT,
+  -- SEX, CLASS, and WORN_MAP maps in that order; when a match is found set the corresponding local variable
+  for _, p in ipairs( propertyString ) do
+    local matched = false
+    if not align then
+      align = mapProperty( p, ALIGNMENT )
+      if align then matched = true end
+    end
+    if not matched and not sex then
+      sex = mapProperty( p, SEX )
+      if sex then matched = true end
+    end
+    if not matched and not class then
+      class = mapProperty( p, CLASS )
+      if class then matched = true end
+    end
+    if not matched and not worn then
+      worn = mapProperty( p, WORN_MAP )
+      if worn then matched = true end
+    end
   end
-  cecho( f "{GDITM} {EC}{count}{RC} items deleted" )
-  -- Force a write of the new empty items table with a direct table.save()
-  table.save( f '{DATA_PATH}/Items.lua', Items )
+  -- If any of align, sex, class, or worn are nil at this point, set them to "any"
+  if not align then align = "any" end
+  if not sex then sex = "any" end
+  if not class then class = "any" end
+  if not worn then worn = "any" end
+  return align, sex, class, worn
+end
+
+function triggerMapProperties( p )
+  p = trimCondense( p )
+  local al, se, cl, wo = mapPlayerProperties( p )
+  al = f "`k{al}`q"
+  se = f "`f{se}`q"
+  cl = f "`c{cl}`q"
+  wo = f "`n{wo}`q"
+  local res = f "Align: {al}, Sex: {se}, Class: {cl}, Worn: {wo}"
+  send( f "say {res}" )
+end
+
+-- This function determines whether a given player will be able to equip a certain item based
+-- on the item's "anti" flags and the player's alignment, sex, and class; this function will
+-- be used to respond to queries in real-time in the game, so it must be made flexible to a variety
+-- of inputs (i.e., abbreviations, case insensitivity, etc.)
+function usable( item, align, sex, class )
+  -- Construct a formatted anti-flag for comparison to in-game strings, or nil on "any"
+  local function antiProperty( property )
+    if property:lower() == "any" then return nil end
+    return "ANTI-" .. property:upper()
+  end
+
+  -- Convert property parameters to corresponding anti-flags
+  local antiAlign = antiProperty( align )
+  local antiSex   = antiProperty( sex )
+  local antiClass = antiProperty( class )
+
+  local flags     = item.flags or {}
+
+  -- Check if the item has any flags that make it unusable by the player
+  local function hasAnti( flag )
+    return table.contains( flags, flag )
+  end
+
+  local badAlign = hasAnti( antiAlign )
+  local badSex   = hasAnti( antiSex )
+  local badClass = hasAnti( antiClass )
+
+  -- An item is unusuable if any of the anti-flags are present
+  return not (badAlign or badSex or badClass)
+end
+
+-- Function to determine if an item is desirable by comparing its stats to those in the DESIRED_STATS table
+function desired( item )
+  -- Get the highest stats for this item's worn location
+  local desiredStats = DESIRED_STATS[item.worn]
+  -- Initialize desirability to false
+  local isDesired = false
+  -- Only consider items with valid worn locations
+  if desiredStats then
+    -- Store the actual stats of this item for comparison
+    local itemStats = {
+      armorClass = item.armorClass and item.armorClass * -1 or 0,
+      averageDamage = item.averageDamage or 0,
+      dr = item.dr or 0,
+      hp = item.hp or 0,
+      hr = item.hr or 0,
+      mn = item.mn or 0,
+    }
+    -- If any of the item's stats meet or exceed the value in the highestStats table, the item is desirable
+    for stat, value in pairs( itemStats ) do
+      if desiredStats[stat] and value >= desiredStats[stat] then
+        isDesired = true
+        -- Use cecho to report on which stat/value pair made the item desirable
+        --cecho( f "\n\t{SC}{stat} {VC}{value}{RC} >= {NC}{desiredStats[stat]}{RC}" )
+      end
+    end
+  end
+  return isDesired
+end
+
+function findDesiredItems( align, sex, class )
+end
+
+function testPropertyMapping()
+  local testAlign = {"good", "neutral", "evil", "goo", "neu", "evi", "go", "ne", "ev"}
+  local testClass = {"anti-paladin", "bard", "cleric", "command", "paladin", "ninja", "nomad",
+    "thief", "magic-user", "warrior",
+    "anti", "bar", "cle", "com", "pal", "nin", "nom", "thi", "mag", "war",
+    "ap", "ba", "cl", "co", "pa", "ni", "no", "th", "mag", "wa"}
+  local testSex = {"male", "female", "mal", "fem", "ma", "fe"}
+  local testWorn = {
+    "about",
+    "robe",
+    "cloak",
+    "abo",
+    "rob",
+    "clo",
+    "arms",
+    "arm",
+    "sleeves",
+    "sleeve",
+    "body",
+    "chest",
+    "bod",
+    "feet",
+    "boots",
+    "boot",
+    "foot",
+    "fingers",
+    "finger",
+    "fin",
+    "rings",
+    "rin",
+    "ri",
+    "hands",
+    "gloves",
+    "glo",
+    "han",
+    "head",
+    "hold",
+    "held",
+    "hol",
+    "legs",
+    "pants",
+    "leg",
+    "light",
+    "torch",
+    "torches",
+    "lights",
+    "neck",
+    "necklace",
+    "amulet",
+    "shield",
+    "waist",
+    "wield",
+    "weapons",
+    "weap",
+    "wrists",
+    "bracelets",
+  }
+  local align, class, sex, worn = nil, nil, nil, nil
+  -- Set align, class, sex, and worn to a random value from each of the local test tables; for each, use "any"
+  -- 25% of the time instead of a random value
+  if math.random( 1, 5 ) == 1 then align = "" else align = testAlign[math.random( #testAlign )] end
+  if math.random( 1, 8 ) == 1 then class = "" else class = testClass[math.random( #testClass )] end
+  if math.random( 1, 2 ) == 1 then sex = "" else sex = testSex[math.random( #testSex )] end
+  if math.random( 1, 8 ) == 1 then worn = "" else worn = testWorn[math.random( #testWorn )] end
+  local function shuffleString( s )
+    local n = #s
+    for i = n, 2, -1 do
+      local j = math.random( i )
+      s[i], s[j] = s[j], s[i]
+    end
+  end
+  local function shuffleProperties( a, c, s, w )
+    local properties = {a, c, s, w}
+    shuffleString( properties )
+    local propertyString = table.concat( properties, " " )
+    return propertyString
+  end
+  local propertyString = shuffleProperties( align, class, sex, worn )
+  propertyString = trimCondense( propertyString )
+  send( f "say find {propertyString}" )
+end
+
+function moveToTemple()
+  disableTimer( "Locate Commons" )
+  send( "south" )
+  send( "south" )
+  send( "down" )
+  resetID()
+  clearScreen()
+end
+
+function goAFK()
+  tempTimer( 2000, function ()
+    moveToTemple()
+  end )
 end

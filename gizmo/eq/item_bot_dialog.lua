@@ -227,7 +227,16 @@ function countContributors()
   displayFramedTable( f "     <orchid>Contributors{RC}     ", contributors )
 end
 
+-- Temporary "fix" function for when the bot gets hung up or confused to reset it
+function resetBot()
+  resetID()
+  send( "drop all" )
+  send( "say I should be good to go now." )
+end
+
 BOT_COMMANDS = {
-  ["ID"] = {argsRequired = true, func = respondItemInquiry},
+  ["ID"]    = {argsRequired = true, func = respondItemInquiry},
   ["FETCH"] = {argsRequired = false, func = requestLoad},
+  ["RESET"] = {argsRequired = false, func = resetBot},
+  ["FIND"]  = {argsRequired = true, func = triggerMapProperties},
 }

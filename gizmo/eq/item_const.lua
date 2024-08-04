@@ -351,11 +351,16 @@ ATTRIBUTE_MAP        = {
 
 SPELL_MAP            = {
   ["blindness"]            = "blind",
+  ["curse"]                = "curse",
   ["cure blind"]           = "!blind",
+  ["remove curse"]         = "!curse",
+  ["remove paralysis"]     = "!para",
+  ["remove poison"]        = "!poison",
   ["cure critic"]          = "+critic",
   ["cure light"]           = "+light",
   ["cure serious"]         = "+serious",
-  ["curse"]                = "curse",
+  ["great miracle"]        = "+great mira",
+  ["heal"]                 = "+heal",
   ["detect alignment"]     = "daln",
   ["detect invisibility"]  = "dinv",
   ["detect magic"]         = "dmag",
@@ -363,26 +368,22 @@ SPELL_MAP            = {
   ["endure"]               = "end",
   ["fireshield"]           = "fshield",
   ["grace of god"]         = "gog",
-  ["great miracle"]        = "+great mira",
   ["hand of god"]          = "hog",
-  ["heal"]                 = "+heal",
   ["holy bless"]           = "hbless",
-  ["improve invisibility"] = "imp inv",
+  ["improve invisibility"] = "impinv",
   ["infravision"]          = "infra",
   ["invisibility"]         = "inv",
   ["invulnerability"]      = "invuln",
   ["miracle"]              = "mira",
   ["paralyze"]             = "para",
   ["protection from evil"] = "pfe",
-  ["remove curse"]         = "-curse",
-  ["remove paralysis"]     = "-para",
-  ["remove poison"]        = "-poison",
   ["sanctuary"]            = "sanct",
   ["sense life"]           = "dlif",
   ["strength"]             = "str",
   ["super harm"]           = "sharm",
   ["swiftness"]            = "swift",
   ["enchant weapon"]       = "ench weapon",
+  ["vitality"]             = "vit",
 }
 
 IGNORED_ITEMS        = {
@@ -394,3 +395,82 @@ IGNORED_ITEMS        = {
 function touchBoobs()
   cecho( "You absolute perv." )
 end
+
+-- Mapping tables to be used when determining whether a player can use a particular item; these
+-- will help the usability comparison respond to a variety of inputs from players including common
+-- nicknames for classes.
+ALIGNMENT = {
+  ["good"]    = {"good"},
+  ["neutral"] = {"neutral"},
+  ["evil"]    = {"evil"}
+}
+SEX       = {
+  ["male"]   = {"male"},
+  ["female"] = {"female"}
+}
+CLASS     = {
+  ["anti-paladin"] = {"anti-paladin", "ap", "antipaladin"},
+  ["bard"]         = {"bard"},
+  ["cleric"]       = {"cleric"},
+  ["commando"]     = {"commando"},
+  ["paladin"]      = {"paladin", "paly", "pally"},
+  ["ninja"]        = {"ninja"},
+  ["nomad"]        = {"nomad"},
+  ["thief"]        = {"thief"},
+  ["magic-user"]   = {"magic-user", "mu", "mage", "magicuser"},
+  ["warrior"]      = {"warrior"}
+}
+WORN_MAP  = {
+  ["about"]   = {"about", "cloaks", "robes"},
+  ["arms"]    = {"arms", "sleeves"},
+  ["body"]    = {"body", "chests"},
+  ["feet"]    = {"feet", "boots", "shoes", "foot"},
+  ["fingers"] = {"fingers", "rings"},
+  ["hands"]   = {"hands", "gloves", "gauntlest"},
+  ["head"]    = {"heads"},
+  ["hold"]    = {"hold", "held"},
+  ["legs"]    = {"legs", "pants"},
+  ["light"]   = {"lights", "torches"},
+  ["neck"]    = {"necks", "necklaces", "amulets"},
+  ["shield"]  = {"shields"},
+  ["waist"]   = {"waists", "belts"},
+  ["wield"]   = {"wielded", "weapons"},
+  ["wrists"]  = {"wrists", "bracelet"}
+}
+
+-- Local/loading function to generate a table of all possible combinations of player properties
+local function combinePlayerProperties()
+  local combinations = {}
+
+  -- Populate the table with all possible align, sex, class combinations
+  for ak, _ in pairs( ALIGNMENT ) do
+    for sk, _ in pairs( SEX ) do
+      for ck, _ in pairs( CLASS ) do
+        table.insert( combinations, {align = ak, sex = sk, class = ck} )
+      end
+    end
+  end
+  return combinations
+end
+
+PLAYER_COMBINATIONS = combinePlayerProperties()
+
+-- This table sets thresholds for each worn location and stat to help identify desirable items;
+-- Note that armorClass is positive here but is negative in the actual item data
+DESIRED_STATS = {
+  ABOUT   = {armorClass = 20, dr = 3, hp = 25, hr = 5, mn = 25},
+  ARMS    = {armorClass = 10, dr = 2, hp = 10, hr = 2, mn = 20},
+  BODY    = {armorClass = 44, dr = 2, hp = 50},
+  FEET    = {armorClass = 10, dr = 2, hp = 15, hr = 3},
+  FINGERS = {armorClass = 10, dr = 4, hp = 30, hr = 4, mn = 35},
+  HANDS   = {armorClass = 8, dr = 3, hr = 4},
+  HEAD    = {armorClass = 12, dr = 2, hp = 30, hr = 3, mn = 35},
+  HOLD    = {armorClass = 10, dr = 3, hp = 30, hr = 4, mn = 35},
+  LEGS    = {armorClass = 10, dr = 2, hp = 20, hr = 1, mn = 15},
+  LIGHT   = {armorClass = 5, dr = 3, hp = 25, hr = 3, mn = 30},
+  NECK    = {armorClass = 12, dr = 2, hp = 15, hr = 2, mn = 25},
+  SHIELD  = {armorClass = 15, dr = 3, hp = 30, hr = 3, mn = 10},
+  WAIST   = {armorClass = 10, dr = 3, hp = 10, hr = 3, mn = 10},
+  WRISTS  = {armorClass = 6, dr = 3, hp = 25, hr = 3, mn = 25},
+  WIELD   = {armorClass = 10, averageDamage = 23}
+}
