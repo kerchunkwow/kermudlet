@@ -421,17 +421,29 @@ function testPropertyMapping()
   send( f "say find {propertyString}" )
 end
 
-function moveToTemple()
-  disableTimer( "Locate Commons" )
-  send( "south" )
-  send( "south" )
-  send( "down" )
-  resetID()
-  clearScreen()
-end
-
-function goAFK()
-  tempTimer( 2000, function ()
-    moveToTemple()
-  end )
+-- The purpose of this function is to identify common or frequently used keywords so they can be used
+-- to locate new unidentified items that happen to have those same keywords
+function findCommonKeywords()
+  local keyWordCounts = {}
+  -- For each item in Items, iterate over item.keywords; for each keyword, increment a count in keyWordCounts;
+  -- Initialize count to 1 the first time a keyword is seen
+  for _, item in pairs( Items ) do
+    for _, keyword in ipairs( item.keywords ) do
+      if not keyWordCounts[keyword] then
+        keyWordCounts[keyword] = 1
+      else
+        keyWordCounts[keyword] = keyWordCounts[keyword] + 1
+      end
+    end
+  end
+  local keyWordMin = 2
+  -- Remove any keywords in keyWordCounts with a count less than keyWordMin
+  for keyword, count in pairs( keyWordCounts ) do
+    if count < keyWordMin then
+      keyWordCounts[keyword] = nil
+    end
+  end
+  local totalUniqueKeywords = table.size( keyWordCounts )
+  display( keyWordCounts )
+  cecho( f "\nTotal keywords: {NC}{totalUniqueKeywords}{RC}" )
 end

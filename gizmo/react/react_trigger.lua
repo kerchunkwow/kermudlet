@@ -229,11 +229,11 @@ function triggerLocateObject()
     deleteLine()
     return
   elseif Items[item] then
-    -- Dim items that are already identified
-    --deleteLine()
-    selectString( line, 1 )
-    fg( "dim_grey" )
-    resetFormat()
+    -- Dim/Ignore items that are already identified
+    deleteLine()
+    -- selectString( line, 1 )
+    -- fg( "dim_grey" )
+    -- resetFormat()
     --return
   else
     selectString( item, 1 )
@@ -337,7 +337,11 @@ end
 function queueReconnect( t )
   local host, port = getConnectionInfo()
   local connectTrigger = tempTrigger( "land of GizmoMUD", function ()
-    send( "n", true )
+    -- Clear the queue of un'id'd items on reconnection after reboot
+    UnknownItems = {}
+    send( "down", true )
+    send( "west", true )
+    send( "north", true )
     send( "save", true )
   end, 1 )
   tempTimer( t, function ()

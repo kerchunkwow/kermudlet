@@ -470,8 +470,11 @@ function triggerEquippedItem()
         if item.statsString then
           stats = isConsumable and cc .. item.statsString or sc .. item.statsString
         end
-        aff   = item.affectString and ac .. " " .. item.affectString or ""
-        flags = getFilteredFlagString( item.flags, item.cloneable )
+        -- Skip adding affects/flags for consumables (they seem meaningless)
+        if not isConsumable then
+          aff   = item.affectString and ac .. " " .. item.affectString or ""
+          flags = getFilteredFlagString( item.flags, item.cloneable )
+        end
       end
     end
   end
