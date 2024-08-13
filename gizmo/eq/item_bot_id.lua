@@ -196,7 +196,7 @@ function enhanceKeywords( keywords )
     -- for substrings to add as potential keywords
     if #keyword > 5 then
       cecho( f "{GDOK} {SC}{keyword}{RC} > 5 characters, searching sub-keywords" )
-      for itemKeyword in pairs( ItemKeywords ) do
+      for itemKeyword in pairs( AllKeywords ) do
         if keyword:find( itemKeyword ) then
           cecho( f "{GDOK} \t+{SC}{itemKeyword}{RC}" )
           addKeyword( itemKeyword )
@@ -232,6 +232,7 @@ function resetID()
   if ReturnedTrigger then killTrigger( ReturnedTrigger ) end
   -- Also cancel any identify we have in progress (just in case)
   cancelIdentify( false )
+  expandAlias( "reload" )
 end
 
 -- After the bot is given an item, it will wait to receive a valid keyword to move
@@ -272,9 +273,9 @@ function calculateItemBounty( item )
   end
   --cecho( f "\n\t<maroon>*Adjusted Bounty<reset>: {NC}{itemBounty}{RC}" )
   -- Add a bonus amount to itemBounty between 10 and 25% of itemBounty
-  local bonus = math.random( 10, 25 ) / 100
+  local bonus = math.random( 10, 33 ) / 100
   itemBounty = itemBounty + (itemBounty * bonus)
-  return itemBounty
+  return round( itemBounty, 1 )
 end
 
 -- Adjust the bounty value based on item type and attribute
@@ -310,6 +311,6 @@ function estimateTotalBounty()
   end
   totalBounty = expandNumber( totalBounty )
   --cecho( f "\n<maroon>Total Bounty Paid{RC}: <gold>{totalBounty}{RC}" )
-  local msg = f "`fThe Archive`f has recorded `k{ArchivedItems}`f total items and paid `k{totalBounty}`f gold to the intrepid adventurers who discovered them."
+  local msg = f "`fThe Archive`f has recorded `k{ArchivedItems}`f total items and paid ~`k{totalBounty}`f gold to the intrepid adventurers who discovered them."
   send( f [[goss {msg}]] )
 end

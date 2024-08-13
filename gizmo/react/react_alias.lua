@@ -302,6 +302,7 @@ function aliasUnstore( item, container )
   local kw       = itemData.keywords[1]
 end
 
+LongItems = LongItems or {}
 function aliasLocateObject()
   -- If two groups are captured, we supplied a starting index
   if matches[3] then
@@ -311,6 +312,11 @@ function aliasLocateObject()
   else
     LocateTarget = trim( matches[2] )
     LocateIndex = 1
+  end
+  local lind = tonumber( LocateIndex )
+  if lind and lind >= 100 and not LongItems[LocateTarget] then
+    LongItems[LocateTarget] = true
+    cecho( f "\n{EC}Long item{RC} list detected for {LocateTarget}." )
   end
   enableTrigger( [[Locate Triggers]] )
   if LocateIndex and LocateIndex > 1 then
@@ -322,5 +328,17 @@ function aliasLocateObject()
   LocateTimer = tempTimer( 5, function ()
     LocateIndex = 0
     disableTrigger( [[Locate Triggers]] )
+    LocateTimer = nil
   end )
+end
+
+function aliasTransferItems()
+  local items = matches[2]
+  -- Split the items list on space into a table of individual strings
+  local itemTable = split( items, " " )
+  -- For each item in the table, send( "get {item} backpack" ) followed by "put {item} {container}"
+  for _, item in ipairs( itemTable ) do
+    send( f "get {item} backpack" )
+    send( f "put {item} parcel" )
+  end
 end

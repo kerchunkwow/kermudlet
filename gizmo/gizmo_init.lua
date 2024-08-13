@@ -48,15 +48,18 @@ function refreshModuleXML()
   os.remove( xmlPath )
 
   -- Copy/rename the .mpackage file to a .zip file
-  os.execute( 'copy "' .. modulePath:gsub( '/', '\\' ) .. '" "' .. tempZipPath:gsub( '/', '\\' ) .. '"' )
+  os.execute( 'copy "' ..
+  modulePath:gsub( '/', '\\' ) .. '" "' .. tempZipPath:gsub( '/', '\\' ) .. '"' )
 
   -- Extract everything from the .zip to a temporary directory
   local extractCmd = 'powershell -command "Expand-Archive -LiteralPath \'' ..
-      tempZipPath:gsub( '/', '\\' ) .. '\' -DestinationPath \'' .. extractDir:gsub( '/', '\\' ) .. '\' -Force"'
+      tempZipPath:gsub( '/', '\\' ) ..
+      '\' -DestinationPath \'' .. extractDir:gsub( '/', '\\' ) .. '\' -Force"'
   os.execute( extractCmd )
 
   -- Relocate the .xml and delete the temporary stuff
-  local moveCmd = 'move "' .. extractDir:gsub( '/', '\\' ) .. '\\gizmudlet2.xml" "' .. xmlPath:gsub( '/', '\\' ) .. '"'
+  local moveCmd = 'move "' ..
+  extractDir:gsub( '/', '\\' ) .. '\\gizmudlet2.xml" "' .. xmlPath:gsub( '/', '\\' ) .. '"'
   os.execute( moveCmd )
   os.remove( tempZipPath )
   os.execute( 'rmdir "' .. extractDir:gsub( '/', '\\' ) .. '" /s /q' )
@@ -68,3 +71,4 @@ end
 
 -- Once the final session is finished loading, alert the Main session to initialize the GUI
 if SESSION == 1 then tempTimer( 0, [[raiseEvent( 'eventProfilesLoaded' )]] ) end
+saveWindowLayout()

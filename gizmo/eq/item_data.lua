@@ -421,11 +421,156 @@ function testPropertyMapping()
   send( f "say find {propertyString}" )
 end
 
--- The purpose of this function is to identify common or frequently used keywords so they can be used
--- to locate new unidentified items that happen to have those same keywords
-function findCommonKeywords()
+-- If the AlternatePlayers table is kept up to date, this function will attribute contributions from
+-- player's alternates to their main character.
+function consolidateContributors()
+  for desc, item in pairs( Items ) do
+    local contributor = item.contributor
+    for main, alts in pairs( AlternatePlayers ) do
+      if table.contains( alts, contributor ) then
+        cecho( f "Updated contributor: {SC}{desc}{RC}, <dim_grey>{contributor}{RC} --> {SC}{main}{RC}" )
+        item.contributor = main
+      end
+    end
+  end
+end
+
+-- The goal of this function is to produce a single "master list" of keywords for locating items within the
+-- MUD; this will combine keywords from the mob data, existing item data, as well as external files that
+-- include common keywords associated with fantasy themes.
+AllKeywords = AllKeywords or {}
+function consolidateKeywords()
+  AllKeywords = {}
+  local totalKeywords = 0
+
+  -- First, add all keywords from the mobData table
+  for _, mob in pairs( mobData ) do
+    local kw = mob.keywords
+    kw = trimCondense( kw )
+    kw = string.lower( kw )
+    -- Split kw into a table of individual words, then insert those into the mobKeywords table
+    kw = split( kw, " " )
+    for _, word in ipairs( kw ) do
+      totalKeywords = totalKeywords + 1
+      if not AllKeywords[word] then
+        AllKeywords[word] = 1
+      else
+        AllKeywords[word] = AllKeywords[word] + 1
+      end
+    end
+  end
+  -- Use cecho to report on the size of the AllKeywords table after mobData is added
+  cecho( f "\nTotal keywords after Mobs: {NC}{totalKeywords}{RC}" )
+  -- Use table.size to report unique keywords
+  cecho( f "\nUnique keywords after Mobs: {VC}{table.size( AllKeywords )}{RC}" )
+
+  -- Next, add all keywords from the Items table
+  for _, item in pairs( Items ) do
+    local kw = item.keywords
+    for _, word in ipairs( kw ) do
+      word = string.lower( word )
+      totalKeywords = totalKeywords + 1
+      if not AllKeywords[word] then
+        AllKeywords[word] = 1
+      else
+        AllKeywords[word] = AllKeywords[word] + 1
+      end
+    end
+  end
+  -- Use cecho to report on the size of the AllKeywords table after Items is added
+  cecho( f "\nTotal keywords after Items: {NC}{totalKeywords}{RC}" )
+  cecho( f "\nUnique keywords after Items: {VC}{table.size( AllKeywords )}{RC}" )
+
+  -- Finally, pull in keywords from external files;
+  -- For every .txt file in C:\Dev\mud\mudlet\gizmo\data\keywords, read each line and add that keyword
+  -- to the AllKeywords table; use cecho to report the name of each file and the number of keywords added
+  -- Function to read keywords from a file and add them to the table
+  local function addKeywordsFromFile( filename )
+    local file = io.open( filename, "r" )
+    local count = 0
+    for keyword in file:lines() do
+      if keyword ~= "" then
+        count = count + 1
+        if AllKeywords[keyword] then
+          AllKeywords[keyword] = AllKeywords[keyword] + 1
+        else
+          AllKeywords[keyword] = 1
+        end
+      end
+    end
+    totalKeywords = totalKeywords + count
+    file:close()
+
+    cecho( f( "\n\t{SC}{filename}{RC} added {NC}{count}{RC} new keywords" ) )
+  end
+
+  local keywordPath = f "{DATA_PATH}keywords"
+  local pfile = io.popen( 'dir "' .. keywordPath .. '" /b /a-d' )
+  for filename in pfile:lines() do
+    if filename:match( "%.txt$" ) then
+      addKeywordsFromFile( keywordPath .. "/" .. filename )
+    end
+  end
+  pfile:close()
+  -- Use cecho to report on the size of the AllKeywords table after Items is added
+  cecho( f "\nTotal keywords after Files: {NC}{totalKeywords}{RC}" )
+  cecho( f "\nUnique keywords after Files: {VC}{table.size( AllKeywords )}{RC}" )
+end
+
+-- This function will clean and "simplify" the AllKeywords table by removing keywords with low count
+-- and then converting the key, value table into a simple list of keywords sorted by count
+function sanitizeKeywords()
+  local keyWordMin = 2
+  cecho( f "\nUnique keywords before Sanitize: {VC}{table.size( AllKeywords )}{RC}" )
+  -- Remove any keywords with a count below keyWordMin
+  for keyword, count in pairs( AllKeywords ) do
+    if count < keyWordMin then
+      AllKeywords[keyword] = nil
+    end
+  end
+  -- Convert AllKeywords into a list of keywords sorted by count
+  local sortedKeywords = {}
+  for keyword, count in pairs( AllKeywords ) do
+    table.insert( sortedKeywords, {keyword = keyword, count = count} )
+  end
+  -- Sort the list by count in descending order
+  table.sort( sortedKeywords, function ( a, b ) return a.count > b.count end )
+
+  -- Extract the keywords into a simple list
+  local cleanedKeywords = {}
+  for _, entry in ipairs( sortedKeywords ) do
+    table.insert( cleanedKeywords, entry.keyword )
+  end
+  -- Replace the original AllKeywords table with the cleaned list
+  AllKeywords = cleanedKeywords
+
+  cecho( f "\nUnique keywords after Sanitize: {VC}{table.size( AllKeywords )}{RC}" )
+end
+
+-- To help improve and optimize the quality of keywords, this function keeps track of keywords that result
+-- in no objects being found (consistent, repeated failures of a keyword could lead to its removal)
+function triggerNoSuch()
+  -- If LocateTarget and AllKeywords[LocateTarget] are both non-nil, add LocateTarget to BadLocates;
+  -- BadLocates is a key, value table where keys are keywords and values are the number of bad locates
+  -- using that keyword - the first ocurrence of a keyword in BadLocates will have a value of 1,
+  -- subsequent occurrences will increment the value
+  cecho( f "\t(<sienna>{LocateTarget}<reset>)" )
+  if LocateTarget and table.contains( AllKeywords, LocateTarget ) then
+    if not BadLocates[LocateTarget] then
+      BadLocates[LocateTarget] = 1
+    else
+      BadLocates[LocateTarget] = BadLocates[LocateTarget] + 1
+    end
+  else
+    cecho( "hmmmm" )
+  end
+  table.save( f "{DATA_PATH}/BadLocates.lua", BadLocates )
+end
+
+BestKeywords = BestKeywords or {}
+function findBestKeywords()
   local keyWordCounts = {}
-  -- For each item in Items, iterate over item.keywords; for each keyword, increment a count in keyWordCounts;
+  -- For each item in Item, iterate over item.keywords; for each keyword, increment a count in keyWordCounts;
   -- Initialize count to 1 the first time a keyword is seen
   for _, item in pairs( Items ) do
     for _, keyword in ipairs( item.keywords ) do
@@ -436,14 +581,19 @@ function findCommonKeywords()
       end
     end
   end
-  local keyWordMin = 2
-  -- Remove any keywords in keyWordCounts with a count less than keyWordMin
-  for keyword, count in pairs( keyWordCounts ) do
-    if count < keyWordMin then
-      keyWordCounts[keyword] = nil
+  -- For each item in Item, iterate over item.keywords; for each keyword, check its count in keyWordCounts;
+  -- remember the keyword with the LOWEST count for each item, and store that in BestKeywords.
+  -- Put another way, BestKeywords[item] should be the keyword that is shared with the fewest number of
+  -- other items in the Items table
+  for desc, item in pairs( Items ) do
+    local bestKeyword = nil
+    local bestCount   = 9999
+    for _, keyword in ipairs( item.keywords ) do
+      if keyWordCounts[keyword] < bestCount then
+        bestKeyword = keyword
+        bestCount   = keyWordCounts[keyword]
+      end
     end
+    BestKeywords[desc] = bestKeyword
   end
-  local totalUniqueKeywords = table.size( keyWordCounts )
-  display( keyWordCounts )
-  cecho( f "\nTotal keywords: {NC}{totalUniqueKeywords}{RC}" )
 end

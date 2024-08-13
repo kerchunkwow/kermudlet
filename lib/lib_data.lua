@@ -15,19 +15,22 @@ local function tableDefinitions()
   KnownPlayers     = {}
   PlayerContainers = {}
   ItemKeywords     = {}
+  BadLocates       = {}
+  UnknownItems     = {}
 end
 
 DATA_FILES = {
   "Items",
   "ItemLoads",
   "AlternateItems",
-  "RejectedItems",
+  "UnknownItems",
   "StaticItems",
   "LoggedLoot",
-  "CommonKeywords",
+  --"CommonKeywords",
   "KnownPlayers",
   "PlayerContainers",
-  "ItemKeywords",
+  --"ItemKeywords",
+  "BadLocates",
 }
 
 -- A wrapper for Mudlet's table.save() that prevents data loss by checking the outgoing

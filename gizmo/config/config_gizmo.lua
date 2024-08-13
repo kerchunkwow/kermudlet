@@ -372,34 +372,6 @@ local FB          = "<firebrick>"
 
 TimeCheck         = nil
 
-function parseDateString( dateString )
-  local pattern = "(%a+) (%a+) (%d+) (%d+):(%d+):(%d+) (%d+) (%a+)"
-  local _, _, month, day, hour, min, sec, year, tz = dateString:find( pattern )
-  local monthTable = {
-    Jan = 1,
-    Feb = 2,
-    Mar = 3,
-    Apr = 4,
-    May = 5,
-    Jun = 6,
-    Jul = 7,
-    Aug = 8,
-    Sep = 9,
-    Oct = 10,
-    Nov = 11,
-    Dec = 12
-  }
-  local timeTable = {
-    year = tonumber( year ),
-    month = monthTable[month],
-    day = tonumber( day ),
-    hour = tonumber( hour ),
-    min = tonumber( min ),
-    sec = tonumber( sec )
-  }
-  return os.time( timeTable )
-end
-
 function timeSince( newTime )
   local newTimeSec = parseDateString( newTime )
   local elapsedTime = 0
@@ -413,3 +385,12 @@ function timeSince( newTime )
   local sinceString = f "(Elapsed: {NC}{elapsedTime}{RC}s)"
   cout( sinceString )
 end
+
+AlternatePlayers = {
+  ["Vassago"] = {"Cyrus", "Anima", "Glory"},
+  ["Bongo"]   = {"Ranyk", "Youku", "Drago"},
+  ["Digest"]  = {"Intestine", "Trachea", "Organ"},
+  ["Irelia"]  = {"Finarfin", "Alatar", "Manwe"},
+  ["Tek"]     = {"Evo", "Tzu", "Rax"},
+  ["Pastor"]  = {"Strap", "Tree", "Lever"}
+}

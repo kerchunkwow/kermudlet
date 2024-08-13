@@ -212,29 +212,54 @@ end
 -- Loaded items tracks items that are present in the game on a mob or in a room that have
 -- not been ID'd; this can be used to assign "quests" to fetch items for the database.
 
-function triggerLocateObject()
-  -- The name (short description) of the located item
-  local item  = trim( matches.item )
-  -- The "position" the item is in (equipped, carried, on ground)
-  local pos   = trim( matches.pos )
-  -- The location of the item (name of mob or room)
-  local loc   = trim( matches.loc )
+-- Some tables to help keep track of which players use which containers (including containers held
+-- inside other containers).
+KnownContainers  = KnownContainers or {}
+NestedContainers = NestedContainers or {}
 
+InItems          = InItems or {}
+CarriedItems     = CarriedItems or {}
+
+function triggerLocateObject()
+  -- If "line" contains "appears in the middle of the room", this is a false match; return
+  -- without doing anything.
+  if string.find( line, "appears in the middle of the room" ) then return end
+  -- Increment the "index" for locating objects; this is used to remember where we are
+  -- in the total list of items with a given keyword so we can string multiple locates
+  -- together without losing track of the index.
   LocateIndex = (LocateIndex or 0) + 1
   cecho( f "\t({NC}{LocateIndex}{RC})" )
 
-  if PlayerContainers[loc] or KnownPlayers[loc] or UnknownItems[item] then
-    -- Ignore items already owned by players, or that have already been entered into the
-    -- "unknown items" table
+  -- The name (short description) of the located item
+  local item = trim( matches.item )
+  -- The "position" the item is in (equipped, carried, on ground)
+  local pos  = trim( matches.pos )
+  -- The location of the item (name of mob or room)
+  local loc  = trim( matches.loc )
+
+  if multipleIns( pos, loc ) then return end
+  trackPlayerContainers( item, loc )
+
+  -- Items in containers (including nested) or carried directly by players that are not yet identified
+  -- are opportunities for player's to help expand the database.
+  local inContainer = PlayerContainers[loc] or NestedContainers[loc]
+  local playerHeld = inContainer or KnownPlayers[loc]
+  if playerHeld and (not Items[item]) then
+    selectString( item, 1 )
+    fg( "medium_purple" )
+    selectString( loc, 1 )
+    fg( "dark_orange" )
+    resetFormat()
+    -- Insert the item into the Carried Items table uniquely keyed to the location
+    CarriedItems[loc] = CarriedItems[loc] or {}
+    if not table.contains( CarriedItems[loc], item ) then
+      table.insert( CarriedItems[loc], item )
+    end
+    return
+  elseif UnknownItems[item] or Items[item] then
+    -- Ignore items that are already identified or have already been queued for identification
     deleteLine()
     return
-  elseif Items[item] then
-    -- Dim/Ignore items that are already identified
-    deleteLine()
-    -- selectString( line, 1 )
-    -- fg( "dim_grey" )
-    -- resetFormat()
-    --return
   else
     selectString( item, 1 )
     fg( "maroon" )
@@ -251,10 +276,74 @@ function triggerLocateObject()
     end
     resetFormat()
   end
-  -- Add/update the item in either UnknownItems or ItemLoads tables
-  if pos == "equipped by" or pos == "carried by" then
+  -- If item contains any variation of the word "corpse" at any part of the string, set isCorpse true
+  local isCorpse = string.find( item:lower(), "corpse" )
+  -- If item contains any variation of the word "coins" at any part of the string, set isCoins true
+  local isCoins = string.find( item:lower(), "coins" )
+  local isLoaded = (pos == "equipped by" or pos == "carried by")
+  local badLocs = {"shopkeeper", "armorer", "weaponsmith", "armourer", "someone", "corpse"}
+  -- If loc contains any variation of any of the words in the badLocs list at any point in the loc string, set
+  -- isBadLoc true
+  local isBadLoc = false
+  for _, badLoc in ipairs( badLocs ) do
+    if string.find( loc:lower(), badLoc ) then
+      isBadLoc = true
+      break
+    end
+  end
+  -- Add/update the item in either UnknownItems or ItemLoads tables (if they're not coins or corpses)
+  if isLoaded and not isCorpse and not isCoins and not isBadLoc then
+    -- If a keyword previously identified as "bad" successfully finds an item, remove it from the list
+    if LocateTarget and BadLocates[LocateTarget] then
+      BadLocates[LocateTarget] = nil
+    end
+    -- [TODO] Figure out how to handle items "in" Rooms or other locations; this will include a method
+    -- to ignore or filter out static items like fountains and statues.
     addLoad( item, loc )
   end
+end
+
+-- Locate Object companion function to help keep track of player containers and the items within
+function trackPlayerContainers( item, loc )
+  if PlayerContainers[item] and KnownPlayers[loc] then
+    -- Set loc, item as a pair in KnownContainers (this should be a table mapping players to a list
+    -- of the containers they carry.
+    KnownContainers[loc] = KnownContainers[loc] or {}
+    if not table.contains( KnownContainers[loc], item ) then
+      table.insert( KnownContainers[loc], item )
+    end
+  end
+  -- If a container is located within a container, use KnownContainers to try and "guess" which player
+  -- might be carrying the nested container
+  if PlayerContainers[item] and PlayerContainers[loc] then
+    -- Set loc, item as a pair in NestedContainers
+    NestedContainers[loc] = NestedContainers[loc] or {}
+    if not table.contains( NestedContainers[loc], item ) then
+      table.insert( NestedContainers[loc], item )
+    end
+  end
+end
+
+-- Instances where an item is "in" a location and that location has multiple instances of "in"
+-- represent an special edge case that will need to be handled separately (for now we skip it)
+function multipleIns( pos, loc )
+  -- If the item is "in" something, check for multiple occurrences of "in" within the location;
+  -- this is indicative of a special case that will need to be handled separately.
+  if pos == "in" then
+    local firstIn = string.find( loc:lower(), " in " )
+    if firstIn then
+      local secondIn = string.find( loc:lower(), " in ", firstIn + 1 )
+      if secondIn then
+        selectString( line, 1 )
+        fg( "ansi_magenta" )
+        resetFormat()
+        -- Insert the line into the InItems table for further processing
+        table.insert( InItems, line )
+        return true
+      end
+    end
+  end
+  return false
 end
 
 -- Triggered by "You are very confused" indicating there are more items by the same name
@@ -264,10 +353,17 @@ function triggerContinueLocate()
   creplaceLine( f "<dim_grey>More {SC}{LocateTarget}<dim_grey>(s) to find...{RC}" )
   local nextIndex = LocateIndex + 1
   send( f [[cast 'locate object' {nextIndex}.{LocateTarget}]], true )
+  triggerExtendLocate()
+end
+
+-- Companion function to extend the window of time in which the locate object triggers are active;
+-- useful to "keep alive" the triggers when there is a delay (e.g., several lost concentrations)
+function triggerExtendLocate()
   if LocateTimer then killTimer( LocateTimer ) end
   LocateTimer = tempTimer( 8, function ()
     LocateIndex = 0
     disableTrigger( [[Locate Triggers]] )
+    LocateTimer = nil
   end )
 end
 

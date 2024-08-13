@@ -171,7 +171,7 @@ function equipMinion( minion )
   end
   -- Give all of the items to the minion
   for i, item in ipairs( minionGear ) do
-    send( f 'get {item} cradle', true )
+    send( f 'get {item} stocking', true )
     send( f 'give {item} {minion}', true )
   end
   tempTimer( 7, function ()
@@ -204,12 +204,12 @@ function doSac()
   local minion = matches[2]
   cecho( f "minion: {minion}" )
   tempEnableTrigger( "Store Minion EQ", 5 )
-  send( 'get cradle stocking', false )
+  send( 'get stocking stocking', false )
   send( f 'sacrifice {minion}', false )
   send( 'get all corpse', false )
   --tempEnableTrigger( "Minion Sacrificed", 3 )
   tempTimer( 5, function ()
-    send( "put cradle stocking" )
+    send( "put stocking stocking" )
   end )
 end
 
@@ -437,10 +437,10 @@ function triggerMinionSummoned( minion )
   -- The shade minion must be turned "evil" by killing a large number of innocent enemies
   -- after summoning; delay for 6 seconds to allow for the summon song lag to expire, then
   -- group the shade and use an area ability to kill the mobs.
-  tempTimer( 6, [[send( 'get cradle stocking' )]] )
+  tempTimer( 6, [[send( 'get stocking stocking' )]] )
   if minion == "shade minion" then
-    tempTimer( 6.1, [[send( 'get waterwalking cradle' )]] )
-    tempTimer( 6.2, [[send( 'get gate cradle' )]] )
+    tempTimer( 6.1, [[send( 'get waterwalking stocking' )]] )
+    tempTimer( 6.2, [[send( 'get gate stocking' )]] )
     tempTimer( 6.3, [[send( 'give waterwalking shade' )]] )
     tempTimer( 6.4, [[send( 'give gate shade' )]] )
     tempTimer( 6.5, [[send( 'group shade' )]] )
@@ -450,30 +450,30 @@ function triggerMinionSummoned( minion )
     -- This trigger waits until the shade is done "wearing" then ungroups it and sets its default
     -- behavior mode.
     MinionEquipTrigger = tempTrigger( [[A shade minion gives you a golden]], function ()
-      send( "put goblet cradle" )
-      send( "put cradle stocking" )
+      send( "put goblet stocking" )
+      send( "put stocking stocking" )
       send( 'group shade' )
       expandAlias( 'circle' )
     end, 1 )
   elseif minion == "troll minion" then
-    tempTimer( 6.1, [[send( 'get waterwalking cradle' )]] )
-    tempTimer( 6.2, [[send( 'get gate cradle' )]] )
+    tempTimer( 6.1, [[send( 'get waterwalking stocking' )]] )
+    tempTimer( 6.2, [[send( 'get gate stocking' )]] )
     tempTimer( 6.3, [[send( 'give waterwalking troll' )]] )
     tempTimer( 6.4, [[send( 'give gate troll' )]] )
     tempTimer( 6.5, [[expandAlias( 'equip troll' )]] )
     MinionEquipTrigger = tempTrigger( [[A troll minion gives you a golden]], function ()
-      send( "put goblet cradle" )
-      send( "put cradle stocking" )
+      send( "put goblet stocking" )
+      send( "put stocking stocking" )
       expandAlias( 'def' )
     end, 1 )
   elseif minion == "blood nymph" then
-    tempTimer( 6.1, [[send( 'get waterwalking cradle' )]] )
-    tempTimer( 6.2, [[send( 'get gate cradle' )]] )
+    tempTimer( 6.1, [[send( 'get waterwalking stocking' )]] )
+    tempTimer( 6.2, [[send( 'get gate stocking' )]] )
     tempTimer( 6.3, [[send( 'give waterwalking nymph' )]] )
     tempTimer( 6.4, [[send( 'give gate nymph' )]] )
     tempTimer( 6.5, [[send( 'group nymph' )]] )
     tempTimer( 6.6, [[send( 'order nymph restore energy' )]] )
-    tempTimer( 6.7, [[send( 'put cradle stocking' )]] )
+    tempTimer( 6.7, [[send( 'put stocking stocking' )]] )
   end
 end
 
@@ -485,7 +485,7 @@ function triggerStoreMinionEq()
   if item then
     local kw = item.keywords[1]
     if desc ~= "a bottle of red potion" then
-      send( "put " .. num .. kw .. " cradle" )
+      send( "put " .. num .. kw .. " stocking" )
     else
       send( "put " .. num .. kw .. " stocking" )
     end
@@ -834,8 +834,4 @@ local function banshee13()
   send( 'give chimes statue', true )
   send( 'get lyre stocking', true )
   send( 'give lyre statue', true )
-end
-
-function fixKnife()
-  Items["a small knife"].longDescription = "A small knife is lying on the ground."
 end
