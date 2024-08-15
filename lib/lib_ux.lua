@@ -90,6 +90,23 @@ function completeDelete()
   end
 end
 
+-- Highlight a list of words using a list of colors where both tables will have synchronized
+-- indices.
+function highlightWords( words, colors )
+  -- For each word in list words, invoke selectString(word, 1) then fg(color)
+  for i, word in ipairs( words ) do
+    selectString( word, 1 )
+    fg( colors[i] )
+  end
+  resetFormat()
+end
+
+function highlightWord( word, color )
+  selectString( word, 1 )
+  fg( color )
+  resetFormat()
+end
+
 -- Function to output a framed/formatted table
 function displayFramedTable( title, table, frameColor )
   -- Color to use for the frame; default to dark slate blue

@@ -128,9 +128,9 @@ function requestLoad( item )
     local function getRandomLoadedItem()
       local itemList = {}
       for k in pairs( UnknownItems ) do
-        if not k:lower():match( "%f[%a]key%f[%A]" ) then
-          table.insert( itemList, k )
-        end
+        --if not k:lower():match( "%f[%a]key%f[%A]" ) then
+        table.insert( itemList, k )
+        --end
       end
       if #itemList == 0 then
         return nil
@@ -428,4 +428,61 @@ function sanitizeItemLoads()
     end
   end
   table.save( f "{DATA_PATH}/ItemLoads.lua", ItemLoads )
+end
+
+-- A catch-all function for determining whether an item should be included among the "UnknownItems" table for
+-- determining the objective of fetch quests; this function should filter out items based on their name and
+-- location to prevent sending players after items that cannot be retrieved for various reasons including:
+-- 1. The item is in a corpse or is itself a corpse;
+-- 2. The item is carried by or equipped by a player character (pc);
+-- 3. The item is held by a shopkeeper or other vendor;
+-- 4. The item is a special type of treasure that converts to gold coins upon looting;
+function isLootable( desc, pos, loc )
+  local lootableItem = isLootableItem( desc )
+  local lootablePos  = (pos == "equipped by" or pos == "carried by")
+  local lootableLoc  = isLootableLocation( loc )
+  local lootable     = lootableItem and lootableLoc and lootablePos
+  return lootable
+end
+
+-- Companion to isLootable to examine an item's name/short description and compare against unlootable and
+-- undesirable items.
+function isLootableItem( desc )
+  desc = desc:lower()
+  -- Assume the item is lootable until proven otherwise
+  local lootable = true
+  -- A list of items that are either unlootable or undesirable
+  local badItems = {"gold coins", "a huge treasure", "corpse"}
+  -- If the desc parameter contains any of the strings within badItems, set lootable to false;
+  -- ensure case insensitivity and match any part of the desc string
+  for _, badItem in ipairs( badItems ) do
+    if desc:match( badItem ) then
+      lootable = false
+      break
+    end
+  end
+  return lootable
+end
+
+-- Companion to isLootable to examine an item's location and compare against unreachable or unkillable
+-- mobs, or items contained within corpses.
+function isLootableLocation( loc )
+  loc = loc:lower()
+  -- Assume the item is lootable until proven otherwise
+  local lootable = true
+  -- A list of locations that are unreachable or undesirable
+  local badLocs = {"shopkeeper", "armorer", "weaponsmith", "armourer", "someone", "corpse"}
+  -- If the item's loc parameter contains any of the strings within badLocs, set lootable to false;
+  -- ensure case insensitivity and match any part of the loc string
+  for _, badLoc in ipairs( badLocs ) do
+    if loc:match( badLoc ) then
+      lootable = false
+      break
+    end
+  end
+  -- If the item is carried or equipped by a PC or inside a known PC's container, set lootable to false
+  if KnownPlayers[loc] or KnownContainers[loc] then
+    lootable = false
+  end
+  return lootable
 end

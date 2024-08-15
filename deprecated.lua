@@ -1,4 +1,131 @@
 ---@diagnostic disable: undefined-global, assign-type-mismatch, cast-local-type
+-- Highlights key milestones within a specific context such as an important quest
+function testPropertyMapping()
+  local testAlign = {"good", "neutral", "evil", "goo", "neu", "evi", "go", "ne", "ev"}
+  local testClass = {"anti-paladin", "bard", "cleric", "command", "paladin", "ninja", "nomad",
+    "thief", "magic-user", "warrior",
+    "anti", "bar", "cle", "com", "pal", "nin", "nom", "thi", "mag", "war",
+    "ap", "ba", "cl", "co", "pa", "ni", "no", "th", "mag", "wa"}
+  local testSex = {"male", "female", "mal", "fem", "ma", "fe"}
+  local testWorn = {
+    "about",
+    "robe",
+    "cloak",
+    "abo",
+    "rob",
+    "clo",
+    "arms",
+    "arm",
+    "sleeves",
+    "sleeve",
+    "body",
+    "chest",
+    "bod",
+    "feet",
+    "boots",
+    "boot",
+    "foot",
+    "fingers",
+    "finger",
+    "fin",
+    "rings",
+    "rin",
+    "ri",
+    "hands",
+    "gloves",
+    "glo",
+    "han",
+    "head",
+    "hold",
+    "held",
+    "hol",
+    "legs",
+    "pants",
+    "leg",
+    "light",
+    "torch",
+    "torches",
+    "lights",
+    "neck",
+    "necklace",
+    "amulet",
+    "shield",
+    "waist",
+    "wield",
+    "weapons",
+    "weap",
+    "wrists",
+    "bracelets",
+  }
+  local align, class, sex, worn = nil, nil, nil, nil
+  -- Set align, class, sex, and worn to a random value from each of the local test tables; for each, use "any"
+  -- 25% of the time instead of a random value
+  if math.random( 1, 5 ) == 1 then align = "" else align = testAlign[math.random( #testAlign )] end
+  if math.random( 1, 8 ) == 1 then class = "" else class = testClass[math.random( #testClass )] end
+  if math.random( 1, 2 ) == 1 then sex = "" else sex = testSex[math.random( #testSex )] end
+  if math.random( 1, 8 ) == 1 then worn = "" else worn = testWorn[math.random( #testWorn )] end
+  local function shuffleString( s )
+    local n = #s
+    for i = n, 2, -1 do
+      local j = math.random( i )
+      s[i], s[j] = s[j], s[i]
+    end
+  end
+  local function shuffleProperties( a, c, s, w )
+    local properties = {a, c, s, w}
+    shuffleString( properties )
+    local propertyString = table.concat( properties, " " )
+    return propertyString
+  end
+  local propertyString = shuffleProperties( align, class, sex, worn )
+  propertyString = trimCondense( propertyString )
+  send( f "say find {propertyString}" )
+end
+
+-- Define a table called QuestHighlights which is a table of strings; each string may be associated with
+-- one or both of an info string and command string; define the table with a sample entry
+QuestHighlights = {
+  ["You see a rat"] = {info = "A rat is here!", code = "burp"},
+}
+function highlightQuest( string )
+  -- Highlight the triggering string in bright orange on dark purple
+  selectString( string, 1 )
+  bg( "dark_slate_blue" )
+  fg( "goldenrod" )
+
+  -- If the string has info associated with it, use onNextPrompt() to create a trigger with function () that will
+  -- cecho that content after the next prompt.
+  if QuestHighlights[string].info then
+    local info = QuestHighlights[string].info
+    onNextPrompt( function ()
+      cecho( "\n\t<:dark_slate_blue><goldenrod>" .. {QuestHighlights[string].info} )
+      resetFormat()
+    end )
+  end
+  -- If the string has an associated command, use iout to report on the triggered command incl. the triggering text,
+  -- then send the command with send().
+  if QuestHighlights[string].code then
+    local command = QuestHighlights[string].code
+    --iout( f "<deep_pink>{cmd} triggered on <royal_blue>{string}<reset>" )
+    send( QuestHighlights[string].code, true )
+  end
+end
+
+-- This function should start by populating tableOfPatterns with the triggering patterns from QuestHighlights
+-- It should then use permRegexTrigger() to create a trigger that calls highlightQuest(string) when triggered.
+-- The passed parameter should be the string from QuestHighlights.
+function createQuestHighlightTriggers()
+  local tableOfPatterns = {}
+
+  -- Populate tableOfPatterns with the keys from QuestHighlights
+  for pattern, _ in pairs( QuestHighlights ) do
+    table.insert( tableOfPatterns, pattern )
+  end
+  -- Create a single permanent trigger for all patterns
+  permRegexTrigger( "Quest Highlights", "", tableOfPatterns, [[
+highlightQuest( matches[1] )
+]] )
+end
 
 -- A temporary function for analyzing item data and identifying the best items in a particular category
 function findDesiredItems()

@@ -1,5 +1,4 @@
 -- A set to keep track of items collected via auto-gathering, like resin
-gathered = {}
 AlertsMuted = false
 
 -- Automatically cast 'miracle' on the tank under predefined conditions
@@ -221,35 +220,57 @@ InItems          = InItems or {}
 CarriedItems     = CarriedItems or {}
 
 function triggerLocateObject()
+  -- Known item color
+  local knownItemColor       = "dark_olive_green"
+  -- Unknown item color
+  local unknownItemColor     = "medium_violet_red"
+  -- Player held
+  local playerColor          = "spring_green"
+  -- Mob held
+  local mobColor             = "indian_red"
+  -- In Room
+  local roomColor            = "royal_blue"
+  -- Can't be found/unknown location
+  local unknownLocationColor = "ansi_light_red"
+
   -- If "line" contains "appears in the middle of the room", this is a false match; return
   -- without doing anything.
   if string.find( line, "appears in the middle of the room" ) then return end
-  -- Increment the "index" for locating objects; this is used to remember where we are
-  -- in the total list of items with a given keyword so we can string multiple locates
-  -- together without losing track of the index.
-  LocateIndex = (LocateIndex or 0) + 1
-  cecho( f "\t({NC}{LocateIndex}{RC})" )
+  -- Increment the "index" to track # items located w/ current keyword
+  LocateIndex      = (LocateIndex or 0) + 1
 
   -- The name (short description) of the located item
-  local item = trim( matches.item )
+  local item       = trim( matches.item )
+  local known      = Items[item]
   -- The "position" the item is in (equipped, carried, on ground)
-  local pos  = trim( matches.pos )
+  local pos        = trim( matches.pos )
   -- The location of the item (name of mob or room)
-  local loc  = trim( matches.loc )
+  local loc        = trim( matches.loc )
+  -- Items in containers or carried/equipped by players cannot be "fetched"
+  local playerHeld = PlayerContainers[loc] or KnownPlayers[loc]
 
   if multipleIns( pos, loc ) then return end
   trackPlayerContainers( item, loc )
 
-  -- Items in containers (including nested) or carried directly by players that are not yet identified
-  -- are opportunities for player's to help expand the database.
-  local inContainer = PlayerContainers[loc] or NestedContainers[loc]
-  local playerHeld = inContainer or KnownPlayers[loc]
-  if playerHeld and (not Items[item]) then
-    selectString( item, 1 )
-    fg( "medium_purple" )
-    selectString( loc, 1 )
-    fg( "dark_orange" )
-    resetFormat()
+  -- Item color is knownColor or unknownColor based on known
+  local ic = known and knownItemColor or unknownItemColor
+  -- Location color is either player, room, or mob
+  local lc = ""
+  if playerHeld then
+    lc = playerColor
+  elseif KnownRooms[loc] then
+    lc = roomColor
+  elseif KnownMobs[loc] then
+    lc = mobColor
+  else
+    lc = unknownLocationColor
+  end
+  -- Highlight the item & location based on above conditions, and append the index
+  highlightWord( item, ic )
+  highlightWord( loc, lc )
+  cecho( f "\t({NC}{LocateIndex}{RC})" )
+
+  if playerHeld and not known then
     -- Insert the item into the Carried Items table uniquely keyed to the location
     CarriedItems[loc] = CarriedItems[loc] or {}
     if not table.contains( CarriedItems[loc], item ) then
@@ -257,46 +278,12 @@ function triggerLocateObject()
     end
     return
   elseif UnknownItems[item] or Items[item] then
-    -- Ignore items that are already identified or have already been queued for identification
-    deleteLine()
+    -- Skip/mute items that are already identified or have already been queued for identification
+    -- deleteLine()
     return
-  else
-    selectString( item, 1 )
-    fg( "maroon" )
-    selectString( loc, 1 )
-    -- Check if it's a room in our map
-    local rooms = searchRoom( loc, true, true )
-    ---@diagnostic disable-next-line: param-type-mismatch
-    if next( rooms ) ~= nil then
-      -- It's a room
-      fg( "royal_blue" )
-    else
-      -- Unmapped room (or mob)
-      fg( "indian_red" )
-    end
-    resetFormat()
-  end
-  -- If item contains any variation of the word "corpse" at any part of the string, set isCorpse true
-  local isCorpse = string.find( item:lower(), "corpse" )
-  -- If item contains any variation of the word "coins" at any part of the string, set isCoins true
-  local isCoins = string.find( item:lower(), "coins" )
-  local isLoaded = (pos == "equipped by" or pos == "carried by")
-  local badLocs = {"shopkeeper", "armorer", "weaponsmith", "armourer", "someone", "corpse"}
-  -- If loc contains any variation of any of the words in the badLocs list at any point in the loc string, set
-  -- isBadLoc true
-  local isBadLoc = false
-  for _, badLoc in ipairs( badLocs ) do
-    if string.find( loc:lower(), badLoc ) then
-      isBadLoc = true
-      break
-    end
   end
   -- Add/update the item in either UnknownItems or ItemLoads tables (if they're not coins or corpses)
-  if isLoaded and not isCorpse and not isCoins and not isBadLoc then
-    -- If a keyword previously identified as "bad" successfully finds an item, remove it from the list
-    if LocateTarget and BadLocates[LocateTarget] then
-      BadLocates[LocateTarget] = nil
-    end
+  if isLootable( item, pos, loc ) then
     -- [TODO] Figure out how to handle items "in" Rooms or other locations; this will include a method
     -- to ignore or filter out static items like fountains and statues.
     addLoad( item, loc )
@@ -383,58 +370,9 @@ function triggerMobIncap()
   end )
 end
 
--- Highlights key milestones within a specific context such as an important quest
-
--- Define a table called QuestHighlights which is a table of strings; each string may be associated with
--- one or both of an info string and command string; define the table with a sample entry
-QuestHighlights = {
-  ["You see a rat"] = {info = "A rat is here!", code = "burp"},
-}
-function highlightQuest( string )
-  -- Highlight the triggering string in bright orange on dark purple
-  selectString( string, 1 )
-  bg( "dark_slate_blue" )
-  fg( "goldenrod" )
-
-  -- If the string has info associated with it, use onNextPrompt() to create a trigger with function () that will
-  -- cecho that content after the next prompt.
-  if QuestHighlights[string].info then
-    local info = QuestHighlights[string].info
-    onNextPrompt( function ()
-      cecho( "\n\t<:dark_slate_blue><goldenrod>" .. {QuestHighlights[string].info} )
-      resetFormat()
-    end )
-  end
-  -- If the string has an associated command, use iout to report on the triggered command incl. the triggering text,
-  -- then send the command with send().
-  if QuestHighlights[string].code then
-    local command = QuestHighlights[string].code
-    --iout( f "<deep_pink>{cmd} triggered on <royal_blue>{string}<reset>" )
-    send( QuestHighlights[string].code, true )
-  end
-end
-
--- This function should start by populating tableOfPatterns with the triggering patterns from QuestHighlights
--- It should then use permRegexTrigger() to create a trigger that calls highlightQuest(string) when triggered.
--- The passed parameter should be the string from QuestHighlights.
-function createQuestHighlightTriggers()
-  local tableOfPatterns = {}
-
-  -- Populate tableOfPatterns with the keys from QuestHighlights
-  for pattern, _ in pairs( QuestHighlights ) do
-    table.insert( tableOfPatterns, pattern )
-  end
-  -- Create a single permanent trigger for all patterns
-  permRegexTrigger( "Quest Highlights", "", tableOfPatterns, [[
-highlightQuest( matches[1] )
-]] )
-end
-
 function queueReconnect( t )
   local host, port = getConnectionInfo()
   local connectTrigger = tempTrigger( "land of GizmoMUD", function ()
-    -- Clear the queue of un'id'd items on reconnection after reboot
-    UnknownItems = {}
     send( "down", true )
     send( "west", true )
     send( "north", true )

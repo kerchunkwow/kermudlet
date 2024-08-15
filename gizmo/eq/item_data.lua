@@ -48,7 +48,7 @@ function addItemObject( newItem )
     --cout( f "{GDITM} <ansi_red>REMINDER<reset>: Item addition temporarily disabled" )
     -- If the newly added item's desc is in the UnknownItems table, remove it
     if UnknownItems[desc] then
-      UnknownItems[desc] = nil
+      cleanupUnknown()
     end
     -- Finally, store the name of the most recent item
     LastItem = desc
@@ -253,7 +253,7 @@ function mapPlayerProperties( propertyString )
       if class then matched = true end
     end
     if not matched and not worn then
-      worn = mapProperty( p, WORN_MAP )
+      worn = mapProperty( p, WEAR_MAP )
       if worn then matched = true end
     end
   end
@@ -337,88 +337,6 @@ function desired( item )
 end
 
 function findDesiredItems( align, sex, class )
-end
-
-function testPropertyMapping()
-  local testAlign = {"good", "neutral", "evil", "goo", "neu", "evi", "go", "ne", "ev"}
-  local testClass = {"anti-paladin", "bard", "cleric", "command", "paladin", "ninja", "nomad",
-    "thief", "magic-user", "warrior",
-    "anti", "bar", "cle", "com", "pal", "nin", "nom", "thi", "mag", "war",
-    "ap", "ba", "cl", "co", "pa", "ni", "no", "th", "mag", "wa"}
-  local testSex = {"male", "female", "mal", "fem", "ma", "fe"}
-  local testWorn = {
-    "about",
-    "robe",
-    "cloak",
-    "abo",
-    "rob",
-    "clo",
-    "arms",
-    "arm",
-    "sleeves",
-    "sleeve",
-    "body",
-    "chest",
-    "bod",
-    "feet",
-    "boots",
-    "boot",
-    "foot",
-    "fingers",
-    "finger",
-    "fin",
-    "rings",
-    "rin",
-    "ri",
-    "hands",
-    "gloves",
-    "glo",
-    "han",
-    "head",
-    "hold",
-    "held",
-    "hol",
-    "legs",
-    "pants",
-    "leg",
-    "light",
-    "torch",
-    "torches",
-    "lights",
-    "neck",
-    "necklace",
-    "amulet",
-    "shield",
-    "waist",
-    "wield",
-    "weapons",
-    "weap",
-    "wrists",
-    "bracelets",
-  }
-  local align, class, sex, worn = nil, nil, nil, nil
-  -- Set align, class, sex, and worn to a random value from each of the local test tables; for each, use "any"
-  -- 25% of the time instead of a random value
-  if math.random( 1, 5 ) == 1 then align = "" else align = testAlign[math.random( #testAlign )] end
-  if math.random( 1, 8 ) == 1 then class = "" else class = testClass[math.random( #testClass )] end
-  if math.random( 1, 2 ) == 1 then sex = "" else sex = testSex[math.random( #testSex )] end
-  if math.random( 1, 8 ) == 1 then worn = "" else worn = testWorn[math.random( #testWorn )] end
-  local function shuffleString( s )
-    local n = #s
-    for i = n, 2, -1 do
-      local j = math.random( i )
-      s[i], s[j] = s[j], s[i]
-    end
-  end
-  local function shuffleProperties( a, c, s, w )
-    local properties = {a, c, s, w}
-    shuffleString( properties )
-    local propertyString = table.concat( properties, " " )
-    return propertyString
-  end
-  local propertyString = shuffleProperties( align, class, sex, worn )
-  propertyString = trimCondense( propertyString )
-  send( f "say find {propertyString}" )
 end
 
 -- If the AlternatePlayers table is kept up to date, this function will attribute contributions from
@@ -515,6 +433,7 @@ function consolidateKeywords()
   -- Use cecho to report on the size of the AllKeywords table after Items is added
   cecho( f "\nTotal keywords after Files: {NC}{totalKeywords}{RC}" )
   cecho( f "\nUnique keywords after Files: {VC}{table.size( AllKeywords )}{RC}" )
+  sanitizeKeywords()
 end
 
 -- This function will clean and "simplify" the AllKeywords table by removing keywords with low count

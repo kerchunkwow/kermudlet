@@ -87,8 +87,6 @@ function returnedItem()
     processItem( nextItem )
   else
     cecho( f "{GDOK} No more ItemsReceived" )
-    -- This is probably unnecessary, but we'll "reset" everything just in case
-    resetID()
   end
 end
 

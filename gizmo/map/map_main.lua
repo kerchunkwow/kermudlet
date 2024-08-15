@@ -189,3 +189,11 @@ function checkChests( n )
     send( f [[lock {i}.chest]] )
   end
 end
+
+KnownRooms = KnownRooms or {}
+function loadKnownRooms()
+  local rooms = getRooms()
+  for id, room in pairs( rooms ) do
+    KnownRooms[room] = true
+  end
+end

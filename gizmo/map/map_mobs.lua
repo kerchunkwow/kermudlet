@@ -1,17 +1,16 @@
 -- For now we're only using mobs in the Main session
-if not mobData then
-  -- Global "master table" to hold all mob data
-  mobData = {}
-  -- Global table to hold fame data (maps mob shorts to fame values)
-  fameData = {}
-  -- After scripts are loaded, call loadAllMobs to populate mobData
-  tempTimer( 0, [[loadAllMobs()]] )
-  tempTimer( 0, [[loadFameData()]] )
-end
-AreaMobs = AreaMobs or {}
+-- Global "master table" to hold all mob data
+mobData  = {}
+-- Global table to hold fame data (maps mob shorts to fame values)
+fameData = {}
+-- After scripts are loaded, call loadAllMobs to populate mobData
+tempTimer( 0, [[loadAllMobs()]] )
+tempTimer( 0, [[loadFameData()]] )
+AreaMobs        = AreaMobs or {}
 
 -- A global table to store the IDs of the current area's temporary mob triggers
 areaMobTriggers = areaMobTriggers or {}
+KnownMobs       = KnownMobs or {}
 -- Load all mobs from the Mob and SpecialAttacks Tables in the gizwrld.db database
 function loadAllMobs()
   mobData = {}
@@ -24,6 +23,7 @@ function loadAllMobs()
   end
   local mob = cursor:fetch( {}, "a" )
   while mob do
+    KnownMobs[mob.shortDescription] = true
     -- Initialize the mob entry with database columns
     local mobEntry = {
       rNumber          = tonumber( mob.rNumber ),
@@ -104,8 +104,18 @@ function loadAllMobs()
   conn:close()
   env:close()
   -- This function is only needed once at startup
-  loadAllMobs = nil
   tempTimer( 0.1, [[setPrimaryKeyword()]] )
+end
+
+-- Give the name/shortDescription of a mob, return the area that mob is in by iterating through
+-- mobData to find mob.shortDescription, then returning mob.areaName
+function getMobArea( desc )
+  for _, mob in ipairs( mobData ) do
+    if mob.shortDescription == desc then
+      return mob.areaName
+    end
+  end
+  return "Unknown"
 end
 
 -- Populate AreaMobs with a subset of mobs from the mobData table; useful for functions that later
@@ -407,21 +417,6 @@ function setPrimaryKeyword()
 
       -- Debug output for each mob
       iout( f "Mob: {mob.shortDescription} - Primary Keyword: {bestKeyword} - Unique: {mob.uniqueKeyword}" )
-    end
-  end
-  setPrimaryKeyword = nil
-end
-
-MobList = {
-  628,
-  816,
-  855,
-  878,
-}
-function circuitHelper( mobList )
-  function circuitHelper( mobList )
-    for i = 1, #mobList do
-      -- Act on each number mobList[i] here
     end
   end
 end

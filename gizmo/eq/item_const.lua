@@ -432,7 +432,7 @@ CLASS     = {
   ["magic-user"]   = {"magic-user", "mu", "mage", "magicuser"},
   ["warrior"]      = {"warrior"}
 }
-WORN_MAP  = {
+WEAR_MAP  = {
   ["about"]   = {"about", "cloaks", "robes"},
   ["arms"]    = {"arms", "sleeves"},
   ["body"]    = {"body", "chests"},
